@@ -24,6 +24,7 @@
     "test": "npm run eslint && npm run mocha",
     "eslint": "eslint src/. test/. --config .eslintrc.json",
     "start": "node src/",
+    "debug": "nodemon --debug=5858 src/",
     "mocha": "mocha test/ --recursive"
   },
   "dependencies": {
