@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type":"object",
+  "required": [
+    "title",
+    "url"
+  ],
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "url": {
+      "$ref": "#/definitions/URL"
+    }
+  },
+  "definitions": {
+    "URL":{
+      "type": "string",
+      "pattern": "^https?://.+$",
+      "example": "http://schul-cloud.org"
+    }
+  }
+}
