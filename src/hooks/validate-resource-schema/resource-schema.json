@@ -3,14 +3,33 @@
   "type":"object",
   "required": [
     "title",
-    "url"
+    "url",
+    "licenses",
+    "contentCategory",
+    "mimeType"
   ],
   "properties": {
     "title": {
-      "type": "string"
+      "type": "string",
+      "description": "The title of the resource.",
+      "example": "C Programming Language"
     },
     "url": {
       "$ref": "#/definitions/URL"
+    },
+    "licenses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "contentCategory": {
+      "$ref": "#/definitions/ContentCategory"
+    },
+    "mimeType": {
+      "type": "string",
+      "description": "https://tools.ietf.org/html/rfc2046",
+      "example":"text/html"
     }
   },
   "definitions": {
@@ -18,6 +37,10 @@
       "type": "string",
       "pattern": "^https?://.+$",
       "example": "http://schul-cloud.org"
+    },
+    "ContentCategory":{
+      "enum": ["atomic", "learning-object", "proven-learning-object", "tool"],
+      "example":"learning-object"
     }
   }
 }
