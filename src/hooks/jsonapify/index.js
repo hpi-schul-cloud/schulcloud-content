@@ -1,4 +1,5 @@
 const find = require('./find.js');
+const get = require('./get.js');
 
 /**
  *
@@ -66,6 +67,7 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
         find(hook);
         break;
       case 'get':
+        get(hook);
         break;
       case 'create':
         break;
