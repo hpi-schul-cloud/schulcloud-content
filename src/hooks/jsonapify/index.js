@@ -1,4 +1,4 @@
-const JSONAPISerializer = require('jsonapi-serializer').Serializer;
+const find = require('./find.js');
 
 /**
  *
@@ -63,6 +63,7 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
 
     switch (hook.method){
       case 'find':
+        find(hook);
         break;
       case 'get':
         break;
