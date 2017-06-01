@@ -36,6 +36,11 @@ app.configure(hooks());
 app.configure(mongodb);
 app.configure(rest());
 
+// Allow accessing req-object in hooks
+app.use(function(req, res, next) {
+  req.feathers.req = req;
+  next();
+});
 
 // Set up our services (see `services/index.js`)
 app.configure(services);
