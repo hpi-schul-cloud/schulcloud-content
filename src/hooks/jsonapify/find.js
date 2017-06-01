@@ -13,21 +13,21 @@ module.exports = function (hook) {
   // Get the model name
   let modelName = hook.service.Model.modelName;
 
-  let result = [];
-  hook.result.data.forEach(function(data) {
+  let result = {
+    links: {self: self},
+    data: []
+  };
+  hook.result.data.forEach(function(data, index) {
     // Get object attributes and exclude some keys
     let attributes = Object.keys(data).filter(x => !(x === '_id' || x === '__v') );
     // Serialize to JSONAPI object
-    let jsonItem = new JSONAPISerializer(modelName, hook.result.data, {
+    let jsonItem = new JSONAPISerializer(modelName, data, {
       id: '_id',
-      topLevelLinks: {
-        self: self
-      },
       pluralizeType: false,
       attributes: attributes
     });
     // Add to result array
-    result.push(jsonItem);
+    result.data[index] = jsonItem.data;
   });
 
   hook.result = result;
