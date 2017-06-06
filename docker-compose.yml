@@ -27,6 +27,15 @@ services:
       - 27017:27017
     command: [ "--replSet", "rs" ]
 
+  schulcloud-content-mongodb-connector:
+    image: python:3.6.1
+    links:
+      - schulcloud-content-mongodb:mongodb
+      - schulcloud-content-elasticsearch:elasticsearch
+    volumes:
+      - .:/usr/src/connector
+    command: [ "bash", "/usr/src/connector/start-schulcloud-content-mongodb-connector.sh" ]
+
   schulcloud-content-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.4.1
     environment:
