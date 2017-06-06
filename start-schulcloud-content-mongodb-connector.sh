@@ -3,17 +3,6 @@
 pip install mongo-connector
 pip install elastic2-doc-manager[elastic5]
 
-cat << EOF > /config.json
-{
-   "docManagers": [
-        {
-            "docManager": "elastic2_doc_manager",
-            "targetURL": "elastic:changeme@elasticsearch:9200",
-        }
-    ]
-}
-EOF
-
 # TODO: Find better method for checking, that mongodb and elasticsearch are online
 sleep 10
 
