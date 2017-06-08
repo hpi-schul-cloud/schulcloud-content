@@ -14,6 +14,7 @@ services:
       - 5858:5858
     links:
       - schulcloud-content-mongodb:mongodb
+      - schulcloud-content-elasticsearch:elasticsearch
     volumes:
       - .:/app
     command: npm run debug
