@@ -9,6 +9,7 @@ services:
       dockerfile: Dockerfile
     environment:
       NODE_ENV: development
+      BACKEND_URL: https://schul-cloud.org:8080/
     ports:
       - 4040:4040
       - 5858:5858
