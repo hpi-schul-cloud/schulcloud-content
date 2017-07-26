@@ -3,24 +3,32 @@ const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 function authenticate(hook) {
 
   const basicAuth = require('basic-auth');
-  const credentials = basicAuth.parse(hook.params.req.headers['authorization']);
-
   const api = require('../../hooks/authenticate/api');
-  return api.post('/authentication', {
-    json: {
-      username: credentials.name,
-      password: credentials.pass
-    }
-  }).then(data => {
-    const jwtDecode = require('jwt-decode');
-    return jwtDecode(data.accessToken);
-  }).then(_ => {
-    // TODO: Authorization
-    return hook;
-  }).catch(_ => {
-    const errors = require('feathers-errors');
-    throw new errors.NotAuthenticated('Could not authenticate');
-  });
+
+  // Parse Auth Header
+  return new Promise((res, rej) => {
+    let credentials = basicAuth.parse(hook.params.req.headers['authorization']);
+    credentials ? res(credentials) : rej();
+  })
+  // Authenticate against Server
+    .then(credentials => {
+      return api.post('/authentication', {
+        json: {
+          username: credentials.name,
+          password: credentials.pass
+        }
+      });
+      // Parse JWT Token and set UserID
+    }).then(data => {
+      const jwtDecode = require('jwt-decode');
+      const jwtTokenDecoded = jwtDecode(data.accessToken);
+      hook.data.userId = jwtTokenDecoded.userId;
+      return hook;
+      // Auth Error
+    }).catch(_ => {
+      const errors = require('feathers-errors');
+      throw new errors.NotAuthenticated('Could not authenticate');
+    });
 }
 
 module.exports = {
@@ -28,7 +36,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [authenticate, validateResourceSchema()],
+    create: [validateResourceSchema()],
     update: [],
     patch: [],
     remove: []
