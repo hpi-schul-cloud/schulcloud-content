@@ -5,7 +5,7 @@ class Service {
   }
 
   find (params) {
-    let featuredContent = ['5975f999cdcc20002234d363', '5975f999cdcc20002234d364', '5975f999cdcc20002234d367'];
+    let featuredContent = ['5975f999cdcc20002234d363', '5975f999cdcc20002234d364', '5975f999cdcc20002234d367', '5975f99ccdcc20002234d79f', '5975f99ccdcc20002234d7a2', '5975f99ccdcc20002234d7a1'];
     return this.options.app.service('content').find({
       query: {
         _id: {
