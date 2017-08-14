@@ -7,7 +7,7 @@ module.exports = function (app) {
   const content = new mongooseClient.Schema({
 
     originId: { type: String, unique: true },
-    //userId: {type: mongooseClient.Schema.Types.ObjectId, required: true },
+    userId: {type: mongooseClient.Schema.Types.ObjectId, required: true },
     providerName: { type: String, required: true },
 
     url: { type: String, required: true },
