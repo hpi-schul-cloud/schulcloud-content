@@ -2,8 +2,8 @@ const cache = require('memory-cache');
 const basicAuth = require('basic-auth');
 const rpn = require('request-promise-native');
 
-// Cache Successful Logins for 10 Seconds
-const TOKEN_CACHE_TIME = 10000;
+// Cache Successful Logins for 30 Seconds
+const TOKEN_CACHE_TIME = 30000;
 
 const api = rpn.defaults({
   baseUrl: process.env.BACKEND_URL || 'http://localhost:3030/',
