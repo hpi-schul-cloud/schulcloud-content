@@ -10,6 +10,9 @@ services:
     environment:
       NODE_ENV: development
       BACKEND_URL: https://schul-cloud.org:8080/
+    networks:
+      - default
+      - schulcloudserver_schulcloud-server-network
     ports:
       - 4040:4040
       - 5858:5858
@@ -26,7 +29,7 @@ services:
       - data-schulcloud-content:/data/db
       - .:/app
     ports:
-      - 27017:27017
+      - 27018:27017
     command: [ "--replSet", "rs" ]
 
   schulcloud-content-mongodb-connector:
@@ -52,6 +55,10 @@ services:
       - data-schulcloud-elasticsearch:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
+
+networks:
+  schulcloudserver_schulcloud-server-network:
+    external: true
 
 volumes:
   data-schulcloud-content:
