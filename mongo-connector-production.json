@@ -1,0 +1,42 @@
+{
+  "__comment__": "Configuration options starting with '__' are disabled. To enable them, remove the preceding '__'.",
+
+  "mainAddress": "mongodb:27018",
+  "oplogFile": "log/mongo-connector/oplog.timestamp",
+  "__noDump": false,
+  "__batchSize": -1,
+  "__verbosity": 0,
+  "__continueOnError": false,
+
+  "logging": {
+    "type": "file",
+    "filename": "log/mongo-connector/mongo-connector.log",
+    "__format": "%(asctime)s [%(levelname)s] %(name)s:%(lineno)d - %(message)s",
+    "__rotationWhen": "D",
+    "__rotationInterval": 1,
+    "__rotationBackups": 10,
+
+    "__type": "syslog",
+    "__host": "localhost:514"
+  },
+
+  "authentication": {
+    "__adminUsername": "username",
+    "__password": "password",
+    "__passwordFile": "mongo-connector.pwd"
+  },
+
+  "namespaces": {
+    "schulCloudContent.*": true
+  },
+
+  "docManagers": [
+    {
+      "docManager": "elastic2_doc_manager",
+      "targetURL": "elasticsearch:9200",
+      "__bulkSize": 1000,
+      "__uniqueKey": "_id",
+      "__autoCommitInterval": 0
+    }
+  ]
+}
