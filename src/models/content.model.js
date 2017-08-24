@@ -20,6 +20,10 @@ module.exports = function (app) {
     contentCategory: { type: String, enum: ['atomic', 'learning-object', 'proven-learning-object', 'tool'], required: true },
     mimeType: { type: String, required: true },
 
+    promoUntil: { type: Date },
+    featuredUntil: { type: Date },
+    clickCount: { type: Number },
+
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 
