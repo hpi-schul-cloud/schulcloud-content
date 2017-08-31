@@ -20,8 +20,7 @@ if i == 30:
 
 # Try connecting to ElasticSearch
 elasticConnect = Elasticsearch(
-	hosts=[{'host': os.environ['ELASTIC_URI'], 'port': int(os.environ['ELASTIC_PORT'])}],
-	http_auth=(os.environ['ELASTIC_USER'], os.environ['ELASTIC_PW'])
+	hosts=[{'host': os.environ['ELASTIC_URI'], 'port': int(os.environ['ELASTIC_PORT'])}]
 )
 i = 0
 while i < 30:
@@ -30,10 +29,10 @@ while i < 30:
                 raise ValueError("Connection failed")
             else:
                 print("Sucessfully connected to elasticsearch")
-                break    
+                break
     except:
             print("Will retry connecting to elasticsearch")
-    i = i +1            
+    i = i +1
 
 if i == 30:
     raise ValueError("Connection failed")
@@ -45,7 +44,7 @@ print("Resources in schulcloud_content exists: " + str(exists))
 # depending on existence start seeding db or start server
 if exists:
 	print("Starting the server now")
-	subprocess.call(["./usr/src/connector/start-schulcloud-content-mongodb-connector.sh", "start"])
+	subprocess.call(["/usr/src/connector/start-schulcloud-content-mongodb-connector.sh", "start"])
 else:
 	print("Seeding the Database now")
-	subprocess.call(["./usr/src/connector/start-schulcloud-content-mongodb-connector.sh", "seed"])
+	subprocess.call(["/usr/src/connector/start-schulcloud-content-mongodb-connector.sh", "seed"])
