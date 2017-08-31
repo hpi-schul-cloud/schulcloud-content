@@ -2,6 +2,7 @@ import subprocess
 import os
 from pymongo import MongoClient
 from elasticsearch import Elasticsearch
+from time import sleep
 
 # Try connecting to MongoDatabase
 connection = None
@@ -13,6 +14,7 @@ while i < 30:
 			break
 	except:
 			print("Will retry connecting to mongodb")
+	sleep(0.5)
 	i = i +1
 
 if i == 30:
@@ -32,6 +34,7 @@ while i < 30:
                 break
     except:
             print("Will retry connecting to elasticsearch")
+    sleep(0.5)
     i = i +1
 
 if i == 30:
