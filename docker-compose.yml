@@ -38,6 +38,13 @@ services:
     links:
       - schulcloud-content-mongodb:mongodb
       - schulcloud-content-elasticsearch:elasticsearch
+    environment: 
+      - MONGO_URI=mongodb
+      - MONGO_PORT=27017
+      - ELASTIC_URI=elasticsearch
+      - ELASTIC_PORT=9200
+      - ELASTIC_USER=elastic
+      - ELASTIC_PW=changeme
     volumes:
       - .:/usr/src/connector
     command: [ "bash", "/usr/src/connector/start-schulcloud-content-mongodb-connector.sh" ]
