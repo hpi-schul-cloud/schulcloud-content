@@ -85,6 +85,8 @@ Getting up and running is as easy as 1, 2, 3.
     info: Feathers application started on localhost:4040
     ```
     Now, you should be able to open the application: http://127.0.0.1:4040
+    This should look like this:  
+    ![](https://schul-cloud.github.io/assets/img/windows-setup/07-01-start-server.png)
 
 ## Testing
 
