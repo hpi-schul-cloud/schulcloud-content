@@ -17,8 +17,8 @@ Getting up and running is as easy as 1, 2, 3.
     cd path/to/schulcloud-content; npm install
     ```
 3. Install [Mongodb](https://mongodb.com).
-4. Start mongodb
-
+4.  Start mongodb.
+    We already have a database you can use for that, in the db folder.
     ```
     mongod --dbpath db
     ```
@@ -75,6 +75,16 @@ Getting up and running is as easy as 1, 2, 3.
     ```
     npm start
     ```
+    You can see an output like this:
+    ```
+    > schulcloud-content@0.0.0 start /home/coderdojo/schulcloud-content
+    > node src/
+
+    You are using the default filter for the search service. For more information about event filters see https://docs.feathersjs.com/api/events.html#event-filtering
+    (node:649) DeprecationWarning: `open()` is deprecated in mongoose >= 4.11.0, use `openUri()` instead, or set the `useMongoClient` option if using `connect()` or `createConnection()`. See http://mongoosejs.com/docs/connections.html#use-mongo-client
+    info: Feathers application started on localhost:4040
+    ```
+    Now, you should be able to open the application: http://127.0.0.1:4040
 
 ## Testing
 
