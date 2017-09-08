@@ -10,12 +10,19 @@ const api = rpn.defaults({
   resolveWithFullResponse: true
 });
 
+var mongoose = require('mongoose');
+
+ANONYMOUS = {"name":"anonymous", "pass":"", "anonymous": true, "userId": mongoose.Types.ObjectId()};
+
 function authenticateHook(hook) {
   // Parse Auth Header
   return new Promise((res, rej) => {
     let credentials = basicAuth.parse(hook.params.req.headers['authorization']);
-    credentials ? res(credentials) : rej();
+    credentials ? res(credentials) : res(ANONYMOUS);
   }).then(credentials => {
+    if (credentials.anonymous) {
+      return credentials;
+    }
     // Create Key for Caching Tokens
     let key = `${credentials.name}:${credentials.pass}`;
     // Check for cached JWT Tokens
@@ -36,6 +43,10 @@ function authenticateHook(hook) {
       }
     });
   }).then(response => {
+    if (response.anonymous) {
+      hook.data.userId = response.userId;
+      return hook;
+    }
     // Parse JWT Token and set UserID
     const jwtDecode = require('jwt-decode');
     const jwtTokenDecoded = jwtDecode(response.accessToken);
