@@ -20,6 +20,7 @@ Getting up and running is as easy as 1, 2, 3.
 4.  Start mongodb.
     We already have a database you can use for that, in the db folder.
     ```
+    mkdir db
     mongod --dbpath db
     ```
     It should look like this:
