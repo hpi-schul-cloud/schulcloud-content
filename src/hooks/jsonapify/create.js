@@ -8,7 +8,8 @@ module.exports = function (hook) {
     if(hook.data.hasOwnProperty('data') && hook.data.data.hasOwnProperty('attributes')) {
       deserializeObject = hook.data.data.attributes;
     }
-    hook.data = deserializeObject;
+    console.log("deserializeObject:", deserializeObject)
+    hook.data.attributes = deserializeObject;
   } else if(hook.type === 'after') {
 
   }

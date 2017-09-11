@@ -12,7 +12,7 @@ const api = rpn.defaults({
 
 var mongoose = require('mongoose');
 
-ANONYMOUS = {"name":"anonymous", "pass":"", "anonymous": true, "userId": mongoose.Types.ObjectId()};
+ANONYMOUS = {"name":"anonymous", "pass":"", "anonymous": true, "userId": mongoose.Types.ObjectId("anonymous123")};
 
 function authenticateHook(hook) {
   // Parse Auth Header
