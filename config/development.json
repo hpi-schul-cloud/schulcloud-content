@@ -1,0 +1,22 @@
+{
+  "host": "localhost",
+  "port": 4040,
+  "public": "../public/",
+  "paginate": {
+    "default": 10,
+    "max": 50
+  },
+  "mongodb": "MONGO_URI",
+  "localAuthentication": [
+    {
+      "userId": "sc-content-1",
+      "username": "schulcloud-content-1",
+      "password": "content-1"
+    },
+    {
+      "userId": "sc-content-2",
+      "username": "schulcloud-content-2",
+      "password": "content-2"
+    }
+  ]
+}
