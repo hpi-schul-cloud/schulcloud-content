@@ -6,7 +6,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [validateResourceSchema(), authenticate],
+    create: [authenticate, validateResourceSchema()],
     update: [],
     patch: [],
     remove: []
