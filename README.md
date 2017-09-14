@@ -1,57 +1,107 @@
 # schulcloud-content
 
-> 
+This is the content search engine for schul-cloud,
+including a database to store the resources.
 
-## About
+## APIs
 
-This project uses [Feathers](http://feathersjs.com). An open source web framework for building modern real-time applications.
+If you start the service, you can use the following APIs:
 
-## Getting Started
+- [Search API][search-api] at `/v1/search` e.g.
+  at http://localhost:4040/v1/search?Q=Funktion
+- [Resources API][resources-api] at `/v1/resources/`
+  e.g. http://localhost:4040/v1/resources/ids if you set it up locally.
 
-Getting up and running is as easy as 1, 2, 3.
+## Get Started
 
-1. Make sure you have [NodeJS](https://nodejs.org/) and [npm](https://www.npmjs.com/) installed.
-2. Install your dependencies
+To get started developing the content service, you first need to install docker
+and docker-compose.
 
-    ```
-    cd path/to/schulcloud-content; npm install
-    ```
+### Setup under Ubuntu
 
-3. Start your app
+First, install docker:
 
-    ```
-    npm start
-    ```
+    wget -O- https://get.docker.com | sh
 
-## Testing
+After docker is installed, you might want to add yourself to the docker group
 
-Simply run `npm test` and all your tests in the `test/` directory will be run.
+    sudo usermod -aG docker $USER
 
-## Scaffolding
+To enable that you do not need `sudo` to urn the docker containers,
+log in and out.
 
-Feathers has a powerful command line interface. Here are a few things it can do:
+Docker runs only single containers. With `docker-compose`,
+we can start create and run a whole container network at once.
+You can install docker-compose like this:
 
-```
-$ npm install -g feathers-cli             # Install Feathers CLI
+    sudo apt-get -y install docker-compose
 
-$ feathers generate service               # Generate a new Service
-$ feathers generate hook                  # Generate a new Hook
-$ feathers generate model                 # Generate a new Model
-$ feathers help                           # Show all commands
-```
+Now, you need to clone this service's repository.
+You will need git for that.
 
-## Help
+    git clone
+    cd 
 
-For more information on all the things you can do with Feathers visit [docs.feathersjs.com](http://docs.feathersjs.com).
+### Run under Ubuntu
 
-## Changelog
+Once you have setup `docker` and `docker-compose`, you can create the services:
 
-__0.1.0__
+    docker network create schulcloudserver_schulcloud-server-network
+    docker-compose create
 
-- Initial release
+This creates docker containers which can be started:
 
-## License
+    docker-compose start
 
-Copyright (c) 2016
+Now, you should see the containers starting.
+You can check their status with `docker-compose ps` which should look like this:
 
-Licensed under the [MIT license](LICENSE).
+          Name             Command             State              Ports       
+    -------------------------------------------------------------------------
+    schulcloudconten   /bin/bash bin      Up                 0.0.0.0:9200->92 
+    t_schulcloud-      /es-docker                            00/tcp, 9300/tcp 
+    content-                                                                  
+    elasticsearch_1                                                           
+    schulcloudconten   python /usr/src/   Up                                  
+    t_schulcloud-      connector/ ...                                         
+    content-mongodb-                                                          
+    connector_1                                                               
+    schulcloudconten   docker-            Up                 0.0.0.0:27018->2 
+    t_schulcloud-      entrypoint.sh                         7017/tcp         
+    content-           --rep ...                                              
+    mongodb_1                                                                 
+    schulcloudconten   npm run debug      Up                 0.0.0.0:4040->40 
+    t_schulcloud-                                            40/tcp, 0.0.0.0: 
+    content_1                                                5858->5858/tcp   
+
+If you see that a service is not `Up` but exited, you can start it again.
+
+    docker-compose start
+
+Sometimes a service turns off.
+If after 5 minutes this command is not able to start all services,
+this is a bug. [Please report it][new-issue].
+
+Now, you have several ports mapped to your local machine:
+
+- `4040` is the port for the content service.
+- `5858` is a debug port for the content service.
+- `9200` is the port of elastisearch.
+- `27018` is the port of mongodb. Note that this is one port higher than usual. 
+
+## Development
+
+We are developing this server using docker.
+Thus, if you make a change, you may need to rebuild you containers.
+You can build all of them or a specific one:
+
+    docker-compose stop
+    docker-compose build
+    docker-compose create
+    docker-compose start
+
+If you have a change, please create a pull-request and discuss it in an issue.
+
+[search-api]: https://github.com/schul-cloud/resources-api-v1#search-api
+[resources-api]: https://github.com/schul-cloud/resources-api-v1#resources-api
+[new-issue]: https://github.com/schul-cloud/schulcloud-content/issues/new
