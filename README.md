@@ -112,7 +112,7 @@ No need to rebuild.
 
 These are the maintainer of this repository:
 
-- Alexander Krämer @kremer-io
+- Alexander Kremer @kremer-io
 
 If you have a question, you can ask them [in an issue][new-issue].
 
