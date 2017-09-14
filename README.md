@@ -92,7 +92,7 @@ Now, you have several ports mapped to your local machine:
 ## Development
 
 We are developing this server using docker.
-Thus, if you make a change, you may need to rebuild you containers.
+Thus, if you make a change, you may need to rebuild your containers.
 You can build all of them or a specific one:
 
     docker-compose stop
@@ -101,6 +101,20 @@ You can build all of them or a specific one:
     docker-compose start
 
 If you have a change, please create a pull-request and discuss it in an issue.
+We will decide if it is worth sharing.
+
+One service is special, the `schulcloud-content` service.
+This one has the local dorectory mapped inside it so if you make changes to
+this folder, the changes will automatically go into the running service.
+No need to rebuild.
+
+## Maintainers
+
+These are the maintainer of this repository:
+
+- Alexander Krämer @kremer-io
+
+If you have a question, you can ask them [in an issue][new-issue].
 
 [search-api]: https://github.com/schul-cloud/resources-api-v1#search-api
 [resources-api]: https://github.com/schul-cloud/resources-api-v1#resources-api
