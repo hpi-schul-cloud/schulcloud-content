@@ -108,6 +108,13 @@ This one has the local dorectory mapped inside it so if you make changes to
 this folder, the changes will automatically go into the running service.
 No need to rebuild.
 
+However, if you make a change which is not in the running code, for example you
+add a dependency to the `package.json` file, you will need to rebuild it:
+
+    docker-compose build schulcloud-content && \
+      docker-compose create schulcloud-content && \
+      docker-compose restart schulcloud-content
+
 ## Maintainers
 
 These are the maintainer of this repository:
