@@ -115,6 +115,36 @@ add a dependency to the `package.json` file, you will need to rebuild it:
       docker-compose create schulcloud-content && \
       docker-compose restart schulcloud-content
 
+## Example Service Usage
+
+You can use the command `curl` to send requests to the service:
+
+- `GET http://localhost:4040/v1/resources/ids`  
+  To get all resource ids. Command:
+  ```
+  curl -X GET "http://schulcloud-content-1:content-1@localhost:4040/v1/resources/ids" -H  "accept: application/vnd.api+json"
+  ```
+- `POST http://localhost:4040/v1/resources`  
+  To add a new resource. Command:
+  ```
+  curl -X POST "http://schulcloud-content-1:content-1@localhost:4040/v1/resources" -H  "accept: application/vnd.api+json" -H  "content-type: application/vnd.api+json" -d "{  \"data\": {    \"type\": \"resource\",    \"attributes\": {      \"title\": \"Example Website\",      \"url\": \"https://example.org\",      \"licenses\": [],      \"mimeType\": \"text/html\",      \"contentCategory\": \"l\",      \"languages\": [        \"en-en\"      ],      \"thumbnail\": \"http://cache.schul-cloud.org/thumbs/k32164876328764872384.jpg\"    },    \"id\": \"cornelsen-physics-1\"  }}"
+  ```
+- `DELETE http://localhost:4040/v1/resources`  
+  To remove all saved resources. Command:
+  ```
+  curl -X DELETE "http://schulcloud-content-1:content-1@localhost:4040/v1/resources" -H  "accept: application/vnd.api+json"
+  ```
+- `GET http://localhost:4040/v1/resources/{resourceId}`  
+  To get a specific resource. Command:
+  ```
+  curl -X GET "http://schulcloud-content-1:content-1@localhost:4040/v1/resources/cornelsen-physics-1" -H  "accept: application/vnd.api+json"
+  ```
+- `DELETE http://localhost:4040/v1/resources/{resourceId}`  
+  To delete a specific resource. Command:
+  ```
+  curl -X DELETE "http://schulcloud-content-1:content-1@localhost:4040/v1/resources/cornelsen-physics-1" -H  "accept: application/vnd.api+json"
+  ```
+
 ## Maintainers
 
 These are the maintainer of this repository:
