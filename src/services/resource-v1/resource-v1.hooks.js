@@ -10,8 +10,8 @@ module.exports = {
     get: [],
     create: [
       function(hook){console.log('create 1');},
-      authenticate,
       validateResourceSchema(),
+      authenticate,
       function(hook){console.log('create 2');}
     ],
     update: [],

@@ -1,9 +1,10 @@
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 const authenticate = require('../../hooks/authenticate');
+const jsonapify = require('../../hooks/jsonapify/index');
 
 module.exports = {
   before: {
-    all: [],
+    all: [jsonapify()],
     find: [],
     get: [],
     create: [authenticate, validateResourceSchema()],
@@ -13,7 +14,7 @@ module.exports = {
   },
 
   after: {
-    all: [],
+    all: [jsonapify()],
     find: [],
     get: [],
     create: [],
@@ -23,7 +24,7 @@ module.exports = {
   },
 
   error: {
-    all: [],
+    all: [jsonapify()],
     find: [],
     get: [],
     create: [],

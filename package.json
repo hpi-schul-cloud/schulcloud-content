@@ -48,7 +48,7 @@
     "request-promise-native": "^1.0.4",
     "serve-favicon": "^2.4.2",
     "winston": "^2.3.1",
-    "@schul-cloud/schul-cloud-resources-api-v1" : "1.0.312"
+    "@schul-cloud/schul-cloud-resources-api-v1" : "1.0.316"
   },
   "devDependencies": {
     "eslint": "^3.19.0",
