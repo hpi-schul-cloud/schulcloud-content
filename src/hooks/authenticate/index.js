@@ -1,6 +1,7 @@
 const cache = require('memory-cache');
 const basicAuth = require('basic-auth');
 const rpn = require('request-promise-native');
+var config = require('config'); // https://www.npmjs.com/package/config
 
 // Cache Successful Logins for 30 Seconds
 const TOKEN_CACHE_TIME = 30000;
@@ -10,12 +11,29 @@ const api = rpn.defaults({
   resolveWithFullResponse: true
 });
 
+var mongoose = require('mongoose');
+
+var LOCAL_USERS = config.get('localAuthentication');
+for (var i = 0; i < LOCAL_USERS.length; i+= 1) {
+  var localUser = LOCAL_USERS[i];
+  localUser.local = true;
+  localUser.userId = mongoose.Types.ObjectId(localUser.userId);
+}
+
 function authenticateHook(hook) {
   // Parse Auth Header
   return new Promise((res, rej) => {
     let credentials = basicAuth.parse(hook.params.req.headers['authorization']);
     credentials ? res(credentials) : rej();
   }).then(credentials => {
+    for (var i = 0; i < LOCAL_USERS.length; i+= 1) {
+      var localUser = LOCAL_USERS[i];
+      if (credentials.name == localUser.username) {
+        if (credentials.pass == localUser.password) {
+          return localUser;
+        }
+      }
+    }
     // Create Key for Caching Tokens
     let key = `${credentials.name}:${credentials.pass}`;
     // Check for cached JWT Tokens
@@ -36,6 +54,10 @@ function authenticateHook(hook) {
       }
     });
   }).then(response => {
+    if (response.local) {
+      hook.data.userId = response.userId;
+      return hook;
+    }
     // Parse JWT Token and set UserID
     const jwtDecode = require('jwt-decode');
     const jwtTokenDecoded = jwtDecode(response.accessToken);
