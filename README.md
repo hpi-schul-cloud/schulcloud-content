@@ -145,6 +145,33 @@ You can use the command `curl` to send requests to the service:
   curl -X DELETE "http://schulcloud-content-1:content-1@localhost:4040/v1/resources/cornelsen-physics-1" -H  "accept: application/vnd.api+json"
   ```
 
+## Testing
+
+The content service serves different contracts:
+
+- The [Search API][search-api]
+- The [Resource API][resource-api]
+
+Both of them can be tested.
+You can install the Pytnon 3 tests for both of them:
+
+    pip3 install --user schul_cloud_resources_server_tests \
+                        schul_cloud_search_tests
+
+Now, you can run the Resource API tests against the running server:
+
+    python3 -m schul_cloud_resources_server_tests.tests     \
+            --url=http://localhost:4040/v1/resources        \
+            --basic=schulcloud-content-1:content-1          \
+            --basic=schulcloud-content-2:content-2          \
+            --noauth=false
+
+You can run the search tests with this command:
+
+    python3 -m schul_cloud_search_tests.search \
+               http://localhost:4040/v1/search \
+               --query "Q=einstein"
+
 ## Maintainers
 
 These are the maintainer of this repository:
