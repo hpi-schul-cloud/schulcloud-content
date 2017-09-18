@@ -44,6 +44,12 @@ You will need git for that.
 
 ### Run under Ubuntu
 
+You will need to run this command every time you reboot:
+
+    sudo sysctl -w vm.max_map_count=262144
+
+Otherwise, elatisearch will fail.
+
 Once you have setup `docker` and `docker-compose`, you can create the services:
 
     docker network create schulcloudserver_schulcloud-server-network
@@ -79,6 +85,10 @@ If you see that a service is not `Up` but exited, you can start it again.
     docker-compose start
 
 Sometimes a service turns off.
+If it is elastisearch, run this command:
+
+    sudo sysctl -w vm.max_map_count=262144
+
 If after 5 minutes this command is not able to start all services,
 this is a bug. [Please report it][new-issue].
 
@@ -161,7 +171,7 @@ You can install the Pytnon 3 tests for both of them:
 Now, you can run the Resource API tests against the running server:
 
     python3 -m schul_cloud_resources_server_tests.tests     \
-            --url=http://localhost:4040/v1/resources        \
+            --url=http://localhost:4040/v1/                 \
             --basic=schulcloud-content-1:content-1          \
             --basic=schulcloud-content-2:content-2          \
             --noauth=false
