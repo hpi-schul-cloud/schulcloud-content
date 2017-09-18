@@ -59,7 +59,7 @@ module.exports = {
   before: {
     all: [function(hook){console.log('before all hook ran');}],
     find: [function(hook){console.log('find 1');}],
-    get: [],
+    get: [function(hook){console.log('get 1');}],
     create: [
       function(hook){console.log('create 1');},
       validateResourceSchema(),
