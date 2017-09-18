@@ -54,12 +54,19 @@ function afterFind(hook) {
   console.log("afterFind:", hook.data)
 }
 
+const errors = require('./errors.json');
+
 function toJSONAPIError(hook) {
+  var error = hook.error;
   var result = {
     'jsonapi': require('../../jsonapi-response'),
     'errors': [
-    
-    ]  
+      {
+        "status": "" + error.code,
+        "title": errors["" + error.code],
+        "detail": error.message, // todo include traceback and more errors
+      }
+    ]
   };
   // hack, see feathers-errors/lib/error-handler.js
   hook.error = {
@@ -69,7 +76,6 @@ function toJSONAPIError(hook) {
   }
   console.log("Error result:", result);
 }
-
 
 // https://docs.feathersjs.com/api/hooks.html#application-hooks
 module.exports = {
@@ -102,7 +108,7 @@ module.exports = {
   error: {
     all: [],
     find: [],
-    get: [function(hook){console.log('get error', hook.error);}],
+    get: [function(hook){console.log('get error', hook.error);}, toJSONAPIError],
     create: [function(hook){console.log('create error', hook.error);}],
     update: [],
     patch: [],
