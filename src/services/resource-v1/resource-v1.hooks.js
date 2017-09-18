@@ -1,6 +1,8 @@
 const validateResourceSchema = require('../../hooks/validate-resource-schema-v1/');
 const authenticate = require('../../hooks/authenticate');
 const uuidV4 = require('uuid/v4');
+const errors = require('./errors.json');
+const feathersErrors = require('feathers-errors');
 
 function prepareResourceForDatabase(hook) {
   /* Incoming resource has these fields:
@@ -54,16 +56,16 @@ function afterFind(hook) {
   console.log("afterFind:", hook.data)
 }
 
-const errors = require('./errors.json');
 
 function toJSONAPIError(hook) {
   var error = hook.error;
+  var code = error.code || 500;
   var result = {
     'jsonapi': require('../../jsonapi-response'),
     'errors': [
       {
-        "status": "" + error.code,
-        "title": errors["" + error.code],
+        "status": "" + code,
+        "title": errors["" + code],
         "detail": error.message, // todo include traceback and more errors
         "meta": {
           "traceback": error.stack,
@@ -77,21 +79,47 @@ function toJSONAPIError(hook) {
     type: 'FeathersError',
     result: result,
     code: error.code,
-    
+     
   }
   console.log("Error result:", result);
 }
 
+// 415 - Unavailable
+function UnsupportedMediaType(message, data) {
+  feathersErrors.FeathersError.call(this, message, 'UnsupportedMediaType', 415, 'Unsupported Media Type', data);
+}
+
+UnsupportedMediaType.prototype = feathersErrors.FeathersError.prototype;
+
+
 function noResponseContent(hook) {
   // These endpoints do not need to return any data
-  console.log("noResponseContent", hook.result);
   hook.result = null;
+}
+
+function checkContentNegotiation(hook) {
+  // http://jsonapi.org/format/#content-negotiation-servers
+  console.log('checkContentNegotiation', hook.params.req.headers);
+  var content_type = hook.params.req.headers['content-type'];
+  if (content_type != "application/vnd.api+json") {
+    throw new UnsupportedMediaType("Content-Type must be \"application/vnd.api+json\" without any parameters, not \"" + content_type + "\".")
+  }
+  var accept = hook.params.req.headers['accept'].split(",");
+  var expected_accept = ["*/*", "application/*", "application/vnd.api+json"];
+  var accepted = false;
+  accept.forEach(a1 => expected_accept.forEach(a2 => {
+    accepted = accepted || a1 == a2;
+  }))
+  if (!accepted) {
+    console.log('!!!!!!!!!!!!!!');
+    throw new UnsupportedMediaType("Accept must include \"application/vnd.api+json\" without any parameters, \"" + accept + "\" does not do that.")
+  }
 }
 
 // https://docs.feathersjs.com/api/hooks.html#application-hooks
 module.exports = {
   before: {
-    all: [function(hook){console.log('before all hook ran');}],
+    all: [checkContentNegotiation],
     find: [function(hook){console.log('find 1');}],
     get: [function(hook){console.log('get 1');}],
     create: [
@@ -117,12 +145,12 @@ module.exports = {
   },
 
   error: {
-    all: [],
+    all: [toJSONAPIError],
     find: [],
-    get: [function(hook){console.log('get error', hook.error);}, toJSONAPIError],
+    get: [function(hook){console.log('get error', hook.error);}],
     create: [function(hook){console.log('create error', hook.error);}],
     update: [],
     patch: [],
-    remove: [function(hook){console.log('remove error', hook.error);}, toJSONAPIError]
+    remove: [function(hook){console.log('remove error', hook.error);}]
   }
 };
