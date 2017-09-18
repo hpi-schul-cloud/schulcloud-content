@@ -3,6 +3,19 @@ const authenticate = require('../../hooks/authenticate');
 const uuidV4 = require('uuid/v4');
 const errors = require('./errors.json');
 const feathersErrors = require('feathers-errors');
+const crypto = require('crypto');
+
+function originIdToObjectId(originId, app) {
+  const mongooseClient = app.get('mongooseClient');
+  var string = crypto.createHash('sha256').update(originId).digest('hex');
+  console.log("string: ", string);
+  return mongooseClient.Schema.Types.ObjectId(string.substring(0, 24))
+}
+
+function setOriginIdToObjectId(hook) {
+  console.log("setOriginIdToObjectId: ", hook.id, hook.data._id);
+  hook.data._id = originIdToObjectId(hook.id, hook.app);
+}
 
 function prepareResourceForDatabase(hook) {
   /* Incoming resource has these fields:
@@ -23,6 +36,7 @@ function prepareResourceForDatabase(hook) {
   } else {
     result.originId = uuidV4();
   }
+  result._id = originIdToObjectId(result.originId, hook.app);
   if (attributes.providerName) {
     result.providerName = "" + attributes.providerName;
   } else {
@@ -49,7 +63,7 @@ function prepareResourceForDatabase(hook) {
   };
   result.contentCategory = contentCategoryMapping[attributes.contentCategory];
   result.originalResource = JSON.stringify(attributes);
-  console.log(result);
+  console.log("prepareResourceForDatabase", result);
 }
 
 function afterFind(hook) {
@@ -128,7 +142,7 @@ module.exports = {
   before: {
     all: [checkContentNegotiation],
     find: [function(hook){console.log('find 1');}],
-    get: [function(hook){console.log('get 1');}],
+    get: [function(hook){console.log('get 1');}, setOriginIdToObjectId],
     create: [
       function(hook){console.log('create 1');},
       validateResourceSchema(),

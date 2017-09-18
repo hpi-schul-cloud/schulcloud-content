@@ -1,11 +1,11 @@
 function convertResource(resource, root) {
   var originalResource = JSON.parse(resource.originalResource);
   var result = {
-    'id': resource._id,
+    'id': resource.originId,
     'type': 'resource',
     'attributes': originalResource,
     'links': {
-      'self': root + "/" + resource._id
+      'self': root + "/" + resource.originId
     }
   };
   return result;
@@ -13,7 +13,7 @@ function convertResource(resource, root) {
 
 function convertResourceList(resourceList, root) {
   return resourceList.map(resource => { return {
-      'id': resource._id,
+      'id': resource.originId,
       'type': 'id',
     };});
 }
