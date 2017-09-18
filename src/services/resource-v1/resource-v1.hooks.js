@@ -5,16 +5,18 @@ const errors = require('./errors.json');
 const feathersErrors = require('feathers-errors');
 const crypto = require('crypto');
 
-function originIdToObjectId(originId, app) {
-  const mongooseClient = app.get('mongooseClient');
-  var string = crypto.createHash('sha256').update(originId).digest('hex');
-  console.log("string: ", string);
-  return mongooseClient.Schema.Types.ObjectId(string.substring(0, 24))
+function originIdToObjectIdString(originId) {
+  var string = crypto.createHash('sha256').update(originId).digest('hex').substring(0, 24);
+  console.log("originIdToObjectId: ", string);
+  return string
 }
 
 function setOriginIdToObjectId(hook) {
-  console.log("setOriginIdToObjectId: ", hook.id, hook.data._id);
-  hook.data._id = originIdToObjectId(hook.id, hook.app);
+  if (hook.id != null) {
+    console.log("setOriginIdToObjectId: ", hook.id);
+    hook.id = originIdToObjectIdString(hook.id, hook.app);
+    console.log("setOriginIdToObjectId: new id ", hook.id);
+  }
 }
 
 function prepareResourceForDatabase(hook) {
@@ -36,7 +38,7 @@ function prepareResourceForDatabase(hook) {
   } else {
     result.originId = uuidV4();
   }
-  result._id = originIdToObjectId(result.originId, hook.app);
+  result._id = originIdToObjectIdString(result.originId, hook.app);
   if (attributes.providerName) {
     result.providerName = "" + attributes.providerName;
   } else {
@@ -152,7 +154,7 @@ module.exports = {
     ],
     update: [],
     patch: [],
-    remove: []
+    remove: [function(hook){console.log('remove 1');}, setOriginIdToObjectId]
   },
 
   after: {

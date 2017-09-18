@@ -41,7 +41,7 @@ module.exports = function jsonapi(req, res) {
     
     console.log("resource-v1.service.js: convertResource", res.data);
     data = convertResource(res.data, root);
-    endpoint = "/" + res.data._id;
+    endpoint = "/" + res.data.originId;
   }
   var location = root + endpoint;
   var result = {
