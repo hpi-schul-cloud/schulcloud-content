@@ -166,6 +166,9 @@ Now, you can run the Resource API tests against the running server:
             --basic=schulcloud-content-2:content-2          \
             --noauth=false
 
+If you like to test step wise, you can increase the step number by
+adding `-m step1` to the arguments.
+
 You can run the search tests with this command:
 
     python3 -m schul_cloud_search_tests.search \

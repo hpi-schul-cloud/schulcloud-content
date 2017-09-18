@@ -23,7 +23,7 @@ module.exports = function (app) {
       licenses: { type: [String], required: true },
       contentCategory: { type: String, enum: ['atomic', 'learning-object', 'proven-learning-object', 'tool'], required: true },
       mimeType: { type: String, required: true },
-      //originalResource: // TODO: add original resource as bson string
+      originalResource: { type: String },// TODO: add original resource as bson string
 
       promoUntil: { type: Date },
       featuredUntil: { type: Date },

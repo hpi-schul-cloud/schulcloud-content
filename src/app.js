@@ -16,6 +16,7 @@ const services = require('./services');
 const appHooks = require('./app.hooks');
 
 const mongodb = require('./mongodb');
+const convertToJsonapi = require('./jsonapi-content-type.js');
 
 const app = feathers();
 
@@ -39,15 +40,10 @@ app.configure(mongodb);
   app.configure(rest(function(req, res) {
     // https://docs.feathersjs.com/api/rest.html
     function json() {
-      console.log("resource-v1.service.js: json")
-      res.end(JSON.stringify(res.data));
-    }
-    function jsonapi() {
-      console.log("resource-v1.service.js: jsonapi")
       res.end(JSON.stringify(res.data));
     }
     res.format({
-    'application/vnd.api+json': jsonapi,
+    'application/vnd.api+json': function(){convertToJsonapi(req, res)},
     'application/json': json,
     'default': json,
     });  

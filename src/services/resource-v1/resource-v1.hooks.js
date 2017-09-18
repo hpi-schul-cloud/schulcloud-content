@@ -46,14 +46,19 @@ function prepareResourceForDatabase(hook) {
     "t" : "tool"
   };
   result.contentCategory = contentCategoryMapping[attributes.contentCategory];
+  result.originalResource = JSON.stringify(attributes);
   console.log(result);
+}
+
+function afterFind(hook) {
+  console.log("afterFind:", hook.data)
 }
 
 // https://docs.feathersjs.com/api/hooks.html#application-hooks
 module.exports = {
   before: {
     all: [function(hook){console.log('before all hook ran');}],
-    find: [],
+    find: [function(hook){console.log('find 1');}],
     get: [],
     create: [
       function(hook){console.log('create 1');},
@@ -69,7 +74,7 @@ module.exports = {
 
   after: {
     all: [],
-    find: [],
+    find: [afterFind],
     get: [],
     create: [function(hook){console.log('create after', hook.data);}],
     update: [],
