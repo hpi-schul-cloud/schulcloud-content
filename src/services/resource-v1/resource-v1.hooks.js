@@ -101,18 +101,25 @@ function checkContentNegotiation(hook) {
   // http://jsonapi.org/format/#content-negotiation-servers
   console.log('checkContentNegotiation', hook.params.req.headers);
   var content_type = hook.params.req.headers['content-type'];
-  if (content_type != "application/vnd.api+json") {
-    throw new UnsupportedMediaType("Content-Type must be \"application/vnd.api+json\" without any parameters, not \"" + content_type + "\".")
+  if (content_type != undefined) {
+    var targetContentType = "application/vnd.api+json";
+    // http://jsonapi.org/format/#content-negotiation-servers
+    // Servers MUST send all JSON API data in response documents with the header Content-Type: application/vnd.api+json without any media type parameters.
+    if (content_type != targetContentType && content_type.startsWith(targetContentType)) {
+      throw new UnsupportedMediaType("Content-Type must be \"application/vnd.api+json\" without any parameters, not \"" + content_type + "\".")
+    }
   }
-  var accept = hook.params.req.headers['accept'].split(",");
-  var expected_accept = ["*/*", "application/*", "application/vnd.api+json"];
-  var accepted = false;
-  accept.forEach(a1 => expected_accept.forEach(a2 => {
-    accepted = accepted || a1 == a2;
-  }))
-  if (!accepted) {
-    console.log('!!!!!!!!!!!!!!');
-    throw new UnsupportedMediaType("Accept must include \"application/vnd.api+json\" without any parameters, \"" + accept + "\" does not do that.")
+  var accept = hook.params.req.headers['accept'];
+  if (accept != undefined) {
+    accept = accept.split(",");
+    var expected_accept = ["*/*", "application/*", "application/vnd.api+json"];
+    var accepted = false;
+    accept.forEach(a1 => expected_accept.forEach(a2 => {
+      accepted = accepted || a1 == a2;
+    }))
+    if (!accepted) {
+      throw new UnsupportedMediaType("Accept must include \"application/vnd.api+json\" without any parameters, \"" + accept + "\" does not do that.")
+    }
   }
 }
 

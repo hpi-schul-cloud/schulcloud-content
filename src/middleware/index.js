@@ -8,5 +8,12 @@ module.exports = function () {
   const app = this;
 
   app.use(notFound());
-  app.use(handler());
+  app.use(handler({
+    "json": function(error, req, res, next) {
+      var output = error.toJSON() || {};
+      // all errors are jsonapi error compatible
+      res.set('Content-Type', 'application/vnd.api+json');
+      res.end(JSON.stringify(output, null, '  '));
+    }
+  }));
 };
