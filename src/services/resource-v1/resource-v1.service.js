@@ -2,6 +2,7 @@
 const createService = require('feathers-mongoose');
 const createModel = require('../../models/resource.model');
 const hooks = require('./resource-v1.hooks');
+const rest = require('feathers-rest');
 
 module.exports = function () {
   const app = this;

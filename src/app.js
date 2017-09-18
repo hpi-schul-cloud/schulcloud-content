@@ -35,7 +35,19 @@ app.use('/', feathers.static(app.get('public')));
 // Set up Plugins and providers
 app.configure(hooks());
 app.configure(mongodb);
-app.configure(rest());
+
+  app.configure(rest(function(req, res) {
+    // https://docs.feathersjs.com/api/rest.html
+    function format() {
+      console.log("resource-v1.service.js: format")
+      res.end(JSON.stringify(res.data));
+    }
+    res.format({
+    'application/vnd.api+json': format,
+    'application/json': format,
+    });  
+  }));
+
 
 // Allow accessing req-object in hooks
 app.use(function(req, res, next) {

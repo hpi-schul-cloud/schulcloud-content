@@ -71,7 +71,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [function(hook){console.log('create after', hook.data);}],
     update: [],
     patch: [],
     remove: []
@@ -81,7 +81,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [function(hook){console.log('create error', hook.error);}],
     update: [],
     patch: [],
     remove: []
