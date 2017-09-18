@@ -88,9 +88,7 @@ function toJSONAPIError(hook) {
 function UnsupportedMediaType(message, data) {
   feathersErrors.FeathersError.call(this, message, 'UnsupportedMediaType', 415, 'Unsupported Media Type', data);
 }
-
 UnsupportedMediaType.prototype = feathersErrors.FeathersError.prototype;
-
 
 function noResponseContent(hook) {
   // These endpoints do not need to return any data
@@ -101,8 +99,8 @@ function checkContentNegotiation(hook) {
   // http://jsonapi.org/format/#content-negotiation-servers
   console.log('checkContentNegotiation', hook.params.req.headers);
   var content_type = hook.params.req.headers['content-type'];
+  var targetContentType = "application/vnd.api+json";
   if (content_type != undefined) {
-    var targetContentType = "application/vnd.api+json";
     // http://jsonapi.org/format/#content-negotiation-servers
     // Servers MUST send all JSON API data in response documents with the header Content-Type: application/vnd.api+json without any media type parameters.
     if (content_type != targetContentType && content_type.startsWith(targetContentType)) {
@@ -112,13 +110,15 @@ function checkContentNegotiation(hook) {
   var accept = hook.params.req.headers['accept'];
   if (accept != undefined) {
     accept = accept.split(",");
-    var expected_accept = ["*/*", "application/*", "application/vnd.api+json"];
+    var expected_accept = ["*/*", "application/*", targetContentType];
     var accepted = false;
+    var should_accept = false;
     accept.forEach(a1 => expected_accept.forEach(a2 => {
       accepted = accepted || a1 == a2;
+      should_accept = should_accept || a2.startsWith(targetContentType);
     }))
-    if (!accepted) {
-      throw new UnsupportedMediaType("Accept must include \"application/vnd.api+json\" without any parameters, \"" + accept + "\" does not do that.")
+    if (should_accept != accepted) {
+      throw new feathersErrors.NotAcceptable("Accept must include \"application/vnd.api+json\" without any parameters, \"" + accept + "\" does not do that.")
     }
   }
 }
