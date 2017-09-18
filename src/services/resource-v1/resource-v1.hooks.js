@@ -65,6 +65,9 @@ function toJSONAPIError(hook) {
         "status": "" + error.code,
         "title": errors["" + error.code],
         "detail": error.message, // todo include traceback and more errors
+        "meta": {
+          "traceback": error.stack,
+        }
       }
     ]
   };

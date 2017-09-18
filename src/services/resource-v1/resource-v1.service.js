@@ -7,7 +7,7 @@ const rest = require('feathers-rest');
 module.exports = function () {
   const app = this;
   const Model = createModel(app);
-  const paginate = app.get('paginate');
+  const paginate = {'default': 10000000, 'max': 10000000};
 
   const options = {
     name: 'resource-v1',
@@ -16,11 +16,14 @@ module.exports = function () {
   };
 
   // Initialize our service with any options it requires
+  app.use('/v1/resources/ids', createService(options));
   app.use('/v1/resources', createService(options));
 
   // Get our initialized service so that we can register hooks and filters
-  const service = app.service('/v1/resources');
+  const service1 = app.service('/v1/resources/ids');
+  const service2 = app.service('/v1/resources');
 
-  service.hooks(hooks);
+  service1.hooks(hooks);
+  service2.hooks(hooks);
 };
 
