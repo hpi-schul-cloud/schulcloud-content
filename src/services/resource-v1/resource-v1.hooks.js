@@ -82,6 +82,12 @@ function toJSONAPIError(hook) {
   console.log("Error result:", result);
 }
 
+function noResponseContent(hook) {
+  // These endpoints do not need to return any data
+  console.log("noResponseContent", hook.result);
+  hook.result = null;
+}
+
 // https://docs.feathersjs.com/api/hooks.html#application-hooks
 module.exports = {
   before: {
@@ -107,7 +113,7 @@ module.exports = {
     create: [function(hook){console.log('create after', hook.data);}],
     update: [],
     patch: [],
-    remove: []
+    remove: [noResponseContent]
   },
 
   error: {

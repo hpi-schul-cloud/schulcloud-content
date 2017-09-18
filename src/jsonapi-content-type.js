@@ -5,7 +5,7 @@ function convertResource(resource, root) {
     'type': 'resource',
     'attributes': originalResource,
     'links': {
-      'self': root + resource._id
+      'self': root + "/" + resource._id
     }
   };
   return result;
@@ -18,20 +18,30 @@ function convertResourceList(resourceList, root) {
     };});
 }
 
-
 module.exports = function jsonapi(req, res) {
-  console.log("resource-v1.service.js: jsonapi", JSON.stringify(res.data))
+  console.log("resource-v1.service.js: jsonapi");
   var data;
   var endpoint;
-  var root = 'http://' + req.headers.host + '/v1/resources/';
-  if (res.data.total) {
+  var root = 'http://' + req.headers.host + '/v1/resources';
+  if (res.data == null) {
+    // no content needs to be returned
+    res.code = 204;
+    res.end();
+    return;
+  }
+  if (res.data.total != undefined) {
     // we have a listing here
-    endpoint = "ids";
+    endpoint = "/ids";
     data = convertResourceList(res.data.data, root);
+  } else if (res.data instanceof Array) {
+    endpoint = "";
+    data = convertResourceList(res.data, root);
   } else {
     // we have a single resource
+    
+    console.log("resource-v1.service.js: convertResource", res.data);
     data = convertResource(res.data, root);
-    endpoint = res.data._id;
+    endpoint = "/" + res.data._id;
   }
   var location = root + endpoint;
   var result = {
