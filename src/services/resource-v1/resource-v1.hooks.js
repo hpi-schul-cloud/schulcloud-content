@@ -72,7 +72,9 @@ function toJSONAPIError(hook) {
   hook.error = {
     toJSON: function() { return result; },
     type: 'FeathersError',
-    result: result
+    result: result,
+    code: error.code,
+    
   }
   console.log("Error result:", result);
 }
