@@ -54,6 +54,23 @@ function afterFind(hook) {
   console.log("afterFind:", hook.data)
 }
 
+function toJSONAPIError(hook) {
+  var result = {
+    'jsonapi': require('../../jsonapi-response'),
+    'errors': [
+    
+    ]  
+  };
+  // hack, see feathers-errors/lib/error-handler.js
+  hook.error = {
+    toJSON: function() { return result; },
+    type: 'FeathersError',
+    result: result
+  }
+  console.log("Error result:", result);
+}
+
+
 // https://docs.feathersjs.com/api/hooks.html#application-hooks
 module.exports = {
   before: {
@@ -85,10 +102,10 @@ module.exports = {
   error: {
     all: [],
     find: [],
-    get: [],
+    get: [function(hook){console.log('get error', hook.error);}],
     create: [function(hook){console.log('create error', hook.error);}],
     update: [],
     patch: [],
-    remove: []
+    remove: [function(hook){console.log('remove error', hook.error);}, toJSONAPIError]
   }
 };
