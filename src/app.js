@@ -38,13 +38,18 @@ app.configure(mongodb);
 
   app.configure(rest(function(req, res) {
     // https://docs.feathersjs.com/api/rest.html
-    function format() {
-      console.log("resource-v1.service.js: format")
+    function json() {
+      console.log("resource-v1.service.js: json")
+      res.end(JSON.stringify(res.data));
+    }
+    function jsonapi() {
+      console.log("resource-v1.service.js: jsonapi")
       res.end(JSON.stringify(res.data));
     }
     res.format({
-    'application/vnd.api+json': format,
-    'application/json': format,
+    'application/vnd.api+json': jsonapi,
+    'application/json': json,
+    'default': json,
     });  
   }));
 
