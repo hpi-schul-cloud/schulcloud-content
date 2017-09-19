@@ -12,13 +12,13 @@ before_install:
   - docker network create schulcloudcontent_default
   - docker-compose create
   - docker-compose start
-  - sleep 30
-  - docker-compose ps
 
 install:
-  - pip install --user schul_cloud_resources_server_tests
+  - pip3 install schul_cloud_resources_server_tests==1.0.250
 
 script:
+  - sleep 30
+  - docker-compose ps
   - python3 -m schul_cloud_resources_server_tests.tests --url=http://localhost:4040/v1/ --basic=schulcloud-content-1:content-1 --basic=schulcloud-content-2:content-2 --noauth=false
 
 after_failure:
