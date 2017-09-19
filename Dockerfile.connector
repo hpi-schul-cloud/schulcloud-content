@@ -1,4 +1,4 @@
-FROM python:3-alpine
+FROM python:3.6.1
 
 # Install Required Python Modules
 RUN pip install mongo-connector && pip install elastic2-doc-manager[elastic5] && \
