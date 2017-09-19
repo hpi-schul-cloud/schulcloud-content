@@ -4,8 +4,7 @@ const uuidV4 = require('uuid/v4');
 const errors = require('./errors.json');
 const feathersErrors = require('feathers-errors');
 const crypto = require('crypto');
-const { queryWithCurrentUser } = require('feathers-authentication-hooks');
-const { associateCurrentUser } = require('feathers-authentication-hooks');
+const authenticationHooks = require('feathers-authentication-hooks');
 
 
 function originIdToObjectIdString(originId) {
@@ -178,20 +177,29 @@ function resourceIdErrorsAre403(hook) {
 
 // from https://stackoverflow.com/q/44091808/1320237
 // those hooks require authentication before
-const readRestrict = queryWithCurrentUser({
+const readRestrict = authenticationHooks.queryWithCurrentUser({
   idField: 'id',
   as: 'userId'
 });
-const modRestrict = associateCurrentUser({
-    idField: 'id',
-    as: 'userId'
-  });
-function setUserField(hook) {
+const modRestrictRemove = authenticationHooks.restrictToOwner({
+  idField: 'id',
+  as: 'userId'
+});
+const modRestrictCreate = authenticationHooks.associateCurrentUser({
+  idField: 'id',
+  as: 'userId'
+});
+
+// if (hook.data.userId != hook.params.user.id) {
+//   throw new feathersErrors.NotFound("The resource does not belong to you!")
+// }
+
+function setUserIdField(hook) {
   // set the user field for readRestrict and modRestrict
-  if (hook.data == undefined || hook.data.userId == undefined) {
+  if (hook.params.user == undefined || hook.params.user.id == undefined) {
     throw new errors.NotAuthenticated('Authentication is required for setUserField');
   }
-  hook.params.user = {"id": hook.data.userId};
+  hook.data.userId = hook.params.user.id;
 }
 
 function invalidMethod(hook) {
@@ -202,19 +210,20 @@ function invalidMethod(hook) {
 module.exports = {
   before: {
     all: [checkContentNegotiation],
-    find: [authenticate, setUserField, readRestrict, function(hook){console.log('find 1');}],
-    get: [authenticate, setUserField, readRestrict, function(hook){console.log('get 1');}, setOriginIdToObjectId],
+    find: [authenticate, readRestrict, function(hook){console.log('find 1');}],
+    get: [authenticate, readRestrict, function(hook){console.log('get 1');}, setOriginIdToObjectId],
     create: [
       function(hook){console.log('create 1');},
       validateResourceSchema(),
       authenticate,
-      setUserField, modRestrict, 
+      modRestrictCreate, 
+      setUserIdField,
       prepareResourceForDatabase,
       function(hook){console.log('create 2');}
     ],
     update: [invalidMethod],
     patch: [invalidMethod],
-    remove: [authenticate, setUserField, modRestrict, function(hook){console.log('remove 1');}, setOriginIdToObjectId]
+    remove: [authenticate, modRestrictRemove, function(hook){console.log('remove 1', hook.data);}, setOriginIdToObjectId]
   },
 
   after: {
