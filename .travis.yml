@@ -14,7 +14,7 @@ before_install:
   - docker-compose start
 
 install:
-  - pip install schul_cloud_resources_server_tests==1.0.250
+  - pip install schul_cloud_resources_server_tests==1.0.252
   - sleep 30
   - docker-compose ps
   - docker-compose start
