@@ -8,6 +8,7 @@ services:
 
 before_install:
   - sudo sysctl -w vm.max_map_count=262144
+  - docker network create schulcloudserver_schulcloud-server-network
   - docker-compose create
   - docker-compose start
   - sleep 30
