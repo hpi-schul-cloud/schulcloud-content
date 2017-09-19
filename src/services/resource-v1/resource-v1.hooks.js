@@ -177,21 +177,29 @@ function resourceIdErrorsAre403(hook) {
 
 
 // from https://stackoverflow.com/q/44091808/1320237
+// those hooks require authentication before
 const readRestrict = queryWithCurrentUser({
-  idField: 'userId',
+  idField: 'id',
   as: 'userId'
 });
 const modRestrict = associateCurrentUser({
-    idField: 'userId',
+    idField: 'id',
     as: 'userId'
   });
+function setUserField(hook) {
+  // set the user field for readRestrict and modRestrict
+  if (hook.data.userId == undefined) {
+    throw new errors.NotAuthenticated('Authentication is required for setUserField');
+  }
+  hook.params.user = {"id": hook.data.userId};
+}
 
 // https://docs.feathersjs.com/api/hooks.html#application-hooks
 module.exports = {
   before: {
     all: [checkContentNegotiation],
-    find: [function(hook){console.log('find 1');}],
-    get: [authenticate, function(hook){console.log('get 1');}, setOriginIdToObjectId],
+    find: [authenticate, setUserField, readRestrict, function(hook){console.log('find 1');}],
+    get: [authenticate, setUserField, readRestrict, function(hook){console.log('get 1');}, setOriginIdToObjectId],
     create: [
       function(hook){console.log('create 1');},
       validateResourceSchema(),
