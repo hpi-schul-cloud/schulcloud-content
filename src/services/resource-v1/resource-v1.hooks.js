@@ -34,6 +34,9 @@ function prepareResourceForDatabase(hook) {
   // convert result
   result.userId = source.userId;
   if (source.data.id) {
+    if (source.data.id == "ids") {
+      throw new feathersErrors.Forbidden("The idof a resource must not be \"ids\".");
+    }
     result.originId = source.data.id;
   } else {
     result.originId = uuidV4();
@@ -141,12 +144,28 @@ function checkContentNegotiation(hook) {
   }
 }
 
-function resourceIdExistsIs403(hook) {
+function resourceIdErrorsAre403(hook) {
   // http://jsonapi.org/format/#crud-creating-client-ids
   if (hook.error.code == 409) {
     // we assume this is the id conflict
     hook.error.code = 403;
     toJSONAPIError(hook);
+  } else if (hook.error.code == 422) {
+    // check the id according to 
+    //    https://github.com/schul-cloud/resources-api-v1/blob/master/schemas/resource-post/resource-post.json
+    const data = hook.data.data;
+    if (data == undefined) {
+      return; // invalid schema
+    }
+    const id = data.id;
+    const idRegex = RegExp("^([!*\"'(),+a-zA-Z0-9$_@.&+\\-])+$");
+    console.log("resourceIdErrorsAre403: id == ", id);
+    if (id != undefined && (typeof id != "string" || idRegex.exec(id) == null)) {
+      hook.error.code = 403;
+      hook.error.message = "Invalid id at data.id: " + JSON.stringify(id) + 
+                           " - " + hook.error.message;
+      toJSONAPIError(hook);
+    }
   }
 }
 
@@ -182,7 +201,7 @@ module.exports = {
     all: [toJSONAPIError],
     find: [],
     get: [function(hook){console.log('get error', hook.error);}],
-    create: [resourceIdExistsIs403],
+    create: [resourceIdErrorsAre403],
     update: [],
     patch: [],
     remove: [function(hook){console.log('remove error', hook.error);}]
