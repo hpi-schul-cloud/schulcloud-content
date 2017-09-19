@@ -7,7 +7,7 @@ RUN npm install -g nodemon
 
 # Install dependency outside of the app volume
 COPY package.json /opt/
-RUN cd /opt && npm install
+RUN cd /opt && npm install --silent
 ENV NODE_PATH=/opt/node_modules
 
 # Copy current directory to container
