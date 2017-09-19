@@ -16,6 +16,7 @@ const services = require('./services');
 const appHooks = require('./app.hooks');
 
 const mongodb = require('./mongodb');
+const convertToJsonapi = require('./jsonapi-content-type.js');
 
 const app = feathers();
 
@@ -32,10 +33,23 @@ app.use(favicon(path.join(app.get('public'), 'favicon.ico')));
 // Host the public folder
 app.use('/', feathers.static(app.get('public')));
 
+
 // Set up Plugins and providers
 app.configure(hooks());
 app.configure(mongodb);
-app.configure(rest());
+
+  app.configure(rest(function(req, res) {
+    // https://docs.feathersjs.com/api/rest.html
+    function json() {
+      res.end(JSON.stringify(res.data));
+    }
+    res.format({
+    'application/vnd.api+json': function(){convertToJsonapi(req, res)},
+    'application/json': json,
+    'default': json,
+    });  
+  }));
+
 
 // Allow accessing req-object in hooks
 app.use(function(req, res, next) {

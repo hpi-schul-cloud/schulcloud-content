@@ -44,6 +44,12 @@ You will need git for that.
 
 ### Run under Ubuntu
 
+You will need to run this command every time you reboot:
+
+    sudo sysctl -w vm.max_map_count=262144
+
+Otherwise, elatisearch will fail.
+
 Once you have setup `docker` and `docker-compose`, you can create the services:
 
     docker network create schulcloudserver_schulcloud-server-network
@@ -79,6 +85,10 @@ If you see that a service is not `Up` but exited, you can start it again.
     docker-compose start
 
 Sometimes a service turns off.
+If it is elastisearch, run this command:
+
+    sudo sysctl -w vm.max_map_count=262144
+
 If after 5 minutes this command is not able to start all services,
 this is a bug. [Please report it][new-issue].
 
@@ -114,6 +124,66 @@ add a dependency to the `package.json` file, you will need to rebuild it:
     docker-compose build schulcloud-content && \
       docker-compose create schulcloud-content && \
       docker-compose restart schulcloud-content
+
+## Example Service Usage
+
+You can use the command `curl` to send requests to the service:
+
+- `GET http://localhost:4040/v1/resources/ids`  
+  To get all resource ids. Command:
+  ```
+  curl -X GET "http://schulcloud-content-1:content-1@localhost:4040/v1/resources/ids" -H  "accept: application/vnd.api+json"
+  ```
+- `POST http://localhost:4040/v1/resources`  
+  To add a new resource. Command:
+  ```
+  curl -X POST "http://schulcloud-content-1:content-1@localhost:4040/v1/resources" -H  "accept: application/vnd.api+json" -H  "content-type: application/vnd.api+json" -d "{  \"data\": {    \"type\": \"resource\",    \"attributes\": {      \"title\": \"Example Website\",      \"url\": \"https://example.org\",      \"licenses\": [],      \"mimeType\": \"text/html\",      \"contentCategory\": \"l\",      \"languages\": [        \"en-en\"      ],      \"thumbnail\": \"http://cache.schul-cloud.org/thumbs/k32164876328764872384.jpg\"    },    \"id\": \"cornelsen-physics-1\"  }}"
+  ```
+- `DELETE http://localhost:4040/v1/resources`  
+  To remove all saved resources. Command:
+  ```
+  curl -X DELETE "http://schulcloud-content-1:content-1@localhost:4040/v1/resources" -H  "accept: application/vnd.api+json"
+  ```
+- `GET http://localhost:4040/v1/resources/{resourceId}`  
+  To get a specific resource. Command:
+  ```
+  curl -X GET "http://schulcloud-content-1:content-1@localhost:4040/v1/resources/cornelsen-physics-1" -H  "accept: application/vnd.api+json"
+  ```
+- `DELETE http://localhost:4040/v1/resources/{resourceId}`  
+  To delete a specific resource. Command:
+  ```
+  curl -X DELETE "http://schulcloud-content-1:content-1@localhost:4040/v1/resources/cornelsen-physics-1" -H  "accept: application/vnd.api+json"
+  ```
+
+## Testing
+
+The content service serves different contracts:
+
+- The [Search API][search-api]
+- The [Resource API][resource-api]
+
+Both of them can be tested.
+You can install the Pytnon 3 tests for both of them:
+
+    pip3 install --user schul_cloud_resources_server_tests \
+                        schul_cloud_search_tests
+
+Now, you can run the Resource API tests against the running server:
+
+    python3 -m schul_cloud_resources_server_tests.tests     \
+            --url=http://localhost:4040/v1/                 \
+            --basic=schulcloud-content-1:content-1          \
+            --basic=schulcloud-content-2:content-2          \
+            --noauth=false
+
+If you like to test step wise, you can increase the step number by
+adding `-m step1` to the arguments.
+
+You can run the search tests with this command:
+
+    python3 -m schul_cloud_search_tests.search \
+               http://localhost:4040/v1/search \
+               --query "Q=einstein"
 
 ## Maintainers
 

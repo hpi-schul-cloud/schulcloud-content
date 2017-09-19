@@ -1,8 +1,8 @@
-
+const jsonapify = require('../../hooks/jsonapify/index');
 
 module.exports = {
   before: {
-    all: [],
+    all: [jsonapify()],
     find: [],
     get: [],
     create: [],
@@ -12,7 +12,7 @@ module.exports = {
   },
 
   after: {
-    all: [],
+    all: [jsonapify()],
     find: [],
     get: [],
     create: [],
@@ -22,7 +22,7 @@ module.exports = {
   },
 
   error: {
-    all: [],
+    all: [jsonapify()],
     find: [],
     get: [],
     create: [],
