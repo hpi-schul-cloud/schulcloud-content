@@ -70,7 +70,7 @@ function authenticateHook(hook) {
   }).catch(error => {
     // Auth Error
     const errors = require('feathers-errors');
-    throw new errors.NotAuthenticated('Could not authenticate', error.stack);
+    throw new errors.NotAuthenticated('Could not authenticate', error && error.stack);
   });
 }
 

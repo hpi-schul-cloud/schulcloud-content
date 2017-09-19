@@ -39,7 +39,7 @@ module.exports = function jsonapi(req, res) {
   } else {
     // we have a single resource
     
-    console.log("resource-v1.service.js: convertResource", res.data);
+//    console.log("src/jsonapi-content-type.js: convertResource", res.data);
     data = convertResource(res.data, root);
     endpoint = "/" + res.data.originId;
   }

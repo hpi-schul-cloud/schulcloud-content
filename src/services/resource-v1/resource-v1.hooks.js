@@ -7,16 +7,21 @@ const crypto = require('crypto');
 const authenticationHooks = require('feathers-authentication-hooks');
 
 
-function originIdToObjectIdString(originId) {
-  var string = crypto.createHash('sha256').update(originId).digest('hex').substring(0, 24);
-  console.log("originIdToObjectId: ", string);
+function originIdToObjectIdString(originId, hook) {
+  if (hook.params.user == undefined || hook.params.user == undefined) {
+    throw new errors.NotAuthenticated('Authentication is required for setOriginIdToObjectId');
+  } 
+  var userId = hook.params.user.id;
+  var baseId = originId.toString() + ":" + userId.toString(); 
+  var string = crypto.createHash('sha256').update(baseId).digest('hex').substring(0, 24);
+  console.log("originIdToObjectId: \"" + baseId + "\" -> \"" + string + "\"");
   return string
 }
 
 function setOriginIdToObjectId(hook) {
   if (hook.id != null) {
     console.log("setOriginIdToObjectId: ", hook.id);
-    hook.id = originIdToObjectIdString(hook.id, hook.app);
+    hook.id = originIdToObjectIdString(hook.id, hook);
     console.log("setOriginIdToObjectId: new id ", hook.id);
   }
 }
@@ -37,13 +42,13 @@ function prepareResourceForDatabase(hook) {
   result.userId = source.userId;
   if (source.data.id) {
     if (source.data.id == "ids") {
-      throw new feathersErrors.Forbidden("The idof a resource must not be \"ids\".");
+      throw new feathersErrors.Forbidden("The id of a resource must not be \"ids\".");
     }
     result.originId = source.data.id;
   } else {
     result.originId = uuidV4();
   }
-  result._id = originIdToObjectIdString(result.originId, hook.app);
+  result._id = originIdToObjectIdString(result.originId, hook);
   if (attributes.providerName) {
     result.providerName = "" + attributes.providerName;
   } else {
@@ -70,7 +75,7 @@ function prepareResourceForDatabase(hook) {
   };
   result.contentCategory = contentCategoryMapping[attributes.contentCategory];
   result.originalResource = JSON.stringify(attributes);
-  console.log("prepareResourceForDatabase", result);
+  //console.log("prepareResourceForDatabase", result);
 }
 
 function afterFind(hook) {
@@ -106,7 +111,7 @@ function toJSONAPIError(hook) {
     stack: error.stack,
     data: error.data,
   }
-  console.log("Error result:", result);
+  console.log("Error result:", hook.error.code);
 }
 
 // 415 - Unavailable
@@ -159,7 +164,7 @@ function resourceIdErrorsAre403(hook) {
     //    https://github.com/schul-cloud/resources-api-v1/blob/master/schemas/resource-post/resource-post.json
     const data = hook.data.data;
     if (data == undefined) {
-      return; // invalid schema
+      return; // invalid schema, 422 should pass
     }
     const id = data.id;
     const idRegex = RegExp("^([!*\"'(),+a-zA-Z0-9$_@.&+\\-])+$");
@@ -209,7 +214,12 @@ function invalidMethod(hook) {
 // https://docs.feathersjs.com/api/hooks.html#application-hooks
 module.exports = {
   before: {
-    all: [checkContentNegotiation],
+    all: [
+      function(hook){
+        console.log("-------------------------------------------------------");
+        console.log("-- new request");
+      },
+      checkContentNegotiation],
     find: [authenticate, readRestrict, function(hook){console.log('find 1');}],
     get: [authenticate, readRestrict, function(hook){console.log('get 1');}, setOriginIdToObjectId],
     create: [
@@ -223,14 +233,14 @@ module.exports = {
     ],
     update: [invalidMethod],
     patch: [invalidMethod],
-    remove: [authenticate, modRestrictRemove, function(hook){console.log('remove 1', hook.data);}, setOriginIdToObjectId]
+    remove: [authenticate, setOriginIdToObjectId, modRestrictCreate, function(hook){console.log('remove 1', hook.data);}]
   },
 
   after: {
     all: [],
     find: [afterFind],
     get: [],
-    create: [function(hook){console.log('create after', hook.data);}],
+    create: [function(hook){console.log('create after');}],
     update: [],
     patch: [],
     remove: [noResponseContent]
