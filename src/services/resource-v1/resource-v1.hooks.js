@@ -188,10 +188,14 @@ const modRestrict = associateCurrentUser({
   });
 function setUserField(hook) {
   // set the user field for readRestrict and modRestrict
-  if (hook.data.userId == undefined) {
+  if (hook.data == undefined || hook.data.userId == undefined) {
     throw new errors.NotAuthenticated('Authentication is required for setUserField');
   }
   hook.params.user = {"id": hook.data.userId};
+}
+
+function invalidMethod(hook) {
+  throw new feathersErrors.MethodNotAllowed("Sorry, but this is not implemented.");
 }
 
 // https://docs.feathersjs.com/api/hooks.html#application-hooks
@@ -204,12 +208,13 @@ module.exports = {
       function(hook){console.log('create 1');},
       validateResourceSchema(),
       authenticate,
+      setUserField, modRestrict, 
       prepareResourceForDatabase,
       function(hook){console.log('create 2');}
     ],
-    update: [],
-    patch: [],
-    remove: [function(hook){console.log('remove 1');}, setOriginIdToObjectId]
+    update: [invalidMethod],
+    patch: [invalidMethod],
+    remove: [authenticate, setUserField, modRestrict, function(hook){console.log('remove 1');}, setOriginIdToObjectId]
   },
 
   after: {
