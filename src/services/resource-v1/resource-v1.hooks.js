@@ -72,7 +72,6 @@ function afterFind(hook) {
   console.log("afterFind:", hook.data)
 }
 
-
 function toJSONAPIError(hook) {
   var error = hook.error;
   var code = error.code || 500;
@@ -90,12 +89,15 @@ function toJSONAPIError(hook) {
     ]
   };
   // hack, see feathers-errors/lib/error-handler.js
+  // this result must contain all the attributes we use from the error variable
+  // to pass this own error back to ourselves
   hook.error = {
     toJSON: function() { return result; },
     type: 'FeathersError',
     result: result,
     code: error.code,
-     
+    message: error.message,
+    stack: error.stack
   }
   console.log("Error result:", result);
 }
@@ -139,6 +141,15 @@ function checkContentNegotiation(hook) {
   }
 }
 
+function resourceIdExistsIs403(hook) {
+  // http://jsonapi.org/format/#crud-creating-client-ids
+  if (hook.error.code == 409) {
+    // we assume this is the id conflict
+    hook.error.code = 403;
+    toJSONAPIError(hook);
+  }
+}
+
 // https://docs.feathersjs.com/api/hooks.html#application-hooks
 module.exports = {
   before: {
@@ -171,7 +182,7 @@ module.exports = {
     all: [toJSONAPIError],
     find: [],
     get: [function(hook){console.log('get error', hook.error);}],
-    create: [function(hook){console.log('create error', hook.error);}],
+    create: [resourceIdExistsIs403],
     update: [],
     patch: [],
     remove: [function(hook){console.log('remove error', hook.error);}]
