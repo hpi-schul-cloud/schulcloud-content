@@ -54,6 +54,9 @@ function authenticateHook(hook) {
       }
     });
   }).then(response => {
+    if (hook.data == undefined) {
+      hook.data = {};
+    }
     if (response.local) {
       hook.data.userId = response.userId;
       return hook;
@@ -67,10 +70,10 @@ function authenticateHook(hook) {
       cache.put(response.cachedKey, response.accessToken, TOKEN_CACHE_TIME);
     }
     return hook;
-  }).catch(_ => {
+  }).catch(error => {
     // Auth Error
     const errors = require('feathers-errors');
-    throw new errors.NotAuthenticated('Could not authenticate');
+    throw new errors.NotAuthenticated('Could not authenticate', error.stack);
   });
 }
 

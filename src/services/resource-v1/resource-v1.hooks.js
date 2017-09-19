@@ -4,6 +4,9 @@ const uuidV4 = require('uuid/v4');
 const errors = require('./errors.json');
 const feathersErrors = require('feathers-errors');
 const crypto = require('crypto');
+const { queryWithCurrentUser } = require('feathers-authentication-hooks');
+const { associateCurrentUser } = require('feathers-authentication-hooks');
+
 
 function originIdToObjectIdString(originId) {
   var string = crypto.createHash('sha256').update(originId).digest('hex').substring(0, 24);
@@ -87,6 +90,7 @@ function toJSONAPIError(hook) {
         "detail": error.message, // todo include traceback and more errors
         "meta": {
           "traceback": error.stack,
+          "data": error.data
         }
       }
     ]
@@ -100,7 +104,8 @@ function toJSONAPIError(hook) {
     result: result,
     code: error.code,
     message: error.message,
-    stack: error.stack
+    stack: error.stack,
+    data: error.data,
   }
   console.log("Error result:", result);
 }
@@ -169,12 +174,24 @@ function resourceIdErrorsAre403(hook) {
   }
 }
 
+
+
+// from https://stackoverflow.com/q/44091808/1320237
+const readRestrict = queryWithCurrentUser({
+  idField: 'userId',
+  as: 'userId'
+});
+const modRestrict = associateCurrentUser({
+    idField: 'userId',
+    as: 'userId'
+  });
+
 // https://docs.feathersjs.com/api/hooks.html#application-hooks
 module.exports = {
   before: {
     all: [checkContentNegotiation],
     find: [function(hook){console.log('find 1');}],
-    get: [function(hook){console.log('get 1');}, setOriginIdToObjectId],
+    get: [authenticate, function(hook){console.log('get 1');}, setOriginIdToObjectId],
     create: [
       function(hook){console.log('create 1');},
       validateResourceSchema(),
