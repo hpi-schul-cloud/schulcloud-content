@@ -15,6 +15,7 @@ before_install:
 
 install:
   - pip install schul_cloud_resources_server_tests==1.0.252
+  - pip install schul_cloud_search_tests==1.0.93
   - sleep 30
   - docker-compose ps
   - docker-compose start
@@ -22,7 +23,8 @@ install:
   - docker-compose ps
 
 script:
-  - scripts/test-docker.sh -m step1 && scripts/test-docker.sh
+  - scripts/test-resource-api.sh -m step1 && scripts/test-resource-api.sh
+  - scripts/test-search-api.sh
 
 after_failure:
   - docker-compose logs schulcloud-content

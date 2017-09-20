@@ -29,9 +29,15 @@ function convertResourceList(resourceList, root) {
     };});
 }
 
+function getServerUrl(req) {
+  // return the resource root from the request object
+  return req.protocol + '://' + req.headers.host
+}
+
+
 function getResourceRoot(req) {
   // return the resource root from the request object
-  return req.protocol + '://' + req.headers.host + '/v1/resources'
+  return getServerUrl(req) + '/v1/resources'
 }
 
 module.exports = function jsonapi(req, res) {
@@ -78,3 +84,4 @@ module.exports = function jsonapi(req, res) {
 
 module.exports.convertResource = convertResource;
 module.exports.getResourceRoot = getResourceRoot;
+module.exports.getServerUrl = getServerUrl;

@@ -50,7 +50,8 @@
     "winston": "^2.3.1",
     "@schul-cloud/schul-cloud-resources-api-v1" : "1.0.316",
     "uuid" : "3.1.0",
-    "feathers-authentication-hooks": "0.1.4"
+    "feathers-authentication-hooks": "0.1.4",
+    "qs": "6.5.1"
   },
   "devDependencies": {
     "eslint": "^3.19.0",
