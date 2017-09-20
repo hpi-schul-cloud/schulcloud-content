@@ -1,8 +1,10 @@
+const jsonapi = require('../jsonapi-response');
+
 function toJSONAPIError(hook) {
   var error = hook.error;
   var code = error.code || 500;
   var result = {
-    'jsonapi': require('../jsonapi-response'),
+    'jsonapi': jsonapi,
     'errors': [
       {
         "status": "" + code,
