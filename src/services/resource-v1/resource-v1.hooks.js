@@ -5,7 +5,7 @@ const errors = require('./errors.json');
 const feathersErrors = require('feathers-errors');
 const crypto = require('crypto');
 const authenticationHooks = require('feathers-authentication-hooks');
-
+const toJSONAPIError = require('../../hooks/toJsonapiError');
 
 function originIdToObjectIdString(originId, hook) {
   if (hook.params.user == undefined || hook.params.user == undefined) {
@@ -80,38 +80,6 @@ function prepareResourceForDatabase(hook) {
 
 function afterFind(hook) {
   console.log("afterFind:", hook.data)
-}
-
-function toJSONAPIError(hook) {
-  var error = hook.error;
-  var code = error.code || 500;
-  var result = {
-    'jsonapi': require('../../jsonapi-response'),
-    'errors': [
-      {
-        "status": "" + code,
-        "title": errors["" + code],
-        "detail": error.message, // todo include traceback and more errors
-        "meta": {
-          "traceback": error.stack,
-          "data": error.data
-        }
-      }
-    ]
-  };
-  // hack, see feathers-errors/lib/error-handler.js
-  // this result must contain all the attributes we use from the error variable
-  // to pass this own error back to ourselves
-  hook.error = {
-    toJSON: function() { return result; },
-    type: 'FeathersError',
-    result: result,
-    code: error.code,
-    message: error.message,
-    stack: error.stack,
-    data: error.data,
-  }
-  console.log("Error result:", hook.error.code);
 }
 
 // 415 - Unavailable
