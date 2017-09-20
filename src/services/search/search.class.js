@@ -6,7 +6,7 @@ class Service {
 
   find (params) {
     let search = this.esClient.search({
-      q: params.query.q
+      q: params.query.Q
     });
     return Promise.resolve(search);
   }

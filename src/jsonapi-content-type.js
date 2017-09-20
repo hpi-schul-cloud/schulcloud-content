@@ -1,5 +1,16 @@
+/* This converts results from the database into a jsonapi compatible format.
+ * 
+ * If you have provided the data in jsonapi compatible format,
+ * you can set the `data.isJsonapiCompatible` to `true`.
+ */
+
 function convertResource(resource, root) {
-  var originalResource = JSON.parse(resource.originalResource);
+  var originalResource;
+  if (resource.originalResource == undefined) {
+    throw Error("jsonapi-content-type.js: resource can not be converted");
+  } else {
+    originalResource = JSON.parse(resource.originalResource);
+  }
   var result = {
     'id': resource.originId,
     'type': 'resource',
@@ -18,11 +29,21 @@ function convertResourceList(resourceList, root) {
     };});
 }
 
+function getResourceRoot(req) {
+  // return the resource root from the request object
+  return req.protocol + '://' + req.headers.host + '/v1/resources'
+}
+
 module.exports = function jsonapi(req, res) {
-  console.log("resource-v1.service.js: jsonapi");
+  console.log("jsonapi-content-type.js: jsonapi");
   var data;
   var endpoint;
-  var root = 'http://' + req.headers.host + '/v1/resources';
+  if (res.data.jsonapi != undefined) {
+    console.log("Provided JSONAPI compatible data.")
+    res.end(JSON.stringify(res.data, null, '  '));
+    return;
+  }
+  var root = getResourceRoot(req);
   if (res.data == null) {
     // no content needs to be returned
     res.code = 204;
@@ -54,3 +75,6 @@ module.exports = function jsonapi(req, res) {
   res.append("Location", location);
   res.end(JSON.stringify(result, null, '  '));
 }
+
+module.exports.convertResource = convertResource;
+module.exports.getResourceRoot = getResourceRoot;
