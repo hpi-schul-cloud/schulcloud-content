@@ -127,7 +127,8 @@ add a dependency to the `package.json` file, you will need to rebuild it:
 
 ## Example Service Usage
 
-You can use the command `curl` to send requests to the service:
+You can use the command `curl` to send requests to the [Resorce API][resources-api]
+ of the service:
 
 - `GET http://localhost:4040/v1/resources/ids`  
   To get all resource ids. Command:
@@ -154,6 +155,13 @@ You can use the command `curl` to send requests to the service:
   ```
   curl -X DELETE "http://schulcloud-content-1:content-1@localhost:4040/v1/resources/cornelsen-physics-1" -H  "accept: application/vnd.api+json"
   ```
+
+If you like to request a search, you can also use curl to query the
+[Search API][search-api]:
+
+```shell
+curl -i 'http://localhost:4040/v1/search?Q=einstein'
+```
 
 ## Testing
 
