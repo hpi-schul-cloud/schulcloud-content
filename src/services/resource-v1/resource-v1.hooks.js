@@ -1,7 +1,6 @@
 const validateResourceSchema = require('../../hooks/validate-resource-schema-v1/');
 const authenticate = require('../../hooks/authenticate');
 const uuidV4 = require('uuid/v4');
-const errors = require('./errors.json');
 const feathersErrors = require('feathers-errors');
 const crypto = require('crypto');
 const authenticationHooks = require('feathers-authentication-hooks');
@@ -9,7 +8,7 @@ const toJSONAPIError = require('../../hooks/toJsonapiError');
 
 function originIdToObjectIdString(originId, hook) {
   if (hook.params.user == undefined || hook.params.user == undefined) {
-    throw new errors.NotAuthenticated('Authentication is required for setOriginIdToObjectId');
+    throw new feathersErrors.NotAuthenticated('Authentication is required for setOriginIdToObjectId');
   } 
   var userId = hook.params.user.id;
   var baseId = originId.toString() + ":" + userId.toString(); 
@@ -170,7 +169,7 @@ const modRestrictCreate = authenticationHooks.associateCurrentUser({
 function setUserIdField(hook) {
   // set the user field for readRestrict and modRestrict
   if (hook.params.user == undefined || hook.params.user.id == undefined) {
-    throw new errors.NotAuthenticated('Authentication is required for setUserField');
+    throw new feathersErrors.NotAuthenticated('Authentication is required for setUserField');
   }
   hook.data.userId = hook.params.user.id;
 }
