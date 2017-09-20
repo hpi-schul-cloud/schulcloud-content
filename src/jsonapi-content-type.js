@@ -44,18 +44,18 @@ module.exports = function jsonapi(req, res) {
   console.log("jsonapi-content-type.js: jsonapi");
   var data;
   var endpoint;
-  if (res.data.jsonapi != undefined) {
-    console.log("Provided JSONAPI compatible data.")
-    res.end(JSON.stringify(res.data, null, '  '));
-    return;
-  }
-  var root = getResourceRoot(req);
   if (res.data == null) {
     // no content needs to be returned
     res.code = 204;
     res.end();
     return;
   }
+  if (res.data.jsonapi != undefined) {
+    console.log("Provided JSONAPI compatible data.")
+    res.end(JSON.stringify(res.data, null, '  '));
+    return;
+  }
+  var root = getResourceRoot(req);
   if (res.data.total != undefined) {
     // we have a listing here
     endpoint = "/ids";
