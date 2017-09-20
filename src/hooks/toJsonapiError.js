@@ -1,4 +1,5 @@
 const jsonapi = require('../jsonapi-response');
+const errors = require('./errors');
 
 function toJSONAPIError(hook) {
   var error = hook.error;
