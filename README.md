@@ -126,6 +126,12 @@ add a dependency to the `package.json` file, you will need to rebuild it:
       docker-compose create schulcloud-content && \
       docker-compose restart schulcloud-content
 
+If you want  to view the output of the schulcloud-content service, you can run
+
+    docker attach schulcloudcontent_schulcloud-content_1
+
+You may need to change the service name.
+
 ## Example Service Usage
 
 You can use the command `curl` to send requests to the [Resorce API][resources-api]
