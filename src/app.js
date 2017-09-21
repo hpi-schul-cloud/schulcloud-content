@@ -26,6 +26,7 @@ app.configure(configuration(path.join(__dirname, '..')));
 app.use(cors());
 app.use(helmet());
 app.use(compress());
+app.set('json spaces', 2);
 app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }))
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -50,7 +51,6 @@ app.configure(mongodb);
       } else {
         json();
       }
-      res.flush()
       console.log("chooseFormatBasedOnEndpoint: done");
     }
     res.format({

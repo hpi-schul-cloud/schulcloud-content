@@ -8,9 +8,10 @@ function convertResource(resource, root) {
   var originalResource;
   if (resource.originalResource == undefined) {
     originalResource = {
+      languages: ["de-de"]
     };
     ["url", "title", "thumbnail", "tags", "mimeType", "originId",
-     "providerName", "description", "licenses"].forEach(
+     "providerName", "description"].forEach(
       function(name) {
         if (resource[name] != undefined) {
           originalResource[name] = resource[name];
@@ -23,6 +24,9 @@ function convertResource(resource, root) {
       "tool" : "t"
     };
     originalResource.contentCategory = contentCategoryMapping[resource.contentCategory];
+    originalResource.licenses = resource.licenses.map(function(license) {
+      return {"value": license, "copyrighted" : true};
+    })
   } else {
     originalResource = JSON.parse(resource.originalResource);
   }
