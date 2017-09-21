@@ -2,12 +2,11 @@ class Service {
   constructor (esClient, options) {
     this.esClient = esClient;
     this.options = options || {};
-    this.Model = {"modelName": "resource"};
   }
 
   find (params) {
     let search = this.esClient.search({
-      q: params.query.Q
+      q: params.query.q
     });
     return Promise.resolve(search);
   }
