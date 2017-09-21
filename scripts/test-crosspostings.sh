@@ -29,6 +29,7 @@ function testBothResourcesAreRetrieved() {
     then
       echo
       echo "ERROR: description could not be found."
+      cat "$output"
       exit 1
     else
       echo " OK"
@@ -60,7 +61,7 @@ curl -X POST "http://schulcloud-content-1:content-1@localhost:4040/v1/resources"
 echo
 echo
 echo "Waiting for elastisearch."
-sleep 0.2
+sleep 10
 
 echo
 echo "Query the resources."
