@@ -44,10 +44,11 @@ app.configure(mongodb);
       res.end(JSON.stringify(res.data));
     }
     function chooseFormatBasedOnEndpoint() {
-      if (req.baseUrl.startsWith("/v1")) {
+      console.log("chooseFormatBasedOnEndpoint: ", req.originalUrl);
+      if (req.originalUrl.startsWith("/v1/")) {
         convertToJsonapi(req, res);
       } else {
-        json()
+        json();
       }
     }
     res.format({
