@@ -43,10 +43,17 @@ app.configure(mongodb);
     function json() {
       res.end(JSON.stringify(res.data));
     }
+    function chooseFormatBasedOnEndpoint() {
+      if (req.baseUrl.startsWith("/v1")) {
+        convertToJsonapi(req, res);
+      } else {
+        json()
+      }
+    }
     res.format({
-    'application/vnd.api+json': function(){convertToJsonapi(req, res)},
-    'application/json': json,
-    'default': json,
+    'application/vnd.api+json': chooseFormatBasedOnEndpoint,
+    'application/json': chooseFormatBasedOnEndpoint,
+    'default': chooseFormatBasedOnEndpoint,
     });  
   }));
 
