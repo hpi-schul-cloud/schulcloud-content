@@ -58,8 +58,10 @@ for accept in '*/*' 'application/*' 'application/json' 'application/vnd.api+json
 do
   header="Accept: $accept"
   assertEndpointIsJsonapi /v1/resources/ids -H "$header"
+  assertEndpointIsJsonapi /v1/search?Q=Schul -H "$header"
   assertEndpointIsJsonapi /v1/search -H "$header"
 
+  assertEndpointIsNotJsonapi /search?q=Mathe -H "$header"
   assertEndpointIsNotJsonapi /search -H "$header"
   assertEndpointIsNotJsonapi /resources -H "$header"
 done
