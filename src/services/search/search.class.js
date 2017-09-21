@@ -2,6 +2,7 @@ class Service {
   constructor (esClient, options) {
     this.esClient = esClient;
     this.options = options || {};
+    this.Model = {"modelName": "resource"};
   }
 
   find (params) {
