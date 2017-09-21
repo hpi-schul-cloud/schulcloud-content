@@ -3,13 +3,16 @@ const createService = require('./search.class.js');
 const hooks = require('./search.hooks');
 const filters = require('./search.filters');
 const elasticsearch = require('elasticsearch');
+const createModel = require('../../models/resource.model');
 
 module.exports = function () {
   const app = this;
   const paginate = app.get('paginate');
+  const Model = createModel(app);
 
   const options = {
     name: 'search',
+    Model,
     paginate
   };
 
