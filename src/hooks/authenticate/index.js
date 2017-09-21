@@ -1,3 +1,8 @@
+/* Authenticate a user and store the user id in
+ *    hook.params.user.id
+ * If the user can not be autheticated, 401 Unauthorized is the result.
+ */
+
 const cache = require('memory-cache');
 const basicAuth = require('basic-auth');
 const rpn = require('request-promise-native');

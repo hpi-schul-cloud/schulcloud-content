@@ -41,7 +41,7 @@ app.configure(mongodb);
   app.configure(rest(function(req, res) {
     // https://docs.feathersjs.com/api/rest.html
     function json() {
-      res.end(JSON.stringify(res.data));
+      res.json(res.data);
     }
     function chooseFormatBasedOnEndpoint() {
       console.log("chooseFormatBasedOnEndpoint: ", req.originalUrl);
@@ -50,6 +50,8 @@ app.configure(mongodb);
       } else {
         json();
       }
+      res.flush()
+      console.log("chooseFormatBasedOnEndpoint: done");
     }
     res.format({
     'application/vnd.api+json': chooseFormatBasedOnEndpoint,

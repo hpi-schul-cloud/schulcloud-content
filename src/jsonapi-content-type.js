@@ -7,7 +7,22 @@
 function convertResource(resource, root) {
   var originalResource;
   if (resource.originalResource == undefined) {
-    throw Error("jsonapi-content-type.js: resource can not be converted");
+    originalResource = {
+    };
+    ["url", "title", "thumbnail", "tags", "mimeType", "originId",
+     "providerName", "description", "licenses"].forEach(
+      function(name) {
+        if (resource[name] != undefined) {
+          originalResource[name] = resource[name];
+        }
+    });
+    contentCategoryMapping = {
+      "atomic" : "a",
+      "learning-object" : "l",
+      "proven-learning-object" : "rl",
+      "tool" : "t"
+    };
+    originalResource.contentCategory = contentCategoryMapping[resource.contentCategory];
   } else {
     originalResource = JSON.parse(resource.originalResource);
   }
@@ -52,7 +67,7 @@ module.exports = function jsonapi(req, res) {
   }
   if (res.data.jsonapi != undefined) {
     console.log("Provided JSONAPI compatible data.")
-    res.end(JSON.stringify(res.data, null, '  '));
+    res.json(res.data);
     return;
   }
   var root = getResourceRoot(req);
@@ -79,7 +94,7 @@ module.exports = function jsonapi(req, res) {
     'jsonapi' : require("./jsonapi-response"),
   };
   res.append("Location", location);
-  res.end(JSON.stringify(result, null, '  '));
+  res.json(result);
 }
 
 module.exports.convertResource = convertResource;

@@ -26,6 +26,7 @@ script:
   - scripts/test-resource-api.sh -m step1 && scripts/test-resource-api.sh
   - scripts/test-search-api.sh
   - scripts/test-content-type-conversion.sh
+  - scripts/test-crosspostings.sh
 
 after_failure:
   - docker-compose logs schulcloud-content
