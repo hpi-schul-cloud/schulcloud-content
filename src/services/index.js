@@ -7,6 +7,6 @@ module.exports = function () {
   const app = this; // eslint-disable-line no-unused-vars
   app.configure(resource);
   app.configure(resourcev1);
-  app.configure(search);
   app.configure(searchv1);
+  app.configure(search);
 };
