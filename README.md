@@ -121,7 +121,8 @@ No need to rebuild.
 However, if you make a change which is not in the running code, for example you
 add a dependency to the `package.json` file, you will need to rebuild it:
 
-    docker-compose build schulcloud-content && \
+    docker-compose stop && \
+      docker-compose build schulcloud-content && \
       docker-compose create schulcloud-content && \
       docker-compose restart schulcloud-content
 
