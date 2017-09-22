@@ -41,66 +41,34 @@ function convertResource(resource, root) {
   return result;
 }
 
-function convertResourceList(resourceList, root) {
-  return resourceList.map(resource => { return {
-      'id': resource.originId,
-      'type': 'id',
-    };});
-}
-
 function getServerUrl(req) {
   // return the resource root from the request object
   return req.protocol + '://' + req.headers.host
 }
 
-
-function getResourceRoot(req) {
-  // return the resource root from the request object
-  return getServerUrl(req) + '/v1/resources'
-}
-
 module.exports = function jsonapi(req, res) {
   console.log("jsonapi-content-type.js: jsonapi");
-  var data;
-  var endpoint;
   if (res.data == null) {
     // no content needs to be returned
     res.code = 204;
     res.end();
     return;
   }
+  if (res.data !== undefined && res.data.links !== undefined && res.data.links.self !== undefined) {
+    var self = res.data.links.self;
+    if (typeof self == "string") {
+      res.append("Location", self);
+    } else {
+      res.append("Location", self.href);
+    }
+  }
   if (res.data.jsonapi != undefined) {
     console.log("Provided JSONAPI compatible data.")
     res.json(res.data);
     return;
   }
-  var root = getResourceRoot(req);
-  if (res.data.total != undefined) {
-    // we have a listing here
-    endpoint = "/ids";
-    data = convertResourceList(res.data.data, root);
-  } else if (res.data instanceof Array) {
-    endpoint = "";
-    data = convertResourceList(res.data, root);
-  } else {
-    // we have a single resource
-    
-//    console.log("src/jsonapi-content-type.js: convertResource", res.data);
-    data = convertResource(res.data, root);
-    endpoint = "/" + res.data.originId;
-  }
-  var location = root + endpoint;
-  var result = {
-    'data': data,
-    'links': {
-      'self': location,
-    },
-    'jsonapi' : require("./jsonapi-response"),
-  };
-  res.append("Location", location);
-  res.json(result);
+  throw new Error("jsonapi-content-type.js: Please provide application/vnd.api+json compatible data.");
 }
 
 module.exports.convertResource = convertResource;
-module.exports.getResourceRoot = getResourceRoot;
 module.exports.getServerUrl = getServerUrl;
