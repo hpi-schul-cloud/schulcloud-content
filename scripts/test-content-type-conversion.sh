@@ -49,6 +49,7 @@ function assertEndpointIsNotJsonapi() {
   if ( cat "$output" | grep -q \"jsonapi\" )
   then
     cat "$output"
+    echo 
     echo "ASSERTION: $1 must not be a jsonapi endpoint but it is."
     exit 4
   fi
@@ -60,7 +61,7 @@ echo "# Test headers which force feathers results."
 for accept in '*/*' 'application/*' 'application/json'
 do
   header="Accept: $accept"
-  assertEndpointIsNotJsonapi /v1/resources/ids -H "$header"
+  assertEndpointIsNotJsonapi /v1/resources -H "$header"
   assertEndpointIsNotJsonapi /v1/search?Q=Schul -H "$header"
   assertEndpointIsNotJsonapi /v1/search -H "$header"
 
