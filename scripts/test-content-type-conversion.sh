@@ -54,20 +54,29 @@ function assertEndpointIsNotJsonapi() {
   fi
 }
 
-for accept in '*/*' 'application/*' 'application/json' 'application/vnd.api+json'
+
+
+echo "# Test headers which force feathers results."
+for accept in '*/*' 'application/*' 'application/json'
 do
   header="Accept: $accept"
-  assertEndpointIsJsonapi /v1/resources/ids -H "$header"
-  assertEndpointIsJsonapi /v1/search?Q=Schul -H "$header"
-  assertEndpointIsJsonapi /v1/search -H "$header"
+  assertEndpointIsNotJsonapi /v1/resources/ids -H "$header"
+  assertEndpointIsNotJsonapi /v1/search?Q=Schul -H "$header"
+  assertEndpointIsNotJsonapi /v1/search -H "$header"
 
   assertEndpointIsNotJsonapi /search?q=Mathe -H "$header"
   assertEndpointIsNotJsonapi /search -H "$header"
   assertEndpointIsNotJsonapi /resources -H "$header"
 done
 
-assertEndpointIsJsonapi /v1/resources/ids
-assertEndpointIsJsonapi /v1/search
+jsonapi_header='Accept: application/vnd.api+json'
+assertEndpointIsNotJsonapi /search?q=Mathe -H "$jsonapi_header"
+assertEndpointIsNotJsonapi /search -H "$jsonapi_header"
+assertEndpointIsNotJsonapi /resources -H "$jsonapi_header"
 
 assertEndpointIsNotJsonapi /search
 assertEndpointIsNotJsonapi /resources
+
+echo "# Test jsonapi compatibility."
+assertEndpointIsJsonapi /v1/resources/ids -H "$jsonapi_header"
+assertEndpointIsJsonapi /v1/search -H "$jsonapi_header"
