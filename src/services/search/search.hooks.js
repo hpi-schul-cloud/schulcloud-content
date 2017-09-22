@@ -1,4 +1,4 @@
-
+const jsonapify = require('../../hooks/jsonapify/index');
 
 module.exports = {
   before: {

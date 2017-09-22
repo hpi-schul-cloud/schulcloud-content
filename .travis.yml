@@ -1,0 +1,33 @@
+language: python
+python:
+- "3.5"
+
+sudo: required
+services:
+  - docker
+
+before_install:
+  - sudo sysctl -w vm.max_map_count=262144
+  - docker network create schulcloudserver_schulcloud-server-network
+  - docker network create schulcloudcontent_default
+  - docker-compose create
+  - docker-compose start
+
+install:
+  - pip install schul_cloud_search_tests==1.0.93
+  - pip install schul_cloud_resources_server_tests==1.0.252
+  - sleep 30
+  - docker-compose ps
+  - docker-compose start
+  - sleep 30
+  - docker-compose ps
+
+script:
+  - scripts/test-resource-api.sh -m step1 && scripts/test-resource-api.sh
+  - scripts/test-crosspostings.sh
+  - scripts/test-content-type-conversion.sh
+  - scripts/test-search-api.sh
+
+after_failure:
+  - docker-compose logs schulcloud-content
+  - docker-compose ps
