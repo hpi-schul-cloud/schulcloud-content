@@ -1,19 +1,28 @@
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 const authenticate = require('../../hooks/authenticate');
+const jsonapify = require('../../hooks/jsonapify/index');
+
+function logData(hook) {
+  console.log("logData: ", hook.data);
+}
+
+function setUserId(hook) {
+  hook.data.userId = hook.params.user.id;
+}
 
 module.exports = {
   before: {
-    all: [],
+    all: [logData, jsonapify()],
     find: [],
     get: [],
-    create: [authenticate, validateResourceSchema()],
+    create: [authenticate, logData, validateResourceSchema(), setUserId],
     update: [],
     patch: [],
     remove: []
   },
 
   after: {
-    all: [],
+    all: [jsonapify()],
     find: [],
     get: [],
     create: [],
@@ -23,7 +32,7 @@ module.exports = {
   },
 
   error: {
-    all: [],
+    all: [jsonapify()],
     find: [],
     get: [],
     create: [],

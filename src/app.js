@@ -16,6 +16,7 @@ const services = require('./services');
 const appHooks = require('./app.hooks');
 
 const mongodb = require('./mongodb');
+const convertToJsonapi = require('./jsonapi-content-type.js');
 
 const app = feathers();
 
@@ -25,6 +26,7 @@ app.configure(configuration(path.join(__dirname, '..')));
 app.use(cors());
 app.use(helmet());
 app.use(compress());
+app.set('json spaces', 2);
 app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }))
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -32,10 +34,32 @@ app.use(favicon(path.join(app.get('public'), 'favicon.ico')));
 // Host the public folder
 app.use('/', feathers.static(app.get('public')));
 
+
 // Set up Plugins and providers
 app.configure(hooks());
 app.configure(mongodb);
-app.configure(rest());
+
+  app.configure(rest(function(req, res) {
+    // https://docs.feathersjs.com/api/rest.html
+    function json() {
+      res.json(res.data);
+    }
+    function chooseFormatBasedOnEndpoint() {
+      console.log("chooseFormatBasedOnEndpoint: ", req.originalUrl);
+      if (req.originalUrl.startsWith("/v1/")) {
+        convertToJsonapi(req, res);
+      } else {
+        json();
+      }
+      console.log("chooseFormatBasedOnEndpoint: done");
+    }
+    res.format({
+    'application/vnd.api+json': chooseFormatBasedOnEndpoint,
+    'application/json': chooseFormatBasedOnEndpoint,
+    'default': chooseFormatBasedOnEndpoint,
+    });  
+  }));
+
 
 // Allow accessing req-object in hooks
 app.use(function(req, res, next) {

@@ -1,10 +1,10 @@
 // Application hooks that run for every service
 const logger    = require('./hooks/logger');
-const jsonapify = require('./hooks/jsonapify/index');
+
 
 module.exports = {
   before: {
-    all: [ jsonapify() ],
+    all: [  ],
     find: [],
     get: [],
     create: [],
@@ -14,7 +14,7 @@ module.exports = {
   },
 
   after: {
-    all: [ logger(), jsonapify() ],
+    all: [ logger(),  ],
     find: [],
     get: [],
     create: [],
@@ -24,7 +24,7 @@ module.exports = {
   },
 
   error: {
-    all: [ logger(), jsonapify() ],
+    all: [ logger(),  ],
     find: [],
     get: [],
     create: [],

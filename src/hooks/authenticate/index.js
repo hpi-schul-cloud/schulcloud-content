@@ -1,3 +1,8 @@
+/* Authenticate a user and store the user id in
+ *    hook.params.user.id
+ * If the user can not be autheticated, 401 Unauthorized is the result.
+ */
+
 const cache = require('memory-cache');
 const basicAuth = require('basic-auth');
 const rpn = require('request-promise-native');
@@ -55,22 +60,22 @@ function authenticateHook(hook) {
     });
   }).then(response => {
     if (response.local) {
-      hook.data.userId = response.userId;
+      hook.params.user = {"id": response.userId};
       return hook;
     }
     // Parse JWT Token and set UserID
     const jwtDecode = require('jwt-decode');
     const jwtTokenDecoded = jwtDecode(response.accessToken);
-    hook.data.userId = jwtTokenDecoded.userId;
+    hook.params.user = {"id": jwtTokenDecoded.userId};
     // Cache Token
     if(!response.cached) {
       cache.put(response.cachedKey, response.accessToken, TOKEN_CACHE_TIME);
     }
     return hook;
-  }).catch(_ => {
+  }).catch(error => {
     // Auth Error
     const errors = require('feathers-errors');
-    throw new errors.NotAuthenticated('Could not authenticate');
+    throw new errors.NotAuthenticated('Could not authenticate', error && error.stack);
   });
 }
 
