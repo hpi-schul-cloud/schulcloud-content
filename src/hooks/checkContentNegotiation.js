@@ -11,7 +11,6 @@ UnsupportedMediaType.prototype = feathersErrors.FeathersError.prototype;
 
 function checkContentNegotiation(hook) {
   // http://jsonapi.org/format/#content-negotiation-servers
-  console.log('checkContentNegotiation', hook.params.req.headers);
   var content_type = hook.params.req.headers['content-type'];
   var targetContentType = "application/vnd.api+json";
   if (content_type != undefined) {
