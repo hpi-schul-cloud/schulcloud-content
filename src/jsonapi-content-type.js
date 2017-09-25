@@ -47,7 +47,6 @@ function getServerUrl(req) {
 }
 
 module.exports = function jsonapi(req, res) {
-  console.log("jsonapi-content-type.js: jsonapi");
   if (res.data == null) {
     // no content needs to be returned
     res.code = 204;
@@ -62,12 +61,7 @@ module.exports = function jsonapi(req, res) {
       res.append("Location", self.href);
     }
   }
-  if (res.data.jsonapi != undefined) {
-    console.log("Provided JSONAPI compatible data.")
-    res.json(res.data);
-    return;
-  }
-  throw new Error("jsonapi-content-type.js: Please provide application/vnd.api+json compatible data.");
+  res.json(res.data);
 }
 
 module.exports.convertResource = convertResource;

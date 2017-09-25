@@ -154,6 +154,15 @@ function getResourceRoot(req) {
   return convert.getServerUrl(req) + '/v1/resources'
 }
 
+function ifJsonapi(hookFunction) {
+  // if the hook is jsonapi compatible, execute the function passed to it.
+  return function(hook) {
+    if (true || hook.params.isJsonapi) {
+      return hookFunction(hook)
+    }
+  }
+}
+
 function convertToJsonapi(hook) {
   const res = hook.params.res;
   const req = hook.params.req;
@@ -220,9 +229,9 @@ module.exports = {
 
   after: {
     all: [],
-    find: [afterFind, convertToJsonapi],
-    get: [convertToJsonapi],
-    create: [convertToJsonapi],
+    find: [afterFind, ifJsonapi(convertToJsonapi)],
+    get: [ifJsonapi(convertToJsonapi)],
+    create: [ifJsonapi(convertToJsonapi)],
     update: [],
     patch: [],
     remove: [noResponseContent]
