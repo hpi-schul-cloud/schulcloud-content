@@ -39,7 +39,6 @@ function checkContentNegotiation(hook) {
       accepted = accepted || a1 == a2;
       should_accept = should_accept || a1.startsWith(targetContentType);
     }))
-    console.log("checkContentNegotiation: accepted == " + accepted + "; should_accept == " + should_accept);
     if (should_accept != accepted) {
       hook.params.isJsonapi = true;
       throw new feathersErrors.NotAcceptable("Accept must include \"application/vnd.api+json\" without any parameters, \"" + accept + "\" does not do that.")
@@ -48,7 +47,6 @@ function checkContentNegotiation(hook) {
       hook.params.isJsonapi = true;
     }
   }
-  console.log('checkContentNegotiation: hook.params.isJsonapi == ', hook.params.isJsonapi);
 }
 
 function ifJsonapi(hookFunction) {
