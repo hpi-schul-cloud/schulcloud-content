@@ -157,7 +157,7 @@ function getResourceRoot(req) {
 function ifJsonapi(hookFunction) {
   // if the hook is jsonapi compatible, execute the function passed to it.
   return function(hook) {
-    if (true || hook.params.isJsonapi) {
+    if (hook.params.isJsonapi) {
       return hookFunction(hook)
     }
   }

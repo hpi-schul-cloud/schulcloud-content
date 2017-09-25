@@ -37,7 +37,7 @@ function checkContentNegotiation(hook) {
     var should_accept = false;
     accept.forEach(a1 => expected_accept.forEach(a2 => {
       accepted = accepted || a1 == a2;
-      should_accept = should_accept || a2.startsWith(targetContentType);
+      should_accept = should_accept || a1.startsWith(targetContentType);
     }))
     if (should_accept != accepted) {
       throw new feathersErrors.NotAcceptable("Accept must include \"application/vnd.api+json\" without any parameters, \"" + accept + "\" does not do that.")
