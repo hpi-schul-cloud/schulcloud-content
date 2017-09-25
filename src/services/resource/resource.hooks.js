@@ -11,7 +11,7 @@ module.exports = {
     all: [jsonapify()],
     find: [],
     get: [],
-    create: [authenticate, logData, validateResourceSchema(), setUserId],
+    create: [authenticate, validateResourceSchema(), setUserId],
     update: [],
     patch: [],
     remove: []
