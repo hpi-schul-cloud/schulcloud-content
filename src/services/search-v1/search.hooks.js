@@ -4,6 +4,7 @@ const jsonapi = require("../../jsonapi-response");
 const convert = require("../../jsonapi-content-type");
 const qs = require("qs");
 const checkContentNegotiation = require('../../hooks/checkContentNegotiation');
+const ifJsonapi = checkContentNegotiation.ifJsonapi;
 
 
 function invalidMethod(hook) {
@@ -84,7 +85,7 @@ module.exports = {
 
   after: {
     all: [],
-    find: [convertElastisearchResult],
+    find: [ifJsonapi(convertElastisearchResult)],
     get: [],
     create: [],
     update: [],

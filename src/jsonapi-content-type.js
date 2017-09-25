@@ -46,6 +46,11 @@ function getServerUrl(req) {
   return req.protocol + '://' + req.headers.host
 }
 
+function getResourceRoot(req) {
+  // return the resource root from the request object
+  return getServerUrl(req) + '/v1/resources'
+}
+
 module.exports = function jsonapi(req, res) {
   if (res.data == null) {
     // no content needs to be returned
@@ -66,3 +71,4 @@ module.exports = function jsonapi(req, res) {
 
 module.exports.convertResource = convertResource;
 module.exports.getServerUrl = getServerUrl;
+module.exports.getResourceRoot = getResourceRoot;

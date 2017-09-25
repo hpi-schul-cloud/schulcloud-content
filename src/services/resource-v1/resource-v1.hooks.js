@@ -6,8 +6,10 @@ const crypto = require('crypto');
 const authenticationHooks = require('feathers-authentication-hooks');
 const toJSONAPIError = require('../../hooks/toJsonapiError');
 const checkContentNegotiation = require('../../hooks/checkContentNegotiation');
+const ifJsonapi = checkContentNegotiation.ifJsonapi;
 const jsonapi = require("../../jsonapi-response");
 const convert = require("../../jsonapi-content-type");
+const getResourceRoot = convert.getResourceRoot;
 
 function originIdToObjectIdString(originId, hook) {
   if (hook.params.user == undefined || hook.params.user == undefined) {
@@ -147,20 +149,6 @@ function setUserIdField(hook) {
 
 function invalidMethod(hook) {
   throw new feathersErrors.MethodNotAllowed("Sorry, but this is not implemented.");
-}
-
-function getResourceRoot(req) {
-  // return the resource root from the request object
-  return convert.getServerUrl(req) + '/v1/resources'
-}
-
-function ifJsonapi(hookFunction) {
-  // if the hook is jsonapi compatible, execute the function passed to it.
-  return function(hook) {
-    if (hook.params.isJsonapi) {
-      return hookFunction(hook)
-    }
-  }
 }
 
 function convertToJsonapi(hook) {
