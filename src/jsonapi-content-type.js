@@ -60,7 +60,6 @@ function getResourceRoot(req) {
 }
 
 module.exports = function jsonapi(req, res) {
-  console.log("jsonapi-content-type.js: jsonapi");
   var data;
   var endpoint;
   if (res.data == null) {
@@ -70,7 +69,6 @@ module.exports = function jsonapi(req, res) {
     return;
   }
   if (res.data.jsonapi != undefined) {
-    console.log("Provided JSONAPI compatible data.")
     res.json(res.data);
     return;
   }
@@ -84,8 +82,6 @@ module.exports = function jsonapi(req, res) {
     data = convertResourceList(res.data, root);
   } else {
     // we have a single resource
-    
-//    console.log("src/jsonapi-content-type.js: convertResource", res.data);
     data = convertResource(res.data, root);
     endpoint = "/" + res.data.originId;
   }

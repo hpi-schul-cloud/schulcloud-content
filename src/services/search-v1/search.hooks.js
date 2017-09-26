@@ -33,13 +33,11 @@ function checkQueryParameters(query) {
 }
 
 function createElastisearchParameters(hook) {
-  console.log("createElastisearchParameters: ", hook.params.query);
   checkQueryParameters(hook.params.query);
   hook.params.esQuery = {q: hook.params.query.Q};
 }
 
 function convertSearchObjectToResource(object, root) {
-  //console.log("convertSearchObjectToResource:", object._source);
   return convert.convertResource(object._source, root);
 }
 
@@ -68,7 +66,6 @@ function convertElastisearchResult(hook) {
     data: objects
   };
   hook.result = result;
-  console.log("convertElastisearchResult: ", result);
 }
 
 module.exports = {

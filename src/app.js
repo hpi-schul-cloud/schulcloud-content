@@ -45,13 +45,11 @@ app.configure(mongodb);
       res.json(res.data);
     }
     function chooseFormatBasedOnEndpoint() {
-      console.log("chooseFormatBasedOnEndpoint: ", req.originalUrl);
       if (req.originalUrl.startsWith("/v1/")) {
         convertToJsonapi(req, res);
       } else {
         json();
       }
-      console.log("chooseFormatBasedOnEndpoint: done");
     }
     res.format({
     'application/vnd.api+json': chooseFormatBasedOnEndpoint,
