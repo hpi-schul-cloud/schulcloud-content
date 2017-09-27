@@ -202,7 +202,7 @@ module.exports = {
 
   after: {
     all: [],
-    find: [afterFind, ifJsonapi(convertToJsonapi)],
+    find: [ifJsonapi(convertToJsonapi)],
     get: [ifJsonapi(convertToJsonapi)],
     create: [ifJsonapi(convertToJsonapi)],
     update: [],
