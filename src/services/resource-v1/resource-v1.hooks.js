@@ -18,15 +18,12 @@ function originIdToObjectIdString(originId, hook) {
   var userId = hook.params.user.id;
   var baseId = originId.toString() + ":" + userId.toString(); 
   var string = crypto.createHash('sha256').update(baseId).digest('hex').substring(0, 24);
-  console.log("originIdToObjectId: \"" + baseId + "\" -> \"" + string + "\"");
   return string
 }
 
 function setOriginIdToObjectId(hook) {
   if (hook.id != null) {
-    console.log("setOriginIdToObjectId: ", hook.id);
     hook.id = originIdToObjectIdString(hook.id, hook);
-    console.log("setOriginIdToObjectId: new id ", hook.id);
   }
 }
 
@@ -79,11 +76,6 @@ function prepareResourceForDatabase(hook) {
   };
   result.contentCategory = contentCategoryMapping[attributes.contentCategory];
   result.originalResource = JSON.stringify(attributes);
-  //console.log("prepareResourceForDatabase", result);
-}
-
-function afterFind(hook) {
-  console.log("afterFind:", hook.data)
 }
 
 function noResponseContent(hook) {
@@ -108,7 +100,6 @@ function resourceIdErrorsAre403(hook) {
     }
     const id = data.id;
     const idRegex = RegExp("^([!*\"'(),+a-zA-Z0-9$_@.&+\\-])+$");
-    console.log("resourceIdErrorsAre403: id == ", id);
     if (id != undefined && (typeof id != "string" || idRegex.exec(id) == null)) {
       hook.error.code = 403;
       hook.error.message = "Invalid id at data.id: " + JSON.stringify(id) + 
@@ -194,25 +185,19 @@ function convertResourceList(resourceList, root) {
 module.exports = {
   before: {
     all: [
-      function(hook){
-        console.log("-------------------------------------------------------");
-        console.log("-- new request");
-      },
       checkContentNegotiation],
-    find: [authenticate, readRestrict, function(hook){console.log('find 1');}],
-    get: [authenticate, readRestrict, function(hook){console.log('get 1');}, setOriginIdToObjectId],
+    find: [authenticate, readRestrict],
+    get: [authenticate, readRestrict, setOriginIdToObjectId],
     create: [
-      function(hook){console.log('create 1');},
       validateResourceSchema(),
       authenticate,
       modRestrictCreate, 
       setUserIdField,
       prepareResourceForDatabase,
-      function(hook){console.log('create 2');}
     ],
     update: [invalidMethod],
     patch: [invalidMethod],
-    remove: [authenticate, setOriginIdToObjectId, modRestrictCreate, function(hook){console.log('remove 1', hook.data);}]
+    remove: [authenticate, setOriginIdToObjectId, modRestrictCreate]
   },
 
   after: {
@@ -228,10 +213,10 @@ module.exports = {
   error: {
     all: [toJSONAPIError],
     find: [],
-    get: [function(hook){console.log('get error', hook.error);}],
+    get: [],
     create: [resourceIdErrorsAre403],
     update: [],
     patch: [],
-    remove: [function(hook){console.log('remove error', hook.error);}]
+    remove: []
   }
 };

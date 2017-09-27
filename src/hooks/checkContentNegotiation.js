@@ -14,7 +14,6 @@ function checkContentNegotiation(hook) {
   // parse the jsonapi compatibility from the headers.
   // hook.params.isJsonapi is set to true/false if 
   // http://jsonapi.org/format/#content-negotiation-servers
-  console.log('checkContentNegotiation', hook.params.req.headers);
   var content_type = hook.params.req.headers['content-type'];
   hook.params.isJsonapi = false;
   if (content_type != undefined) {

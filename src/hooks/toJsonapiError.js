@@ -30,7 +30,6 @@ function toJSONAPIError(hook) {
     stack: error.stack,
     data: error.data,
   }
-  console.log("Error result:", hook.error.code);
 }
 
 module.exports = toJSONAPIError;
