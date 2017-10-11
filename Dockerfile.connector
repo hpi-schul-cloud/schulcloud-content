@@ -13,5 +13,6 @@ apt-get install -y mongodb-org-tools mongodb-org-shell
 # Copy Required Scripts
 WORKDIR /usr/src/connector
 COPY start-schulcloud-content-mongodb-connector.sh check-schulcloud-content-mongodb-connector.py ./
+COPY backup ./backup
 
-CMD ["python", "/usr/src/connector/check-schulcloud-content-mongodb-connector.py"]
+CMD ["python", "-u", "/usr/src/connector/check-schulcloud-content-mongodb-connector.py"]
