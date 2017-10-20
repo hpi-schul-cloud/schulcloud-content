@@ -41,7 +41,7 @@ if i == 30:
     raise ValueError("Connection failed")
 
 # Check whether collection accounts exists in schulcloud db
-exists = connection.schulcloud_content.resources.count() > 0
+exists = connection.admin.command('isMaster')['ismaster']
 print("Resources in schulcloud_content exists: " + str(exists))
 
 # depending on existence start seeding db or start server
