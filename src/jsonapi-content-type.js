@@ -41,18 +41,10 @@ function convertResource(resource, root) {
   return result;
 }
 
-function convertResourceList(resourceList, root) {
-  return resourceList.map(resource => { return {
-      'id': resource.originId,
-      'type': 'id',
-    };});
-}
-
 function getServerUrl(req) {
   // return the resource root from the request object
   return req.protocol + '://' + req.headers.host
 }
-
 
 function getResourceRoot(req) {
   // return the resource root from the request object
@@ -60,43 +52,23 @@ function getResourceRoot(req) {
 }
 
 module.exports = function jsonapi(req, res) {
-  var data;
-  var endpoint;
   if (res.data == null) {
     // no content needs to be returned
     res.code = 204;
     res.end();
     return;
   }
-  if (res.data.jsonapi != undefined) {
-    res.json(res.data);
-    return;
+  if (res.data !== undefined && res.data.links !== undefined && res.data.links.self !== undefined) {
+    var self = res.data.links.self;
+    if (typeof self == "string") {
+      res.append("Location", self);
+    } else {
+      res.append("Location", self.href);
+    }
   }
-  var root = getResourceRoot(req);
-  if (res.data.total != undefined) {
-    // we have a listing here
-    endpoint = "/ids";
-    data = convertResourceList(res.data.data, root);
-  } else if (res.data instanceof Array) {
-    endpoint = "";
-    data = convertResourceList(res.data, root);
-  } else {
-    // we have a single resource
-    data = convertResource(res.data, root);
-    endpoint = "/" + res.data.originId;
-  }
-  var location = root + endpoint;
-  var result = {
-    'data': data,
-    'links': {
-      'self': location,
-    },
-    'jsonapi' : require("./jsonapi-response"),
-  };
-  res.append("Location", location);
-  res.json(result);
+  res.json(res.data);
 }
 
 module.exports.convertResource = convertResource;
-module.exports.getResourceRoot = getResourceRoot;
 module.exports.getServerUrl = getServerUrl;
+module.exports.getResourceRoot = getResourceRoot;

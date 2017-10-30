@@ -6,6 +6,10 @@ const crypto = require('crypto');
 const authenticationHooks = require('feathers-authentication-hooks');
 const toJSONAPIError = require('../../hooks/toJsonapiError');
 const checkContentNegotiation = require('../../hooks/checkContentNegotiation');
+const ifJsonapi = checkContentNegotiation.ifJsonapi;
+const jsonapi = require("../../jsonapi-response");
+const convert = require("../../jsonapi-content-type");
+const getResourceRoot = convert.getResourceRoot;
 
 function originIdToObjectIdString(originId, hook) {
   if (hook.params.user == undefined || hook.params.user == undefined) {
@@ -138,6 +142,45 @@ function invalidMethod(hook) {
   throw new feathersErrors.MethodNotAllowed("Sorry, but this is not implemented.");
 }
 
+function convertToJsonapi(hook) {
+  const res = hook.params.res;
+  const req = hook.params.req;
+  var root = getResourceRoot(req);
+  var data = hook.result;
+  var resultData;
+  var endpoint;
+  if (data.total != undefined) {
+    // we have a listing here
+    endpoint = "/ids";
+    resultData = convertResourceList(data.data, root);
+  } else if (data instanceof Array) {
+    endpoint = "";
+    resultData = convert.convertResourceList(data, root);
+  } else {
+    // we have a single resource
+    
+//    console.log("src/jsonapi-content-type.js: convertResource", res.data);
+    resultData = convert.convertResource(data, root);
+    endpoint = "/" + data.originId;
+  }
+  var location = root + endpoint;
+  var result = {
+    'data': resultData,
+    'links': {
+      'self': location,
+    },
+    'jsonapi' : jsonapi,
+  };
+  hook.result = result;
+}
+
+function convertResourceList(resourceList, root) {
+  return resourceList.map(resource => { return {
+      'id': resource.originId,
+      'type': 'id',
+    };});
+}
+
 // https://docs.feathersjs.com/api/hooks.html#application-hooks
 module.exports = {
   before: {
@@ -159,9 +202,9 @@ module.exports = {
 
   after: {
     all: [],
-    find: [],
-    get: [],
-    create: [],
+    find: [ifJsonapi(convertToJsonapi)],
+    get: [ifJsonapi(convertToJsonapi)],
+    create: [ifJsonapi(convertToJsonapi)],
     update: [],
     patch: [],
     remove: [noResponseContent]
