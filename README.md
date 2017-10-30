@@ -132,6 +132,15 @@ If you want  to view the output of the schulcloud-content service, you can run
 
 You may need to change the service name.
 
+### Pull Requests
+
+We follow a staging model
+- the `master` branch it integration tested with the up-to-date Schul-Cloud
+  services.
+- the `development` branch is the branch you can create pull-requests to.
+
+We merge `development` into `master`, when the integration is sure.
+
 ## Example Service Usage
 
 You can use the command `curl` to send requests to the [Resorce API][resources-api]
