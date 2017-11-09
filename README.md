@@ -79,6 +79,16 @@ If you see that a service is not `Up` but exited, you can start it again.
     docker-compose start
 
 Sometimes a service turns off.
+If the elastic search container is exiting, please check the max_map_count of your host system (not the container!) by using the following command:
+
+    sysctl vm.max_map_count
+If it is less than 262144, increase it by running:
+
+    sudo sysctl -w vm.max_map_count=262144
+To permanently set the max_map_count add the following line to your /etc/sysctl.conf:
+
+    vm.max_map_count=262144
+More info in the [Elasticsearch with Docker guide][elasticsearch-docker].
 If after 5 minutes this command is not able to start all services,
 this is a bug. [Please report it][new-issue].
 
@@ -126,3 +136,4 @@ If you have a question, you can ask them [in an issue][new-issue].
 [search-api]: https://github.com/schul-cloud/resources-api-v1#search-api
 [resources-api]: https://github.com/schul-cloud/resources-api-v1#resources-api
 [new-issue]: https://github.com/schul-cloud/schulcloud-content/issues/new
+[elasticsearch-docker]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode
