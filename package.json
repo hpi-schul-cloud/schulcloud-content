@@ -35,6 +35,7 @@
     "elasticsearch": "^13.0.1",
     "feathers": "^2.1.2",
     "feathers-configuration": "^0.4.1",
+    "feathers-elasticsearch": "^0.4.3",
     "feathers-errors": "^2.8.0",
     "feathers-hooks": "^2.0.1",
     "feathers-hooks-common": "^3.3.2",
