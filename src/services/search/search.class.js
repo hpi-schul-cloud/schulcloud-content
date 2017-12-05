@@ -1,14 +1,22 @@
+const feathersES = require('feathers-elasticsearch');
+
 class Service {
+
   constructor (esClient, options) {
     this.esClient = esClient;
     this.options = options || {};
   }
 
   find (params) {
-    let search = this.esClient.search({
-      q: params.query.q
+    let service = feathersES({
+      Model: this.esClient,
+      paginate: this.options.paginate,
+      elasticsearch: {
+        index: 'schulcloud_content',
+        type: 'resources'
+      }
     });
-    return Promise.resolve(search);
+    return service.find(params);
   }
 }
 
