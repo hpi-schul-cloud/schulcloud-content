@@ -2,6 +2,7 @@
   "host": "localhost",
   "port": 4040,
   "public": "../public/",
+  "docs": "../public/docs/",
   "paginate": {
     "default": 10,
     "max": 50

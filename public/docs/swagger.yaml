@@ -1,0 +1,68 @@
+openapi: 3.0.0
+info:
+  title: Schul-Cloud Content Service
+  description: The API description for the Schul-Cloud Content Service
+  version: 1.0.0
+
+tags:
+  - name: resources
+    description: The resources endpoint
+  - name: search
+    description: The search endpoint
+
+paths:
+  /resources:
+    get:
+      tags:
+        - resources
+      summary: Retrieves a list of all resources
+      responses:
+        "200":
+          description: "ok"
+
+    post:
+      tags:
+        - resources
+      summary: Creates a new resource
+      responses:
+        "200":
+          description: "ok"
+
+  /resources/{resourceId}:
+    get:
+      tags:
+        - resources
+      summary: Retrieves a single resource with the given id
+      responses:
+        "200":
+          description: "ok"
+
+    put:
+      tags:
+        - resources
+      summary: Replaces the resource with the given id with the provided data
+
+    patch:
+      tags:
+        - resources
+      summary: Merges the existing data of the resource with the given id with the provided data
+      responses:
+        "200":
+          description: "ok"
+
+    delete:
+      tags:
+        - resources
+      summary: Removes the resource with the given id
+      responses:
+        "200":
+          description: "ok"
+
+  /search:
+    get:
+      tags:
+        - search
+      summary: Search for resources in ElasticSearch
+      responses:
+        "200":
+          description: "ok"
