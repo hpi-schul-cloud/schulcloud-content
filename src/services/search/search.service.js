@@ -14,7 +14,8 @@ module.exports = function () {
   };
 
   const client = elasticsearch.Client({
-    hosts: 'elastic:changeme@elasticsearch:9200'
+    hosts: process.env.ELASTICSEARCH_URI || 'elasticsearch:9200',
+    apiVersion: '5.4'
   });
 
   // Initialize our service with any options it requires
