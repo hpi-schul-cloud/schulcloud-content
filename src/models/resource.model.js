@@ -4,6 +4,12 @@
 // for more of what you can do here.
 module.exports = function (app) {
   const mongooseClient = app.get('mongooseClient');
+
+  const thumbnailOptionsSchema = new mongooseClient.Schema({
+    generate: {type: boolean, 'default': false, required: true},
+    options: {type: String, 'default': '', required:true}
+  });
+
   const resource = new mongooseClient.Schema({
 
     originId: { type: String, unique: true },
@@ -14,6 +20,7 @@ module.exports = function (app) {
     title: { type: String, required: true },
     description: { type: String, required: true },
     thumbnail: {type: String },
+    thumbnailOptions: thumbnailOptionsSchema,
 
     tags: { type: [String] },
     licenses: { type: [String], required: true },

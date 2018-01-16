@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type":"object",
+  "type": "object",
   "required": [
     "title",
     "description",
@@ -35,16 +35,32 @@
       "items": {
         "type": "string"
       }
+    },
+
+    "thumbnailOptions": {
+      "type": "object",
+      "required": [
+        "generate",
+        "options"
+      ],
+      "properties": {
+        "generate": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "string"
+        }
+      }
     }
 
 
   },
   "definitions": {
-    "URL":{
+    "URL": {
       "type": "string",
       "pattern": "^https?://.+$"
     },
-    "ContentCategory":{
+    "ContentCategory": {
       "enum": ["atomic", "learning-object", "proven-learning-object", "tool"]
     }
   }

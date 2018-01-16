@@ -1,12 +1,13 @@
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 const authenticate = require('../../hooks/authenticate');
+const createThumbnail = require('../../hooks/createThumbnail');
 
 module.exports = {
   before: {
     all: [],
     find: [],
     get: [],
-    create: [authenticate, validateResourceSchema()],
+    create: [authenticate, validateResourceSchema(), createThumbnail],
     update: [],
     patch: [],
     remove: []
