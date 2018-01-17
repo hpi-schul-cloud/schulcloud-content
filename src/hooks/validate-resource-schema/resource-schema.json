@@ -40,8 +40,7 @@
     "thumbnailOptions": {
       "type": "object",
       "required": [
-        "generate",
-        "options"
+        "generate"
       ],
       "properties": {
         "generate": {

@@ -6,8 +6,8 @@ module.exports = function (app) {
   const mongooseClient = app.get('mongooseClient');
 
   const thumbnailOptionsSchema = new mongooseClient.Schema({
-    generate: {type: boolean, 'default': false, required: true},
-    options: {type: String, 'default': '', required:true}
+    generate: {type: Boolean, 'default': false, required: true},
+    options: {type: String, 'default': '', required: false}
   });
 
   const resource = new mongooseClient.Schema({

@@ -1,46 +1,13 @@
 const config = require('config'); // https://www.npmjs.com/package/config
 const errors = require('feathers-errors');
 const rpn = require('request-promise-native');
-const url = require('url')
+const url = require('url');
 
 const thumbnailConfiguration = config.get('thumbnailservice');
 
-// todo run once at startup instead
-function checkConfig() {
-  return false;
-  return new Promise((resolve, reject) => {
-    if (thumbnailConfiguration.enabled !== true) {
-      reject('thumbnail service not enabled');
-    }
-    var urlRegex = new RegExp(expression);
-    if (process.env.PICHASSO_URL) {
-      thumbnailConfiguration.pichassoUrl = process.env.PICHASSO_URL;
-    }
-    if (!url.parse(thumbnailConfiguration.pichassoUrl)) {
-      reject('check pichassoUrl in thumbnailservice configuration section ');
-    }
-    if (!thumbnailConfiguration.token) {
-      reject('authentication token missing in thumbnailservice configuration section')
-    }
-    resolve();
-  });
-}
-
 const api = rpn.defaults({
-  baseUrl: thumbnailConfiguration.pichassoUrl,
   resolveWithFullResponse: true
 });
-
-function createThumbnail_(hook) {
-  console.log('createThumbnail_');
-  return new Promise((res, rej) => {
-    console.log('createThumbnail_ in Promise');
-    res("a");
-  }).then((x) => {
-    console.log('createThumbnail_ in Then ' + x);
-    return hook;
-  });
-}
 
 /**
  * generates a thumbnail url for a running pichasso instance
@@ -48,38 +15,48 @@ function createThumbnail_(hook) {
  * @param {*} hook
  */
 function createThumbnail(hook) {
+  const dataUrl = encodeURIComponent(hook.data.url);
+  if (thumbnailConfiguration.enabled !== true ||
+    !hook.data.thumbnailOptions ||
+    hook.data.thumbnailOptions.generate !== true) { 
+      // ignore thumbnail creation if not enabled in config or hook.data
+    return hook;
+  }
   return new Promise((resolve, reject) => {
-    if (thumbnailConfiguration.enabled !== true ||
-      !data.thumbnailOptions ||
-      data.thumbnailOptions.generate !== true) {
-      return hook;
+    // check configuration
+    if (process.env.PICHASSO_URL) {
+      thumbnailConfiguration.pichassoUrl = process.env.PICHASSO_URL;
     }
-    const dataUrl = encodeURIComponent(hook.data.url);
-    return new Promise((res, rej) => {
-      return checkConfig();
-    }).then(() => {
-      // request public authorization token with secret token from configuration
-      const verifyUrl = url.resolve(thumbnailConfiguration.pichassoUrl,
-        `/thumbnail/verify/${thumbnailConfiguration.token}/${dataUrl}`);
-      return api.get(verifyUrl);
-    }).then(response => {
-      // check response
-      if (response.status !== 'ok') { // todo
-        console.error('verification failed getting thumbnail url', response);
-        rej('verification failed getting thumbnail url');
-      }
-      return response.text; // todo
-    }).then(token => {
-      // add thumbnail url to resource model
-      const thumbnailUrl = url.resolve(thumbnailConfiguration.pichassoUrl,
-        `/thumbnail?auth=${token}&file=${dataUrl}`);
-      hook.data.thumbnail = thumbnailUrl;
-      return hook;
-    });
+    if (!url.parse(thumbnailConfiguration.pichassoUrl)) {
+      reject('check pichassoUrl in thumbnailservice configuration section ');
+    }
+    if (!thumbnailConfiguration.token) {
+      reject('token value missing in thumbnailservice configuration section');
+    }
+    resolve();
+  }).then(() => {
+    // request public authorization token with secret token from configuration
+    const verifyUrl = url.resolve(thumbnailConfiguration.pichassoUrl,
+      `/thumbnail/verify/${thumbnailConfiguration.token}/${dataUrl}`);
+    return api.get(verifyUrl);
+  }).then(response => {
+    // check response
+    if (response.statusCode !== 200) { 
+      Promise.reject('verification failed getting thumbnail url');
+    }
+    return response.body; 
+  }).then(token => {
+    // add thumbnail url to resource model
+    if(!token || token.length !== 6){
+      Promise.reject('received token seems to be wrong');
+    }
+    const thumbnailUrl = url.resolve(thumbnailConfiguration.pichassoUrl,
+      `/thumbnail?auth=${token}&file=${dataUrl}`);
+    hook.data.thumbnail = thumbnailUrl;
+    return hook;
   }).catch(err => {
-    console.error('thumbnail url generation failed:', err);
     throw new errors.GeneralError(err);
-  });;
+  });
 }
 
-module.exports = createThumbnail_;
+module.exports = createThumbnail;
