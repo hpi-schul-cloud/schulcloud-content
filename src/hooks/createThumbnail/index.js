@@ -7,6 +7,7 @@ const thumbnailConfiguration = config.get('thumbnailservice');
 
 // todo run once at startup instead
 function checkConfig() {
+  return false;
   return new Promise((resolve, reject) => {
     if (thumbnailConfiguration.enabled !== true) {
       reject('thumbnail service not enabled');
@@ -30,10 +31,21 @@ const api = rpn.defaults({
   resolveWithFullResponse: true
 });
 
+function createThumbnail_(hook) {
+  console.log('createThumbnail_');
+  return new Promise((res, rej) => {
+    console.log('createThumbnail_ in Promise');
+    res("a");
+  }).then((x) => {
+    console.log('createThumbnail_ in Then ' + x);
+    return hook;
+  });
+}
+
 /**
  * generates a thumbnail url for a running pichasso instance
  * the thumbnail will be generated on request
- * @param {*} hook 
+ * @param {*} hook
  */
 function createThumbnail(hook) {
   return new Promise((resolve, reject) => {
@@ -70,4 +82,4 @@ function createThumbnail(hook) {
   });;
 }
 
-module.exports = createThumbnail;
+module.exports = createThumbnail_;
