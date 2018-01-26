@@ -1,77 +1,109 @@
-const cache = require('memory-cache');
 const basicAuth = require('basic-auth');
 const rpn = require('request-promise-native');
-var config = require('config'); // https://www.npmjs.com/package/config
+const cache = require('memory-cache');
+const errors = require('feathers-errors');
 
 // Cache Successful Logins for 30 Seconds
 const TOKEN_CACHE_TIME = 30000;
 
+// Backend for Authentication
 const api = rpn.defaults({
   baseUrl: process.env.BACKEND_URL || 'http://localhost:3030/',
   resolveWithFullResponse: true
 });
 
-var mongoose = require('mongoose');
-
-var LOCAL_USERS = config.get('localAuthentication');
-for (var i = 0; i < LOCAL_USERS.length; i+= 1) {
-  var localUser = LOCAL_USERS[i];
-  localUser.local = true;
-  localUser.userId = mongoose.Types.ObjectId(localUser.userId);
+function checkLocalAuthentication(username, password) {
+  const config = require('config');
+  const localUsers = config.get('localAuthentication');
+  return localUsers.find(user => { return user.username === username && user.password === password; });
 }
 
+function remoteAuthentication(username, password) {
+
+  // Check for cached token
+  let key = `${username}:${password}`;
+  let token = checkForCachedToken(key);
+  if (token) {
+    return Promise.resolve({ accessToken: token, cached: true });
+  }
+
+  // Make actual API call
+  return api.post('/authentication', {
+    json: {
+      username: username,
+      password: password
+    },
+    transform: (body, response) => {
+      response.accessToken = body.accessToken;
+      response.cachedKey = key;
+      return response;
+    }
+  });
+}
+
+function checkForCachedToken(key) {
+  let cachedToken = cache.get(key);
+  if(cachedToken) {
+    return { accessToken: cachedToken, cached: true};
+  }
+  return false;
+}
+
+function cacheToken(key, accessToken, cacheTime = TOKEN_CACHE_TIME) {
+  cache.put(key, accessToken, cacheTime);
+}
+
+function parseJwtToken(token) {
+  // Parse JWT Token and set UserID
+  const jwtDecode = require('jwt-decode');
+  const jwtTokenDecoded = jwtDecode(token);
+  return jwtTokenDecoded.userId;
+}
+
+/**
+ *
+ */
 function authenticateHook(hook) {
-  // Parse Auth Header
-  return new Promise((res, rej) => {
-    let credentials = basicAuth.parse(hook.params.req.headers['authorization']);
-    credentials ? res(credentials) : rej();
-  }).then(credentials => {
-    for (var i = 0; i < LOCAL_USERS.length; i+= 1) {
-      var localUser = LOCAL_USERS[i];
-      if (credentials.name == localUser.username) {
-        if (credentials.pass == localUser.password) {
-          return localUser;
-        }
-      }
-    }
-    // Create Key for Caching Tokens
-    let key = `${credentials.name}:${credentials.pass}`;
-    // Check for cached JWT Tokens
-    let cachedToken = cache.get(key);
-    if(cachedToken) {
-      return { accessToken: cachedToken, cached: true};
-    }
-    // Otherwise Authenticate against Backend Server
-    return api.post('/authentication', {
-      json: {
-        username: credentials.name,
-        password: credentials.pass
-      },
-      transform: (body, response) => {
-        response.accessToken = body.accessToken;
-        response.cachedKey = key;
-        return response;
-      }
-    });
-  }).then(response => {
-    if (response.local) {
-      hook.data.userId = response.userId;
+
+  let authHeader = hook.params.req.headers['authorization'];
+
+  // JWT AUTH
+  // TODO: Validate JWT Token against Server
+  // TODO: Error Handling
+  if(authHeader.startsWith('Bearer ')) {
+    hook.data.userId = parseJwtToken(authHeader);
+    return hook;
+  }
+
+  // BASIC AUTH
+  if(authHeader.startsWith('Basic ')) {
+
+    let credentials = basicAuth.parse(authHeader);
+
+    // Check Local Auth
+    let localUser = checkLocalAuthentication(credentials.name, credentials.pass);
+    if(localUser) {
+      hook.data.userId = localUser.userId;
       return hook;
     }
-    // Parse JWT Token and set UserID
-    const jwtDecode = require('jwt-decode');
-    const jwtTokenDecoded = jwtDecode(response.accessToken);
-    hook.data.userId = jwtTokenDecoded.userId;
-    // Cache Token
-    if(!response.cached) {
-      cache.put(response.cachedKey, response.accessToken, TOKEN_CACHE_TIME);
-    }
-    return hook;
-  }).catch(_ => {
-    // Auth Error
-    const errors = require('feathers-errors');
-    throw new errors.NotAuthenticated('Could not authenticate');
-  });
+
+    // Otherwise Remote Auth
+    return remoteAuthentication(credentials.name, credentials.pass).then(response => {
+      // Cache Token
+      if(!response.cached) {
+        cacheToken(response.cachedKey, response.accessToken);
+      }
+      // Extract Token
+      hook.data.userId = parseJwtToken(response.accessToken);
+      return hook;
+    }).catch(_ => {
+      // TODO: Show Error in Response
+      throw new errors.NotAuthenticated('Could not authenticate');
+    });
+  }
+
+  // Otherwise
+  throw new errors.NotAuthenticated('Could not authenticate. We are currently supporting Basic- and Bearer Token Auth.');
 }
 
 module.exports = authenticateHook;
