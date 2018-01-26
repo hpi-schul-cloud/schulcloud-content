@@ -1,7 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type":"object",
+
   "required": [
+    "originId",
     "title",
     "description",
     "url",
@@ -10,6 +12,7 @@
     "licenses"
   ],
   "properties": {
+
     "originId": {
       "type": "string"
     },
