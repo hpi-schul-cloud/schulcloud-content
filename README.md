@@ -49,13 +49,5 @@ The schema is defined in `src/models/resource.model.js`:
 
 ## Validation
 
-For validating incoming resources, we're using the [JSON Schema](http://json-schema.org) definition in `src/hooks/validate-resource-schema` and the [ajv JSON Schema Validator](https://github.com/epoberezkin/ajv).   
+For validating incoming resources, we're using the [JSON Schema](http://json-schema.org) definition in `src/hooks/validate-resource-schema` and the [ajv JSON Schema Validator](https://github.com/epoberezkin/ajv).
 
-
-## Maintainers
-
-These are the maintainer of this repository:
-
-- Alexander Kremer @kremer-io
-
-If you have a question, you can ask them [in an issue][new-issue].
