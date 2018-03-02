@@ -5,7 +5,6 @@
 module.exports = function(app) {
     const mongooseClient = app.get('mongooseClient');
     const rating = new mongooseClient.Schema({
-        originId: { type: Number, unique: true, default: Math.random }, //TODO remove
         materialId: { type: mongooseClient.Schema.ObjectId, ref: 'resource', required: true },
         rating: { type: Number, min: 0, max: 5, required: true },
         isTeacherRating: { type: Boolean, required: true },
