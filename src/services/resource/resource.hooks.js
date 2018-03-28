@@ -1,23 +1,31 @@
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 const authenticate = require('../../hooks/authenticate');
 
+const average = array => array.reduce((a, b) => a + b, 0) / array.length;
+
 const getRating = context => {
-  //TODO X if requested via context.params.query
+  if(context.params.query.rating === undefined || context.params.query.rating !== 'true'){
+    return context;
+  }
+
   const ratingService = context.app.service('ratings');
-  return ratingService.find({
+  return Promise.all([ratingService.find({
     query: {
-      // $select: 'rating',
-      // materialId: context.id,
+      $limit: 999999,
+      $select: 'rating',
+      materialId: context.id,
       isTeacherRating: true
     }
-  }).then(ratingValues => {
-    console.log('blaaa');
-    // console.log(ratingValues);
-    //TODO X modify context.result
-
-  }, error => {
-    console.error('erroooooor')
-  }).then(() => {
+  }), ratingService.find({
+    query: {
+      $limit: 999999,
+      $select: 'rating',
+      materialId: context.id,
+      isTeacherRating: false
+    }
+  })]).then(([teacherRatings, studentRatings]) => {
+    context.result.teacherRating = teacherRatings.total === 0 ? -1 : average(teacherRatings.data.map(it => it.rating));
+    context.result.studentRating = studentRatings.total === 0 ? -1 : average(studentRatings.data.map(it => it.rating));
     return context;
   });
 };
@@ -26,7 +34,7 @@ module.exports = {
   before: {
     all: [],
     find: [],
-    get: [getRating],
+    get: [],
     create: [authenticate, validateResourceSchema()],
     update: [],
     patch: [],
@@ -36,7 +44,7 @@ module.exports = {
   after: {
     all: [],
     find: [],
-    get: [],
+    get: [getRating],
     create: [],
     update: [],
     patch: [],
