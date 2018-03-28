@@ -14,5 +14,5 @@ module.exports = function() {
   // Get our initialized service so that we can register hooks and filters
   const ratingService = app.service('ratings');
 
-  // ratingService.hooks(hooks); //TODO
+  // ratingService.hooks(hooks); //TODO X
 };
