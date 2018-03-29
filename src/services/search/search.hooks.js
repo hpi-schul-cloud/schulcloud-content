@@ -1,4 +1,4 @@
-
+const getRatingHook = require('../../hooks/get-rating-hook');
 
 module.exports = {
   before: {
@@ -13,8 +13,8 @@ module.exports = {
 
   after: {
     all: [],
-    find: [],
-    get: [],
+    find: [getRatingHook.find],
+    get: [getRatingHook.get],
     create: [],
     update: [],
     patch: [],

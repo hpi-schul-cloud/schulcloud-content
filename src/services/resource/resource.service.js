@@ -12,6 +12,7 @@ module.exports = function() {
   // Initialize our service with any options it requires
   const mongooseService = createService({ name: 'resources', Model: resourceModel, paginate });
   app.use('/resources', mongooseService);
+  //does the same as /resources, but adds ratings via after-hook
   app.use('/ratedresources', mongooseService);
 
   // Get our initialized service so that we can register hooks and filters

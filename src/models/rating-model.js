@@ -15,6 +15,3 @@ module.exports = function(app) {
 
     return mongooseClient.model('rating', rating);
 };
-
-// get overall average: db.getCollection('ratings').aggregate([{$group: {_id: 0, avgRating: { $avg: "$rating"}}}])
-// get teacher/pupil average: db.getCollection('ratings').aggregate([{$group: {_id: "$isTeacherRating", avgRating: { $avg: "$rating"}}}])
