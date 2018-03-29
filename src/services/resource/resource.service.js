@@ -1,7 +1,8 @@
 // Initializes the `resources` service on path `/resources`
 const createService = require('feathers-mongoose');
 const createResourceModel = require('../../models/resource-model');
-const hooks = require('./resource.hooks');
+const resourceHooks = require('./resource.hooks');
+const ratedResourceHooks = require('./ratedresources.hooks');
 
 module.exports = function() {
   const app = this;
@@ -9,10 +10,11 @@ module.exports = function() {
   const resourceModel = createResourceModel(app);
 
   // Initialize our service with any options it requires
-  app.use('/resources', createService({ name: 'resources', Model: resourceModel, paginate }));
+  const mongooseService = createService({ name: 'resources', Model: resourceModel, paginate });
+  app.use('/resources', mongooseService);
+  app.use('/ratedresources', mongooseService);
 
   // Get our initialized service so that we can register hooks and filters
-  const resourceService = app.service('resources');
-
-  resourceService.hooks(hooks);
+  app.service('resources').hooks(resourceHooks);
+  app.service('ratedresources').hooks(ratedResourceHooks);
 };
