@@ -7,10 +7,10 @@ including a database to store the resources.
 
 To get started developing the content service, you first need to install docker
 and docker-compose. Then use docker-compose after cloning.
-                    
+
 1. `docker-compose build`
 2. `docker-compose up`
-                    
+
 The web service runs on port `4040`. Debugging is available on port `5858` by default.
 
 ## Authentication
@@ -21,17 +21,17 @@ TBD
 
 ## Schema
 
-The schema is defined in `src/models/resource.model.js`:
+The schema is defined in `src/models/resource-model.js`:
 ```
 {
     originId: { type: String, unique: true, required: true },
-    userId: {type: mongooseClient.Schema.Types.ObjectId, required: true },
+    userId: { type: mongooseClient.Schema.Types.ObjectId, required: true },
     providerName: { type: String, required: true },
 
     url: { type: String, required: true },
     title: { type: String, required: true },
     description: { type: String, required: true },
-    thumbnail: {type: String },
+    thumbnail: { type: String },
 
     tags: { type: [String] },
     licenses: { type: [String], required: true },
@@ -50,4 +50,3 @@ The schema is defined in `src/models/resource.model.js`:
 ## Validation
 
 For validating incoming resources, we're using the [JSON Schema](http://json-schema.org) definition in `src/hooks/validate-resource-schema` and the [ajv JSON Schema Validator](https://github.com/epoberezkin/ajv).
-

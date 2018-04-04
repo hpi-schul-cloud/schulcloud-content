@@ -1,11 +1,12 @@
-const getRatingHook = require('../../hooks/get-rating-hook');
+const validateResourceSchema = require('../../hooks/validate-resource-schema/');
+const authenticate = require('../../hooks/authenticate');
 
 module.exports = {
   before: {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [authenticate],
     update: [],
     patch: [],
     remove: []
@@ -13,8 +14,8 @@ module.exports = {
 
   after: {
     all: [],
-    find: [getRatingHook.find],
-    get: [getRatingHook.get],
+    find: [],
+    get: [],
     create: [],
     update: [],
     patch: [],

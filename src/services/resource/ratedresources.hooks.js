@@ -1,3 +1,5 @@
+const validateResourceSchema = require('../../hooks/validate-resource-schema/');
+const authenticate = require('../../hooks/authenticate');
 const getRatingHook = require('../../hooks/get-rating-hook');
 
 module.exports = {
@@ -5,7 +7,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [authenticate, validateResourceSchema()],
     update: [],
     patch: [],
     remove: []

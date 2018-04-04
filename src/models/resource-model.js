@@ -1,19 +1,18 @@
-// content-model.js - A mongoose model
+// resource-model.js - A mongoose model
 //
 // See http://mongoosejs.com/docs/models.html
 // for more of what you can do here.
-module.exports = function (app) {
+module.exports = function(app) {
   const mongooseClient = app.get('mongooseClient');
   const resource = new mongooseClient.Schema({
-
     originId: { type: String, unique: true, required: true },
-    userId: {type: mongooseClient.Schema.Types.ObjectId, required: true },
+    userId: { type: mongooseClient.Schema.Types.ObjectId, required: true },
     providerName: { type: String, required: true },
 
     url: { type: String, required: true },
     title: { type: String, required: true },
     description: { type: String, required: true },
-    thumbnail: {type: String },
+    thumbnail: { type: String },
 
     tags: { type: [String] },
     licenses: { type: [String], required: true },
@@ -26,7 +25,6 @@ module.exports = function (app) {
 
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
-
   });
 
   return mongooseClient.model('resource', resource);
