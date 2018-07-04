@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type":"object",
+
+  "required": [
+    "userId",
+    "content"
+  ],
+  "properties": {
+    "content": {
+      "type": "string"
+    },
+
+    "ratings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "text": {
+            "type": "number"
+          },
+          "layout": {
+            "type": "number"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+
+    "categories": {
+      "type": "object",
+      "properties": {
+        "age": {
+          "type": "number"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "goal": {
+          "type": "string"
+        },
+        "difficulty": {
+          "type": "string"
+        }
+      }
+    }
+
+  }
+}

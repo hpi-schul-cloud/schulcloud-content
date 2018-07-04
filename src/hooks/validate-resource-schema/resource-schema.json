@@ -3,7 +3,6 @@
   "type":"object",
 
   "required": [
-    "originId",
     "title",
     "description",
     "url",
@@ -12,10 +11,6 @@
     "licenses"
   ],
   "properties": {
-
-    "originId": {
-      "type": "string"
-    },
 
     "title": {
       "type": "string"

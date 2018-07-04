@@ -1,7 +1,7 @@
 // Initializes the `search` service on path `/search`
-const createService = require('./search.class.js');
-const hooks = require('./search.hooks');
-const filters = require('./search.filters');
+const createService = require('./searchInternal.class.js');
+const hooks = require('./searchInternal.hooks');
+const filters = require('./searchInternal.filters');
 const elasticsearch = require('elasticsearch');
 
 module.exports = function () {
@@ -9,7 +9,7 @@ module.exports = function () {
   const paginate = app.get('paginate');
 
   const options = {
-    name: 'search',
+    name: 'searchInternal',
     paginate
   };
 
@@ -18,11 +18,12 @@ module.exports = function () {
     apiVersion: '5.4'
   });
 
+  console.log("Initialize searchInternal service");
   // Initialize our service with any options it requires
-  app.use('/search', createService(client, options));
+  app.use('/searchInternal', createService(client, options));
 
   // Get our initialized service so that we can register hooks and filters
-  const service = app.service('search');
+  const service = app.service('searchInternal');
 
   service.hooks(hooks);
 

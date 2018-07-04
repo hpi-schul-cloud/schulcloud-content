@@ -8,6 +8,8 @@ class Service {
   }
 
   find (params) {
+    console.log("inside searchExternal");
+    console.log(params);
     let service = feathersES({
       Model: this.esClient,
       paginate: this.options.paginate,
