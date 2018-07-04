@@ -1,4 +1,4 @@
-FROM node:6.10.2
+FROM node:8.11.3
 
 # Prepare non-root user and folders
 RUN useradd --system --user-group --create-home app && \
