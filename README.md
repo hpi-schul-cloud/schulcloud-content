@@ -3,137 +3,51 @@
 This is the content search engine for schul-cloud,
 including a database to store the resources.
 
-## APIs
-
-If you start the service, you can use the following APIs:
-
-- [Search API][search-api] at `/v1/search` e.g.
-  at http://localhost:4040/v1/search?Q=Funktion
-- [Resources API][resources-api] at `/v1/resources/`
-  e.g. http://localhost:4040/v1/resources/ids if you set it up locally.
-
 ## Get Started
 
 To get started developing the content service, you first need to install docker
-and docker-compose.
+and docker-compose. Then use docker-compose after cloning.
+                    
+1. `docker-compose build`
+2. `docker-compose up`
+                    
+The web service runs on port `4040`. Debugging is available on port `5858` by default.
 
-### Setup under Ubuntu
+## Authentication
+TBD
 
-First, install docker:
+## API
+TBD
 
-    wget -O- https://get.docker.com | sh
+## Schema
 
-After docker is installed, you might want to add yourself to the docker group
+The schema is defined in `src/models/resource.model.js`:
+```
+{
+    originId: { type: String, unique: true, required: true },
+    userId: {type: mongooseClient.Schema.Types.ObjectId, required: true },
+    providerName: { type: String, required: true },
 
-    sudo usermod -aG docker $USER
+    url: { type: String, required: true },
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    thumbnail: {type: String },
 
-To enable that you do not need `sudo` to urn the docker containers,
-log in and out.
+    tags: { type: [String] },
+    licenses: { type: [String], required: true },
+    contentCategory: { type: String, enum: ['atomic', 'learning-object', 'proven-learning-object', 'tool'], required: true },
+    mimeType: { type: String, required: true },
 
-Docker runs only single containers. With `docker-compose`,
-we can start create and run a whole container network at once.
-You can install docker-compose like this:
+    promoUntil: { type: Date },
+    featuredUntil: { type: Date },
+    clickCount: { type: Number },
 
-    sudo apt-get -y install docker-compose
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+}
+```
 
-Now, you need to clone this service's repository.
-You will need git for that.
+## Validation
 
-    git clone
-    cd 
+For validating incoming resources, we're using the [JSON Schema](http://json-schema.org) definition in `src/hooks/validate-resource-schema` and the [ajv JSON Schema Validator](https://github.com/epoberezkin/ajv).
 
-### Run under Ubuntu
-
-Once you have setup `docker` and `docker-compose`, you can create the services:
-
-    docker network create schulcloudserver_schulcloud-server-network
-    docker-compose create
-
-This creates docker containers which can be started:
-
-    docker-compose start
-
-Now, you should see the containers starting.
-You can check their status with `docker-compose ps` which should look like this:
-
-          Name             Command             State              Ports       
-    -------------------------------------------------------------------------
-    schulcloudconten   /bin/bash bin      Up                 0.0.0.0:9200->92 
-    t_schulcloud-      /es-docker                            00/tcp, 9300/tcp 
-    content-                                                                  
-    elasticsearch_1                                                           
-    schulcloudconten   python /usr/src/   Up                                  
-    t_schulcloud-      connector/ ...                                         
-    content-mongodb-                                                          
-    connector_1                                                               
-    schulcloudconten   docker-            Up                 0.0.0.0:27018->2 
-    t_schulcloud-      entrypoint.sh                         7017/tcp         
-    content-           --rep ...                                              
-    mongodb_1                                                                 
-    schulcloudconten   npm run debug      Up                 0.0.0.0:4040->40 
-    t_schulcloud-                                            40/tcp, 0.0.0.0: 
-    content_1                                                5858->5858/tcp   
-
-If you see that a service is not `Up` but exited, you can start it again.
-
-    docker-compose start
-
-Sometimes a service turns off.
-If the elastic search container is exiting, please check the max_map_count of your host system (not the container!) by using the following command:
-
-    sysctl vm.max_map_count
-If it is less than 262144, increase it by running:
-
-    sudo sysctl -w vm.max_map_count=262144
-To permanently set the max_map_count add the following line to your /etc/sysctl.conf:
-
-    vm.max_map_count=262144
-More info in the [Elasticsearch with Docker guide][elasticsearch-docker].
-If after 5 minutes this command is not able to start all services,
-this is a bug. [Please report it][new-issue].
-
-Now, you have several ports mapped to your local machine:
-
-- `4040` is the port for the content service.
-- `5858` is a debug port for the content service.
-- `9200` is the port of elastisearch.
-- `27018` is the port of mongodb. Note that this is one port higher than usual. 
-
-## Development
-
-We are developing this server using docker.
-Thus, if you make a change, you may need to rebuild your containers.
-You can build all of them or a specific one:
-
-    docker-compose stop
-    docker-compose build
-    docker-compose create
-    docker-compose start
-
-If you have a change, please create a pull-request and discuss it in an issue.
-We will decide if it is worth sharing.
-
-One service is special, the `schulcloud-content` service.
-This one has the local dorectory mapped inside it so if you make changes to
-this folder, the changes will automatically go into the running service.
-No need to rebuild.
-
-However, if you make a change which is not in the running code, for example you
-add a dependency to the `package.json` file, you will need to rebuild it:
-
-    docker-compose build schulcloud-content && \
-      docker-compose create schulcloud-content && \
-      docker-compose restart schulcloud-content
-
-## Maintainers
-
-These are the maintainer of this repository:
-
-- Alexander Kremer @kremer-io
-
-If you have a question, you can ask them [in an issue][new-issue].
-
-[search-api]: https://github.com/schul-cloud/resources-api-v1#search-api
-[resources-api]: https://github.com/schul-cloud/resources-api-v1#resources-api
-[new-issue]: https://github.com/schul-cloud/schulcloud-content/issues/new
-[elasticsearch-docker]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode

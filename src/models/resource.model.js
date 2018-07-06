@@ -12,7 +12,7 @@ module.exports = function (app) {
 
   const resource = new mongooseClient.Schema({
 
-    originId: { type: String, unique: true },
+    originId: { type: String, unique: true, required: true },
     userId: {type: mongooseClient.Schema.Types.ObjectId, required: true },
     providerName: { type: String, required: true },
 
