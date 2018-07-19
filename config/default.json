@@ -8,9 +8,9 @@
   },
   "mongodb": "MONGO_URI",
   "localAuthentication": [],
-  "thumbnailservice": {
-    "enabled": false,
-    "pichassoUrl": "",
-    "token": ""
+  "pichasso": {
+    "enabled": true,
+    "url": "PICHASSO_URL",
+    "token": "PICHASSO_TOKEN"
   }
 }
