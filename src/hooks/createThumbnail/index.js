@@ -1,4 +1,4 @@
-const errors = require('feathers-errors');
+const errors = require('@feathersjs/errors');
 const rpn = require('request-promise-native');
 const url = require('url');
 

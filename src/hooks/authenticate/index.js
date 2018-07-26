@@ -1,7 +1,7 @@
 const basicAuth = require('basic-auth');
 const rpn = require('request-promise-native');
 const cache = require('memory-cache');
-const errors = require('feathers-errors');
+const errors = require('@feathersjs/errors');
 
 // Cache Successful Logins for 30 Seconds
 const TOKEN_CACHE_TIME = 30000;
