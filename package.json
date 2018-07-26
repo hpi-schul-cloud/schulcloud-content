@@ -33,26 +33,26 @@
     "@feathersjs/express": "^1.2.3",
     "@feathersjs/feathers": "^3.1.7",
     "basic-auth": "^1.1.0",
-    "body-parser": "^1.17.1",
-    "compression": "^1.6.2",
+    "body-parser": "^1.18.3",
+    "compression": "^1.7.3",
     "cors": "^2.8.3",
     "elasticsearch": "^13.0.1",
     "feathers-elasticsearch": "^0.4.3",
     "feathers-hooks-common": "^3.3.2",
     "feathers-mongoose": "^5.1.0",
-    "helmet": "^3.6.0",
+    "helmet": "^3.13.0",
     "jsonapi-serializer": "^3.5.3",
     "jwt-decode": "^2.2.0",
     "memory-cache": "^0.2.0",
     "mongoose": "^4.9.8",
-    "request-promise-native": "^1.0.4",
-    "serve-favicon": "^2.4.2",
+    "request-promise-native": "^1.0.5",
+    "serve-favicon": "^2.5.0",
     "winston": "^2.3.1"
   },
   "devDependencies": {
     "eslint": "^3.19.0",
     "mocha": "^3.3.0",
-    "request": "^2.81.0",
-    "request-promise": "^4.2.1"
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2"
   }
 }
