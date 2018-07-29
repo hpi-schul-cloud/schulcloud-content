@@ -28,6 +28,7 @@
     "mocha": "mocha test/ --recursive"
   },
   "dependencies": {
+    "amqplib": "^0.5.2",
     "basic-auth": "^1.1.0",
     "body-parser": "^1.17.1",
     "compression": "^1.6.2",

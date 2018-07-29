@@ -1,3 +1,8 @@
+const AmqpConnector = require('./../../amqp-connector.js');
+
+const amqpConnector = new AmqpConnector('localhost:5672'); // app.get('rabbitmq'), app
+amqpConnector.connect().then(() => {console.log("Successfully connected to amqp");});
+
 exports.isApproved = async function (context) {
   const count = context.data.approvalCount;
   const _id = context.data._id;
@@ -10,7 +15,7 @@ exports.isApproved = async function (context) {
     context.data.approved = true;
     context.app.service('resources').update(_id, context.data);
 
-    console.log("Content approved. Teacher with ID " + context.data.userId + " should get 50 points"); // TODO: Send event that gives author 50 points
+    amqpConnector.sendToQueue('my-queue', '{"name": "ContentAccepted", "user_id": "' + context.data.userId + '"}').then(() => {console.log("ContentAccepted successful")});
   } else if (count < -2) {
     context.app.service('resources').remove(_id);
   } else {
@@ -38,7 +43,8 @@ exports.rate = async function (context) {
     resource.ratings = [context.data.rating]
   }
 
-  console.log("Teacher with ID " + context.data.rating.userId + " should get 5 points"); // TODO: Send event that will give context.data.rating.userId 5 points
+  console.log('{"name": "RateContent", "user_id": "' + context.data.rating.userId + '"}');
+  amqpConnector.sendToQueue('my-queue', '{"name": "RateContent", "user_id": "' + context.data.rating.userId + '"}').then(() => {console.log("RateContent successful")});
 
   context.data = resource;
 
@@ -46,7 +52,7 @@ exports.rate = async function (context) {
 };
 
 exports.created = async function (context) {
-  console.log("Teacher with ID " + context.data.userId + " should get 5 points"); // TODO: Send event that will give context.data.rating.userId 5 points
+  amqpConnector.sendToQueue('my-queue', '{"name": "SubmitContent", "user_id": "' + context.data.userId + '"}').then(() => {console.log("SubmitContent successful")});
 
   return context;
 };
