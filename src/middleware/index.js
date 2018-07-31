@@ -1,5 +1,5 @@
 const handler = require('@feathersjs/express/errors');
-const notFound = require('feathers-errors/not-found');
+const notFound = require('@feathersjs/errors/not-found');
 
 module.exports = function () {
   // Add your custom middleware here. Remember, that
