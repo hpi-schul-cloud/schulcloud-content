@@ -4,10 +4,10 @@ const authenticate = require('../../hooks/authenticate');
 
 module.exports = {
   before: {
-    all: [],
+    all: [resourceHooks.test],
     find: [],
     get: [],
-    create: [authenticate, validateResourceSchema()],
+    create: [validateResourceSchema()], //authenticate, 
     update: [],
     patch: [resourceHooks.rate],
     remove: []
