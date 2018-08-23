@@ -32,16 +32,31 @@
       "items": {
         "type": "string"
       }
+    },
+
+    "thumbnailOptions": {
+      "type": "object",
+      "required": [
+        "generate"
+      ],
+      "properties": {
+        "generate": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "string"
+        }
+      }
     }
 
 
   },
   "definitions": {
-    "URL":{
+    "URL": {
       "type": "string",
       "pattern": "^https?://.+$"
     },
-    "ContentCategory":{
+    "ContentCategory": {
       "enum": ["atomic", "learning-object", "proven-learning-object", "tool"]
     }
   }

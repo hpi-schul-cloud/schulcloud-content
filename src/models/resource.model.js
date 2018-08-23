@@ -4,6 +4,7 @@
 // for more of what you can do here.
 module.exports = function (app) {
   const mongooseClient = app.get('mongooseClient');
+
   const resource = new mongooseClient.Schema({
 
     originId: { type: String }, // , unique: true , required: true --> not anymore with internal material (?)
