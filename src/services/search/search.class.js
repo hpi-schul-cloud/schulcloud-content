@@ -10,9 +10,7 @@ class Service {
   find (params) {
     var query = params.query;
     var options = getDefaultOptions(query);
-
-    // console.log(JSON.stringify(options));
-    // console.log(JSON.stringify(options.body.query.bool));
+    console.log(params.query.task);
     switch (params.query.task) {
       case "review":
         options = getReviewOptions(query, options);
@@ -26,7 +24,7 @@ class Service {
       default:
         options = getOptions(query);
     }
-    console.log(JSON.stringify(options));
+
     return this.esClient.search(options);
   }
 }
@@ -77,33 +75,51 @@ getDefaultOptions = function(query) {
 }
 
 getReviewOptions = function(query, options) {
-  console.log("Getting review options for ES");
-  options.body.query.bool.must.push({"match": {"providerName": "Schul-Cloud"}}); // only SC-content
+  console.log("review");
   options.body.query.bool.must_not.push({"match" : {"approved": true}}); // no approved content
   options.body.query.bool.must_not.push({"match" : { "userId": query.userId }}); // user can't review own content
   options.body.query.bool.must_not.push({"match" : { "isPrivat": true }}); // only published content
   options.body.query.bool.must_not.push({"match" : { "ratings.userId" : query.userId }}) // Don't show content that has been rated by userId before
-
+  console.log(query.userId);
   return getFilter(query, options);
 }
 
 getMyContentOptions = function(query, options) {
-  console.log("Getting my-content options for ES");
   options.body.query.bool.must.push({"match" : { "userId": query.userId } }); // only own content
   return getFilter(query, options);
 }
 
 getSearchOptions = function(query, options) {
-  console.log("Getting search options for ES");
   options.body.query.bool.must_not.push({"match" : { "isPrivat": true }}); // only published content
-  options.body.query.bool.should.push({'match': {'approved': true}});
-  options.body.query.bool.should.push({
-    'bool': {
-      'must_not': [
-        {'match': {'providerName': "Schul-Cloud"}}
-      ]
-    }
-  }); // only approved or external content
+  // options.body.query.bool.should.push({'match': {'approved': true}});
+  options.body.query.bool.should = [{
+        "bool": {
+          "must_not": [{
+            "match": {
+              'providerName': "Schul-Cloud"
+            }
+          }]
+        }
+      }, {
+        "bool": {
+          "must": [{
+            "match": {
+              'approved': true
+            }
+          }]
+        }
+      }]
+  // options.body.query.bool.should.push({
+  //   'bool': {
+  //     'must_not': [
+  //       {'match': {'providerName': "Schul-Cloud"}}
+  //     ],
+  //     'must': [
+  //       {'match': {'approved': true}}
+  //     ]
+  //   }
+  // }); // only approved or external content TODO: is this working?
+
   return getFilter(query, options);
 }
 
@@ -117,6 +133,12 @@ getFilter = function(query, options) {
   if (query.provider) {
     options.body.query.bool.must.push(
       {"match" : { "providerName": query.provider } }
+    );
+  }
+
+  if (query.approved) {
+    options.body.query.bool.must.push(
+      {"match" : { "approved": true } }
     );
   }
 

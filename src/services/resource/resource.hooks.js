@@ -5,10 +5,10 @@ const createThumbnail = require('../../hooks/createThumbnail');
 
 module.exports = {
   before: {
-    all: [resourceHooks.test],
+    all: [],
     find: [],
     get: [],
-    create: [validateResourceSchema(), createThumbnail],  //authenticate
+    create: [validateResourceSchema()], //authenticate, createThumbnail
     update: [],
     patch: [resourceHooks.rate],
     remove: []
