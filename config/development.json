@@ -6,7 +6,7 @@
     "default": 10,
     "max": 50
   },
-  "mongodb": "MONGO_URI",
+  "mongodb": "http://localhost:27017",
   "localAuthentication": [
     {
       "userId": "73632d636f6e74656e742d31",
