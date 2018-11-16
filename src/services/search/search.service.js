@@ -13,7 +13,7 @@ module.exports = function () {
   };
 
   const client = elasticsearch.Client({
-    hosts: process.env.ELASTICSEARCH_URI || 'elasticsearch:9200',
+    hosts: process.env.ELASTICSEARCH_URI || 'http://localhost:9200',
     apiVersion: '5.4'
   });
 
