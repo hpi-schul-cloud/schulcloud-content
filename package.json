@@ -46,6 +46,8 @@
     "jwt-decode": "^2.2.0",
     "memory-cache": "^0.2.0",
     "mongoose": "^5.2.5",
+    "multiparty": "^4.2.1",
+    "pkgcloud": "^1.7.0",
     "request-promise-native": "^1.0.5",
     "serve-favicon": "^2.5.0",
     "winston": "^3.0.0"
