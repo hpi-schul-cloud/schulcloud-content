@@ -1,0 +1,101 @@
+<p>Drag files and/or directories to the box below!</p>
+<div id="dropzone">
+  <div id="boxtitle">
+    Drop Files Here
+  </div>
+</div>
+
+<h2>Directory tree:</h2>
+
+<ul id="listing">
+</ul>
+
+
+<script>
+let dropzone = document.getElementById("dropzone");
+let listing = document.getElementById("listing");
+
+function scanFiles(item, container) {
+  let elem = document.createElement("li");
+  elem.innerHTML = item.name;
+  container.appendChild(elem);
+
+  if (item.isFile) {
+      uploadFile(item.file, item.fullPath);
+  } else if (item.isDirectory) {
+    let directoryReader = item.createReader();
+    let directoryContainer = document.createElement("ul");
+    container.appendChild(directoryContainer);
+    directoryReader.readEntries(function(entries) {
+        entries.forEach(function(entry) {
+          scanFiles(entry, directoryContainer);
+      });
+    });
+  }
+}
+
+function uploadFile(file, path) {
+		let url = `http://localhost:4040/files/upload?path=${path}`;
+  console.log(file, path);
+		let formData = new FormData();
+		formData.append("file", file);
+
+		fetch(url, {
+			method: "POST",
+			body: formData
+		})
+			.then(() => {
+				console.log("YEHAAAA");
+			})
+			.catch(() => {
+				console.log("nope :(");
+			});
+	}
+
+dropzone.addEventListener("dragover", function(event) {
+    event.preventDefault();
+}, false);
+
+dropzone.addEventListener("drop", function(event) {
+  let items = event.dataTransfer.items;
+
+  event.preventDefault();
+  listing.innerHTML = "";
+ 
+  for (let i=0; i<items.length; i++) {
+    let item = items[i].webkitGetAsEntry();
+    
+    if (item) {
+        scanFiles(item, listing);
+    }
+  }
+}, false);
+
+</script>
+
+
+<style>
+#dropzone {
+    text-align: center;
+    width: 300px;
+    height: 100px;
+    margin: 10px;
+    padding: 10px;
+    border: 4px dashed red;
+    border-radius: 10px;
+  }
+  
+  #boxtitle {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    color: black;
+    font: bold 2em "Arial", sans-serif;
+    width: 300px;
+    height: 100px;
+  }
+  
+  body {
+    font: 14px "Arial", sans-serif;
+  }
+</style>
