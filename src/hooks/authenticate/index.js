@@ -70,6 +70,7 @@ function authenticateHook(hook) {
   // gracefully exits instead of checking undefined variable
   if (!authHeader) { throw new errors.NotAuthenticated('Could not authenticate! Missing auth header'); }
 
+  if(!hook.data){ hook.data = {}; }
   // JWT AUTH
   // TODO: Validate JWT Token against Server
   // TODO: Error Handling
@@ -90,8 +91,8 @@ function authenticateHook(hook) {
     let localUser = checkLocalAuthentication(credentials.name, credentials.pass);
     if(localUser) {
       // check hook.data is available, otherwise store userId as query param
-      if(hook.data) { hook.data.userId = localUser.userId; }
-      else { hook.params.query.userId = localUser.userId; }
+      hook.data.userId = localUser.userId;
+      hook.params.query.userId = localUser.userId; // TODO WHY???
       return hook;
     }
 
