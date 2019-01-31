@@ -42,12 +42,14 @@ function handle_upload(req, res, next) {
   const uploadPath = req.query.path.replace(/^\/*/, "");
   const form = new multiparty.Form();
   form.on("part", part => {
-    if (uploadPath) {
+    if (part.filename && uploadPath) {
       uploadStream({
         stream: part,
         path: uploadPath,
         res
       });
+    }else{
+      return res.sendStatus(400);
     }
   });
   form.parse(req);
