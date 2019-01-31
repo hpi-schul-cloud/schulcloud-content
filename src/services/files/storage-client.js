@@ -1,7 +1,10 @@
 const pkgcloud = require('pkgcloud');
 
-module.exports = {
-	client: pkgcloud.storage.createClient({
+function createClient(){
+	if(!process.env['STORAGE_KEY']){
+		throw new Error("STORAGE_KEY env variable unset")
+	}
+	return pkgcloud.storage.createClient({
 		provider: 'amazon',
 		keyId: process.env['STORAGE_KEY_ID'] || 'sc-devteam', // access key id
 		key: process.env['STORAGE_KEY'], // secret key
@@ -9,4 +12,8 @@ module.exports = {
 		forcePathBucket: true, // CRITICAL option here as we don't follow default https://bucket-name.s3-us-west-2.amazonaws.com url format for endpoint
 		endpoint: process.env['STORAGE_ENDPOINT'] || 'https://dev-storage.schul-cloud.org:9001'
 	})
+}
+
+module.exports = {
+	client: createClient()
 };
