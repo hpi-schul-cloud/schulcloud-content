@@ -10,9 +10,9 @@ const mime = require('mime-types')
 
 const container = process.env["STORAGE_CONTAINER"] || "content-hosting";
 
-function PromisePipe(from, to){
+function PromisePipe(source, target){
   return new Promise((resolve, reject) => {
-    from.pipe(to)
+    source.pipe(target)
     .on("success", function(result) {
       return resolve(result);
     })
@@ -26,12 +26,12 @@ function PromisePipe(from, to){
 # UPLOAD
 ################################################## */
 
-function getUploadStream(path) {
+function getUploadStream(filePath) {
   return client.upload({
     queueSize: 1, // == default value
     partSize: 5 * 1024 * 1024, // == default value of 5MB
     container: container,
-    remote: path
+    remote: filePath
   });
 }
 
@@ -46,11 +46,14 @@ function handle_upload(req, res, next) {
       //writableStream.managedUpload === https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3/ManagedUpload.html
       // managedUpload object allows you to abort ongoing upload or track file upload progress.
       PromisePipe(part, getUploadStream(uploadPath))
-      .then(() => {
+      .then((result) => {
         return res.sendStatus(200);
       }).catch(error => {
-        return res.sendStatus(error.statusCode);
-      })
+        if(error.statusCode){
+          return res.sendStatus(error.statusCode);
+        }
+        return res.sendStatus(400);
+      });
     } else {
       return res.sendStatus(400);
     }
