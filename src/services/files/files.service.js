@@ -22,6 +22,13 @@ function PromisePipe(source, target){
   });
 }
 
+function removeTrailingSlashes(filePath){
+  // remove trailing slashes and dots
+  return filePath.replace(/^[\/\.]*/, "");
+}
+
+
+
 /* ##################################################
 # UPLOAD
 ################################################## */
@@ -39,7 +46,7 @@ function handle_upload(req, res, next) {
   // TODO permission check, content-id must be owned by current user, ...
   // TODO prefix with content-id from query-string
   // TODO prefix with tmp/user-id
-  const uploadPath = req.query.path.replace(/^\/*/, "");
+  const uploadPath = removeTrailingSlashes(req.query.path);
   const form = new multiparty.Form();
   form.on("part", part => {
     if (part.filename && uploadPath) {
@@ -60,6 +67,8 @@ function handle_upload(req, res, next) {
   });
   form.parse(req);
 }
+
+
 
 /* ##################################################
 # DOWNLOAD
@@ -102,11 +111,12 @@ async function handle_download(req, res) {
   }
 }
 
+
+
 /* ##################################################
 # PERSIST
 ################################################## */
 
-// TODO
 async function moveFile(from, to) {
   try{
     await fileExists(from);
@@ -118,10 +128,37 @@ async function moveFile(from, to) {
   }
 }
 
-function handle_manage(req, res, next) {
-  console.log(req.body);
-  return moveFile("image.png", "save/image.png");
+
+function removeFile(filePath) {
+  return new Promise((resolve, reject) => {
+    return client.removeFile(container, filePath, (error) => {
+      if (error !== null) { return reject(error); }
+      return resolve();
+    });
+  });
 }
+
+function handle_manage(req, res, next) {
+  const removeOperations = (req.body.delete || []).map((sourcePath) => {
+    const filePath = removeTrailingSlashes(sourcePath);
+    return removeFile(filePath);
+  });
+  const moveOperations = (req.body.save || []).map((sourcePath) => {
+    const filePath = removeTrailingSlashes(sourcePath);
+    return moveFile("/tmp/u-id/" + filePath, filePath);
+  });
+  return Promise.all([...removeOperations, ...moveOperations])
+    .then(() =>{
+      res.sendStatus(200);
+    }).catch((error) => {
+      if(error.statusCode){
+        res.sendStatus(error.statusCode);
+      }
+      res.sendStatus(500);
+    });
+}
+
+
 
 /* ##################################################
 # ROUTING
