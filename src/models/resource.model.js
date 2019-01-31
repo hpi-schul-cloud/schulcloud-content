@@ -6,8 +6,7 @@ module.exports = function (app) {
   const mongooseClient = app.get('mongooseClient');
 
   const resource = new mongooseClient.Schema({
-
-    originId: { type: String, unique: true, required: true },
+    originId: { type: String, unique: true },
     userId: {type: mongooseClient.Schema.Types.ObjectId, required: true },
     providerName: { type: String, required: true },
 
@@ -26,7 +25,9 @@ module.exports = function (app) {
     clickCount: { type: Number },
 
     createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    updatedAt: { type: Date, default: Date.now },
+
+    isPublished:{ type: Boolean, default: false}
 
   });
 
