@@ -13,10 +13,10 @@ const container = process.env["STORAGE_CONTAINER"] || "content-hosting";
 function PromisePipe(source, target){
   return new Promise((resolve, reject) => {
     source.pipe(target)
-    .on("success", function(result) {
+    .on("success", (result) => {
       return resolve(result);
     })
-    .on("error", function(error) {
+    .on("error", (error) => {
       return reject(error);
     });
   });
@@ -25,6 +25,20 @@ function PromisePipe(source, target){
 function removeTrailingSlashes(filePath){
   // remove trailing slashes and dots
   return filePath.replace(/^[\/\.]*/, "");
+}
+
+
+
+/* ##################################################
+# FILE DB HANDLING
+################################################## */
+
+function addFileToDB(sourcePath){
+  // TODO @elias
+}
+
+function removeFileFromDB(sourcePath){
+  // TODO @elias
 }
 
 
@@ -54,6 +68,7 @@ function handle_upload(req, res, next) {
       // managedUpload object allows you to abort ongoing upload or track file upload progress.
       PromisePipe(part, getUploadStream(uploadPath))
       .then((result) => {
+        addFileToDB(uploadPath);
         return res.sendStatus(200);
       }).catch(error => {
         if(error.statusCode){
@@ -139,16 +154,28 @@ function removeFile(filePath) {
 }
 
 function handle_manage(req, res, next) {
-  const removeOperations = (req.body.delete || []).map((sourcePath) => {
+  const tmpPrefix = "/tmp/u-id/";
+
+  const deleteOperations = (req.body.delete || []);
+  const moveOperations = (req.body.save || []);
+
+  const deletePromises = deleteOperations.map((sourcePath) => {
     const filePath = removeTrailingSlashes(sourcePath);
     return removeFile(filePath);
   });
-  const moveOperations = (req.body.save || []).map((sourcePath) => {
+  const movePromises = moveOperations.map((sourcePath) => {
     const filePath = removeTrailingSlashes(sourcePath);
-    return moveFile("/tmp/u-id/" + filePath, filePath);
+    return moveFile(tmpPrefix + filePath, filePath);
   });
-  return Promise.all([...removeOperations, ...moveOperations])
+  return Promise.all([...deletePromises, ...movePromises])
     .then(() =>{
+      deleteOperations.forEach((sourcePath) => {
+        removeFileFromDB(from);
+      })
+      moveOperations.forEach((sourcePath) => {
+        removeFileFromDB(tmpPrefix + from);
+        addFileToDB(to);
+      })
       res.sendStatus(200);
     }).catch((error) => {
       if(error.statusCode){

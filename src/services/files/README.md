@@ -4,7 +4,7 @@
 Upload einer Datei in einen tmp-folder.
 Der Upload muss mit dem Header `multipart/form-data` erfolgen und jede Datei muss eine einzelne request sein.
 Zurückgegeben wird ein eindeutiger identifier für diese Datei.
-Dieser Identifier muss in einer weiteren `POST /manage` (siehe unten) verwendet werden um die Datei zu persistieren 
+Dieser Identifier muss in einer weiteren `POST /manage` (siehe unten) verwendet werden um die Datei zu persistieren
 und aus dem tmp-Ordner an seinen angedachten Platz zu verschieben.
 
 ### `GET /get/**/*.*`
@@ -13,7 +13,7 @@ Zusätzlich soll hier die Rechteprüfung stattfinden. (not implemented)
 
 ### `POST /manage (JSON)`
 This endpoint allows modifications to the main source folder,
-you can specify files that should be deleted (`delete: [...]`) 
+you can specify files that should be deleted (`delete: [...]`)
 and specify which files should be moved from the tmp upload directory to it's final destination.
 The tmp-folder prefix will be added by the server itself.
 ```js

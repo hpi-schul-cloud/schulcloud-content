@@ -54,8 +54,12 @@
 		}, false);
 
 		// File uploaded
-		xhr.addEventListener("load", function () {
+		xhr.addEventListener("load", function (res) {
       console.log("Uploaded!")
+    }, false);
+
+    xhr.addEventListener("error", function (res) {
+      console.log("upload failed!")
 		}, false);
 
 		xhr.open("post", url, true);
