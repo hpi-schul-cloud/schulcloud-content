@@ -9,20 +9,21 @@ Außer: userId = currentUser._id (hook.data.userId)
 
 const myHook = (hook) => {
   try{
-    
     hook = authenticate(hook);
-    delete hook.params.query.userId
+    delete hook.params.query.userId;
 
     if(typeof hook.params.query.isPublished == 'undefined' || hook.params.query.isPublished == 'false'){
-      delete hook.params.query.isPublished
+      delete hook.params.query.isPublished;
       hook.params.query.$or = [{ isPublished: true }, { userId: hook.data.userId }];
     }else{
       hook.params.query.isPublished = true;
     }
   } catch(error){
-    console.log(error);
-    hook.params.query.isPublished = true;
-  } 
+    console.log("ERROR CATCHED")
+    // TODO FIX this line, it's preventing /content/resources from loading
+    //hook.params.query["isPublished[$ne]"] = false;
+    return hook;
+  }
   return hook;
 }
 
