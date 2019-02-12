@@ -27,7 +27,7 @@ module.exports = function (app) {
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 
-    isPublished:{ type: Boolean, default: false}
+    isPublished:{ type: Boolean, default: false, required: true}
 
   });
 
