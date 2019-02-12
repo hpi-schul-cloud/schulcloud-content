@@ -27,7 +27,14 @@ function removeTrailingSlashes(filePath){
   return filePath.replace(/^[\/\.]*/, "");
 }
 
-
+function addIsPublishFlag(app){
+  return app.service('resources').find({query: {$limit: false}}).then(response => {
+    const patchList = response.data.map((entry) => {
+      return app.service('resources').patch(entry._id, {isPublished: true});
+    });
+    return Promise.all(patchList);
+  });
+}
 
 /* ##################################################
 # FILE DB HANDLING
