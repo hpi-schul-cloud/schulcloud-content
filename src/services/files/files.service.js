@@ -132,7 +132,7 @@ function giveHandle_upload(app){
         PromisePipe(part, getUploadStream(uploadPath))
         .then((result) => {
           return addFileToDB(app, uploadPath).then(()=> {
-            return res.sendStatus(200);
+            return res.send(uploadPath);
           }).catch(error => {
             throw error;
           });
