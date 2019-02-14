@@ -62,14 +62,20 @@ function handle_upload(req, res, next) {
   // TODO prefix with tmp/user-id
   const uploadPath = removeTrailingSlashes(req.query.path);
   const form = new multiparty.Form();
+  form.on('error', function(err) {
+    console.error('Error parsing form: ' + err.stack);
+  });
   form.on("part", part => {
+    part.on('error', (err) => {
+      // decide what to do
+    });
     if (part.filename && uploadPath) {
       //writableStream.managedUpload === https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3/ManagedUpload.html
       // managedUpload object allows you to abort ongoing upload or track file upload progress.
       PromisePipe(part, getUploadStream(uploadPath))
       .then((result) => {
         addFileToDB(uploadPath);
-        return res.sendStatus(200);
+        return res.send(uploadPath);
       }).catch(error => {
         if(error.statusCode){
           return res.sendStatus(error.statusCode);
