@@ -27,58 +27,6 @@ function removeTrailingSlashes(filePath){
   return filePath.replace(/^[\/\.]*/, "");
 }
 
-function getPathRec(path,fullPath){
-  if(path.length == 1){
-    //Es ist eine Datei
-      return {
-      id: fullPath.join('/'),
-      type: 'file',
-      name: path[0]
-    }
-  } else{
-    //Es ist ein Ordner
-    let name = path.shift()
-    let object = getPathRec(path,fullPath)
-    fullPath.reverse()
-    path.forEach(element => {
-      fullPath.shift()
-    });
-    fullPath.reverse()
-
-    let folder = {
-      id: fullPath.join('/'),
-      type: 'folder',
-      name: name,
-      objects: [object]
-    }
-    return folder
-  }
-  
-}
-
-
-
-function getFileStructure(app,sourcePath, contentId = 'mycid1111'){
-  return app.service('file_structure').find({query: {contentId: contentId, isTemporary: false}}).then((response) => {
-    let fileIds = response.data[0].filesIds
-    console.log('FileIds')
-    console.log(fileIds);
-
-    //build trees
-    trees = []
-    fileIds.forEach((fileId) => {
-      let result = (getPathRec(fileId.split('/'),fileId.split('/')));
-      trees.push(result);
-      console.log("result", result)
-    });
-
-    
-  }).catch(error => {
-    console.log(error)
-  }
-  );
-}
-
 function addIsPublishFlag(app){
   return app.service('resources').find({query: {$limit: false}}).then(response => {
     const patchList = response.data.map((entry) => {
@@ -287,6 +235,7 @@ function giveHandle_manage(app){
     const deleteOperations = (req.body.delete || []);
     const moveOperations = (req.body.save || []);
 
+ 
     const deletePromises = deleteOperations.map((sourcePath) => {
       const filePath = removeTrailingSlashes(sourcePath);
       return removeFile(filePath);
@@ -313,6 +262,82 @@ function giveHandle_manage(app){
   }
 }
 
+/* ##################################################
+# FILETREE
+################################################## */
+
+function getPathRec(path,fullPath){
+  if(path.length == 1){
+    //Es ist eine Datei
+      return {
+      id: fullPath.join('/'),
+      type: 'file',
+      name: path[0]
+    }
+  } else{
+    //Es ist ein Ordner
+    let name = path.shift()
+    let object = getPathRec(path,fullPath)
+    fullPath.reverse()
+    path.forEach(element => {
+      fullPath.shift()
+    });
+    fullPath.reverse()
+
+    let folder = {
+      id: fullPath.join('/'),
+      type: 'folder',
+      name: name,
+      objects: [object]
+    }
+    return folder
+  }
+}
+
+function mergeTreesRecursive(tree, objectsArray) {
+  let index = objectsArray.findIndex((element)=>{
+    return element.name == tree.name
+  });
+  if (index == -1) {
+    objectsArray.push(tree);
+    return objectsArray
+  } else {
+    objectsArray[index].objects = mergeTreesRecursive(tree.objects[0], objectsArray[index].objects);
+    return objectsArray
+  }
+}
+
+
+function getFileStructure(app,sourcePath='', contentId = 'mycid1111'){
+  return app.service('file_structure').find({query: {contentId: contentId, isTemporary: false}}).then((response) => {
+    let fileIds = response.data[0].filesIds
+
+    // build trees
+    let trees = []
+    fileIds.forEach((fileId) => {
+      let result = (getPathRec(fileId.split('/'),fileId.split('/')));
+      trees.push(result);
+    });
+
+    // merge trees
+    let GlobalTree = []
+    trees.forEach((tree)=>{
+      GlobalTree = mergeTreesRecursive(tree, GlobalTree)
+    })
+
+    return GlobalTree;
+
+  }).catch(error => {
+    console.error(error)
+  }
+  );
+}
+
+function giveHandle_filetree(app){
+  return async (req,res,next) => {
+    return res.json(await getFileStructure(app));
+  }
+}
 
 /* ##################################################
 # ROUTING
@@ -324,6 +349,7 @@ module.exports = function() {
   router.post("/upload", giveHandle_upload(app));
   router.post("/manage", giveHandle_manage(app));
   router.get("/get*", handle_download);
+  router.get("/filetree", giveHandle_filetree(app));
 
   router.get("/", function(req, res, next) {
     res.sendFile(path.join(__dirname + "/index.html"));
