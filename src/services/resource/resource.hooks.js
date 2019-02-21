@@ -6,8 +6,7 @@ const createThumbnail = require('../../hooks/createThumbnail');
 Anfrage so manipulieren, dass nur isPublished=true angezeigt wird
 Außer: userId = currentUser._id (hook.data.userId)
 */
-
-const myHook = (hook) => {
+const restrictToPublicIfUnauthorized = (hook) => {
   try{
     hook = authenticate(hook);
     delete hook.params.query.userId;
@@ -19,7 +18,6 @@ const myHook = (hook) => {
       hook.params.query.isPublished = true;
     }
   } catch(error){
-    console.log("ERROR CATCHED")
     // TODO FIX this line, it's preventing /content/resources from loading
     //hook.params.query["isPublished[$ne]"] = false;
     return hook;
@@ -27,15 +25,22 @@ const myHook = (hook) => {
   return hook;
 }
 
+const manageFiles = (hook) => {
+  hook = authenticate(hook);
+  if(!hook.data.files || !hook.data.userId) { return hook; }
+  const files = hook.data.files;
+  const fileManagementService = hook.app.service('/files/manage');
+	return fileManagementService.patch(hook.id, { ...files, userId: hook.data.userId }, hook).then(() => hook);
+}
 
 module.exports = {
   before: {
     all: [],
-    find: [myHook],
+    find: [restrictToPublicIfUnauthorized],
     get: [],
     create: [authenticate, validateResourceSchema(), createThumbnail],
     update: [],
-    patch: [],
+    patch: [manageFiles],
     remove: []
   },
 
