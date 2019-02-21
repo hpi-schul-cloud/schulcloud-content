@@ -30,6 +30,7 @@ function addIsPublishFlag(app){
 
 module.exports = {
   promisePipe,
-  removeTrailingSlashes
+  removeTrailingSlashes,
+  container: process.env['STORAGE_CONTAINER'] || 'content-hosting',
   //addIsPublishFlag
 };

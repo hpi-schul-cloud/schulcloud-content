@@ -16,6 +16,7 @@ This endpoint allows modifications to the main source folder,
 you can specify files that should be deleted (`delete: [...]`)
 and specify which files should be moved from the tmp upload directory to it's final destination.
 The tmp-folder prefix will be added by the server itself.
+
 ```js
 {
   "delete": [
