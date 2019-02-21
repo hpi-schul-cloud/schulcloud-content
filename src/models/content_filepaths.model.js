@@ -15,7 +15,7 @@ tempFlag boolean
 module.exports = function (app) {
     const mongooseClient = app.get('mongooseClient');
   
-    const file_structure = new mongooseClient.Schema({
+    const content_filepaths = new mongooseClient.Schema({
       filesIds: {type: Array, required: true }, //Array of Strings [PFAD/file,PFAD2/file2,...]
       contentId: {type: String, required: true},
       userId: {type: String, required: true},
@@ -24,5 +24,5 @@ module.exports = function (app) {
       updatedAt: { type: Date, default: Date.now },  
     });
   
-    return mongooseClient.model('file_structure', file_structure);
+    return mongooseClient.model('content_filepaths', content_filepaths);
   };  
