@@ -52,6 +52,7 @@ class FileStructureService {
       .service("content_filepaths")
       .find({ query: { contentId: contentId, isTemporary: false } })
       .then(response => {
+        if(response.total === 0){ return; }
         let fileIds = response.data[0].filesIds;
 
         // build trees

@@ -5,7 +5,7 @@ const { FileDistributionService } = require('./file_distribution.service.js');
 const { FileUploadService } = require('./file_upload.service.js');
 const { FileManageService } = require('./file_manage.service.js');
 
-const hooks = require('./../content_filepaths/content_filepaths.hooks');
+const hooks = require('./file.hooks');
 
 module.exports = function() {
   const app = this;
@@ -20,7 +20,7 @@ module.exports = function() {
   app.use('/files/upload', new FileUploadService(app));
   // Get our initialize service to that we can bind hooks
   const fileUploadService = app.service('files/upload');
-  fileUploadService.hooks(hooks);
+  fileUploadService.hooks(hooks.upload);
 
 
 
@@ -33,7 +33,7 @@ module.exports = function() {
 
   app.use('/files/manage', new FileManageService(app));
   const fileManageService = app.service('files/manage');
-  fileManageService.hooks(hooks);
+  fileManageService.hooks(hooks.manage);
 
 
 
@@ -45,7 +45,7 @@ module.exports = function() {
 
   app.use('/files/get*', new FileDistributionService(app));
   const fileDistributionService = app.service('files/get*');
-  fileDistributionService.hooks(hooks);
+  fileDistributionService.hooks(hooks.distribution);
 
 
 
@@ -57,5 +57,5 @@ module.exports = function() {
 
   app.use('/files/structure', new FileStructureService(app));
   const fileStructureService = app.service('files/structure');
-  fileStructureService.hooks(hooks);
+  fileStructureService.hooks(hooks.structure);
 };
