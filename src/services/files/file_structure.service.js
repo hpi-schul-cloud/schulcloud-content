@@ -42,43 +42,36 @@ function mergeTreesRecursive(tree, objectsArray) {
   }
 }
 
-function getFileStructure(app, sourcePath = "", contentId = "mycid1111") {
-  return app
-    .service("content_filepaths")
-    .find({ query: { contentId: contentId, isTemporary: false } })
-    .then(response => {
-      let fileIds = response.data[0].filesIds;
-
-      // build trees
-      let trees = [];
-      fileIds.forEach(fileId => {
-        let result = getPathRec(fileId.split("/"), fileId.split("/"));
-        trees.push(result);
-      });
-
-      // merge trees
-      let GlobalTree = [];
-      trees.forEach(tree => {
-        GlobalTree = mergeTreesRecursive(tree, GlobalTree);
-      });
-
-      return GlobalTree;
-    })
-    .catch(error => {
-      console.error(error);
-    });
-}
-
 class FileStructureService {
   constructor(app) {
     this.app = app;
   }
 
-  async get(id, { req }) {
-    // TODO use correct content id
-    console.log("Body:", req.body);
-    const data = await getFileStructure(this.app);
-    return data; // same as `return req.res.data = data;`
+  async get(contentId, { req }) {
+    return this.app
+      .service("content_filepaths")
+      .find({ query: { contentId: contentId, isTemporary: false } })
+      .then(response => {
+        let fileIds = response.data[0].filesIds;
+
+        // build trees
+        let trees = [];
+        fileIds.forEach(fileId => {
+          let result = getPathRec(fileId.split("/"), fileId.split("/"));
+          trees.push(result);
+        });
+
+        // merge trees
+        let GlobalTree = [];
+        trees.forEach(tree => {
+          GlobalTree = mergeTreesRecursive(tree, GlobalTree);
+        });
+
+        return GlobalTree;
+      })
+      .catch(error => {
+        console.error(error);
+      });
   }
 }
 
