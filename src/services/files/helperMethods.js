@@ -48,6 +48,15 @@ function fileExists(filePath) {
   });
 }
 
+function removeFile(filePath) {
+  return new Promise((resolve, reject) => {
+    return client.removeFile(container, filePath, (error) => {
+      if (error !== null) { return reject(error); }
+      return resolve();
+    });
+  });
+}
+
 // Script to set isPublished for all existing content
 /*
 function addIsPublishFlag(app){
@@ -66,6 +75,7 @@ module.exports = {
   getUploadStream,
   getDownloadStream,
   fileExists,
+  removeFile,
   container,
   //addIsPublishFlag
 };
