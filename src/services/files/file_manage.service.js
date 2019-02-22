@@ -1,5 +1,5 @@
 const { removeFileFromDB, moveFileWithinDB } = require('./fileDBHelper.js');
-const { promisePipe, removeTrailingSlashes, fileExists, getDownloadStream, getUploadStream } = require('./helperMethods.js');
+const { promisePipe, removeTrailingSlashes, fileExists, getDownloadStream, getUploadStream, removeFile } = require('./helperMethods.js');
 
 async function moveFile(from, to) {
   try{
@@ -10,16 +10,6 @@ async function moveFile(from, to) {
   }catch(error){
     return error;
   }
-}
-
-
-function removeFile(filePath) {
-  return new Promise((resolve, reject) => {
-    return client.removeFile(container, filePath, (error) => {
-      if (error !== null) { return reject(error); }
-      return resolve();
-    });
-  });
 }
 
 class FileManageService {
