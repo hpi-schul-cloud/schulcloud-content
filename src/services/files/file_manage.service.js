@@ -27,7 +27,6 @@ class FileManageService {
   }
 
   patch(contentId, data) {
-    console.log('DATA', data);
     // TODO permission check, contentId must be owned by current user, ...
 
     const tmpPrefix = `tmp/${data.userId}/`;
@@ -58,13 +57,10 @@ class FileManageService {
         );
 
         return Promise.all([manageDeletePromise, manageMovePromise, manageDeleteTmpPromise]).then((dbResult) => {
-          console.log('MANAGED FILE-DB:', dbResult);
-
           return { status: 200 };
         });
       })
       .catch(error => {
-        console.error("CATCH", error);
         if (error.statusCode) {
           return { status: error.statusCode };
         }
