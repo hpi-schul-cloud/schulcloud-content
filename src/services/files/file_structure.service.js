@@ -1,22 +1,20 @@
-function getPathRec(filepath, fullPath) {
-  if (filepath.length == 1) {
-    //Es ist eine Datei
-    return {
+const logger = require('winston');
+
+function getPathRecursive(filepathArray, fullPath) {
+  if (filepathArray.length == 1) {
+    return { // file
       id: fullPath.join('/'),
       type: 'file',
-      name: filepath[0]
+      name: filepathArray[0]
     };
-  } else {
-    //Es ist ein Ordner
-    let name = filepath.shift();
-    let object = getPathRec(filepath, fullPath);
-    fullPath.reverse();
-    filepath.forEach(element => {
-      fullPath.shift();
+  } else { // folder
+    const name = filepathArray.shift();
+    const object = getPathRecursive(filepathArray, fullPath);
+    filepathArray.forEach(() => {
+      fullPath.pop();
     });
-    fullPath.reverse();
 
-    let folder = {
+    const folder = {
       id: fullPath.join('/'),
       type: 'folder',
       name: name,
@@ -30,8 +28,11 @@ function mergeTreesRecursive(tree, objectsArray) {
   let index = objectsArray.findIndex(element => {
     return element.name == tree.name;
   });
-  if (index === -1 || tree.type === 'file') {
+  if (index === -1) {
     objectsArray.push(tree);
+    objectsArray.sort((a,b) => {
+      return (a.type === b.type) ? a.name.localeCompare(b.name) : a.type === 'file' ? -1 : 1;
+    })
     return objectsArray;
   } else {
     if(tree.type === 'folder'){
@@ -39,6 +40,8 @@ function mergeTreesRecursive(tree, objectsArray) {
         tree.objects[0],
         objectsArray[index].objects
       );
+    }else{
+      logger.warn('found duplicate item: ' + JSON.stringify(tree, undefined, 2));
     }
     return objectsArray;
   }
@@ -50,7 +53,6 @@ class FileStructureService {
   }
 
   async get(contentId, { req }) {
-    console.log('GET')
     return this.app
       .service('content_filepaths')
       .find({ query: { contentId: contentId, isTemporary: false } })
@@ -59,12 +61,11 @@ class FileStructureService {
         //if(response.total === 0){ return; }
 
         let fileIds = response.data[0].fileIds;
-        console.log('fileIds', fileIds)
 
         // build trees
         let trees = [];
         fileIds.forEach(fileId => {
-          let result = getPathRec(fileId.split('/'), fileId.split('/'));
+          let result = getPathRecursive(fileId.split('/'), fileId.split('/'));
           trees.push(result);
         });
 
@@ -77,7 +78,7 @@ class FileStructureService {
         return GlobalTree;
       })
       .catch(error => {
-        console.error(error);
+        logger.error(error);
       });
   }
 }
