@@ -9,43 +9,40 @@ function addFileToDB(app, sourcePath){
 
 /*
 Paths: [
-  {from "tmp/abc", to: "abc"}
-  {from "tmp/abc", to: "abc"}
+  {from 'tmp/abc', to: 'abc'}
+  {from 'tmp/abc', to: 'abc'}
   ...
 ]
 */
 function moveFileWithinDB(app, paths, contentId = 'htrshjtzjdz5'){
-  console.log("moveFileWithinDB");
+  console.log('moveFileWithinDB');
   //1. SEARCH FOR NOT TEMP FILE STRUCT and insert paths.to
   const insertPromise = app.service('content_filepaths').find({query: {contentId: contentId, isTemporary: false}}).then((response) => {
     if(response.data.length != 1){
       throw new Error('Es existiert mehr als ein Object mit der eigenschaft isTemporary=false für die contentId:'+contentId);
     }
-    var recivedpaths = [];
-    for(path in paths){
-      recivedpaths.push(path.to)
-    }
+    const receivedpaths = paths.map(filepath => filepath.to)
     var oldPaths = response.data[0].filesIds;
-    var newPaths = recivedpaths.filter(item => {return oldPaths.indexOf(item) == -1;})
-    var newPaths = oldPaths.concat(newPaths);
+    let newPaths = receivedpaths.filter(item => {return oldPaths.indexOf(item) == -1;});
+    newPaths = oldPaths.concat(newPaths);
     return app.service('content_filepaths').patch(response.data[0]._id, {filesIds: newPaths});
-  })
+  });
   //1. SEARCH FOR TEMP FILE STRUCT TO DELETE paths.from
 
-  deletePromise = app.service('content_filepaths').find({query: {contentId: contentId, isTemporary: true, userId: '73632d636f6e74656e742d31'}}).then(response => {
-  const removeList = response.data.map((entry) => {
-    return app.service('content_filepaths').remove(entry._id);
+  const deletePromise = app.service('content_filepaths').find({query: {contentId: contentId, isTemporary: true, userId: '73632d636f6e74656e742d31'}}).then(response => {
+    const removeList = response.data.map((entry) => {
+      return app.service('content_filepaths').remove(entry._id);
+    });
+    return Promise.all(removeList);
   });
-  return Promise.all(removeList);
-});
 
- return Promise.all([insertPromise, deletePromises]);
+ return Promise.all([insertPromise, deletePromise]);
 }
 
 
 function removeFileFromDB(app,sourcePath, contentId = 'htrshjtzjdz5'){
  return app.service('content_filepaths').find({query: {contentId: contentId, filesIds: sourcePath}}).then((response) => {
-    let newFileIds = response.data[0].filesIds
+    let newFileIds = response.data[0].filesIds;
     newFileIds.splice(newFileIds.indexOf(sourcePath), 1);
     if(newFileIds.length == 0){
       return app.service('content_filepaths').remove(response.data[0]._id);
@@ -54,9 +51,9 @@ function removeFileFromDB(app,sourcePath, contentId = 'htrshjtzjdz5'){
     }
   }).catch(error => {
     if(error instanceof TypeError){
-      console.log("Type Error !")
+      console.log('Type Error !')
     }else{
-      console.log("No type error ?")
+      console.log('No type error ?')
     }
     console.log(error);
   });
