@@ -2,14 +2,14 @@ function getPathRec(filepath, fullPath) {
   if (filepath.length == 1) {
     //Es ist eine Datei
     return {
-      id: fullPath.join("/"),
-      type: "file",
+      id: fullPath.join('/'),
+      type: 'file',
       name: filepath[0]
     };
   } else {
     //Es ist ein Ordner
-    let name = path.shift();
-    let object = getPathRec(path, fullPath);
+    let name = filepath.shift();
+    let object = getPathRec(filepath, fullPath);
     fullPath.reverse();
     filepath.forEach(element => {
       fullPath.shift();
@@ -17,8 +17,8 @@ function getPathRec(filepath, fullPath) {
     fullPath.reverse();
 
     let folder = {
-      id: fullPath.join("/"),
-      type: "folder",
+      id: fullPath.join('/'),
+      type: 'folder',
       name: name,
       objects: [object]
     };
@@ -30,14 +30,16 @@ function mergeTreesRecursive(tree, objectsArray) {
   let index = objectsArray.findIndex(element => {
     return element.name == tree.name;
   });
-  if (index == -1) {
+  if (index === -1 || tree.type === 'file') {
     objectsArray.push(tree);
     return objectsArray;
   } else {
-    objectsArray[index].objects = mergeTreesRecursive(
-      tree.objects[0],
-      objectsArray[index].objects
-    );
+    if(tree.type === 'folder'){
+      objectsArray[index].objects = mergeTreesRecursive(
+        tree.objects[0],
+        objectsArray[index].objects
+      );
+    }
     return objectsArray;
   }
 }
@@ -46,25 +48,23 @@ class FileStructureService {
   constructor(app) {
     this.app = app;
   }
-  async find(){
-    console.log("FIND")
-  }
+
   async get(contentId, { req }) {
-    console.log("GET")
+    console.log('GET')
     return this.app
-      .service("content_filepaths")
+      .service('content_filepaths')
       .find({ query: { contentId: contentId, isTemporary: false } })
       .then(response => {
         // TODO
         //if(response.total === 0){ return; }
 
         let fileIds = response.data[0].fileIds;
-        console.log("fileIds", fileIds)
+        console.log('fileIds', fileIds)
 
         // build trees
         let trees = [];
         fileIds.forEach(fileId => {
-          let result = getPathRec(fileId.split("/"), fileId.split("/"));
+          let result = getPathRec(fileId.split('/'), fileId.split('/'));
           trees.push(result);
         });
 
