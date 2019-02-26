@@ -83,6 +83,7 @@ class FileStructureService {
       })
       .catch(error => {
         logger.error(error);
+        return [];
       });
   }
 }
