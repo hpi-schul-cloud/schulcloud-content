@@ -1,66 +1,84 @@
-function addFileToDB(app, sourcePath){
-  let data = {
-    filesIds: sourcePath,
-    contentId: Math.floor(Math.random()*1000000)+1, // returns a random integer from 1 to 1.000.000
-    userId: '73632d636f6e74656e742d31', // Hardcoded UserID of User: 'schulcloud-content-1'
-    isTemporary: true}
-  return app.service('content_filepaths').create(data);
+function addFilesToDB(app, sourcePaths, options) {
+  if(sourcePaths.length === 0){
+    return Promise.resolve();
+  }
+  // TODO make this hack pretty
+  let contentId;
+  if(options === undefined){
+    const userId = sourcePaths[0].split('/')[1]; // TODO
+    contentId = sourcePaths[0].split('/')[2]; // TODO
+    options = {
+      userId: userId,
+      isTemporary: true
+    };
+  }else{
+    contentId = sourcePaths[0].split('/')[0]; // TODO
+  }
+
+  return app.service('content_filepaths').find({ query: {
+      contentId: contentId,
+      ...options
+    }}).then(response => {
+      if(response.total === 0){ // CREATE
+        return app
+          .service('content_filepaths')
+          .create({
+            fileIds: sourcePaths,
+            contentId: contentId,
+            ...options
+          });
+      }else if(response.total === 1){ // PATCH
+        return app
+          .service('content_filepaths')
+          .update(response.data[0]._id, { $push: {fileIds: { $each: sourcePaths }}});
+      }else{
+        throw new Error('Found more than one matching entry');
+      }
+    });
 }
 
 /*
-Paths: [
-  {from 'tmp/abc', to: 'abc'}
-  {from 'tmp/abc', to: 'abc'}
+paths: [ 'path1/folder1', ... ]
+*/
+function removeFilesFromDB(app, paths, contentId) {
+  // TODO permission check
+  if(paths.length === 0){
+    return Promise.resolve();
+  }
+  return app.service('content_filepaths').find({ query: {
+        contentId: contentId,
+        fileIds: {
+          $in: paths
+        } }
+      })
+      .then(response => {
+        const removePromises = response.data.forEach((entry) => {
+          const newFileIds = (entry.fileIds).filter(fileId => !paths.includes(fileId));
+          return app
+            .service('content_filepaths')
+            .patch(entry._id, { fileIds: newFileIds });
+        });
+        return Promise.all(removePromises);
+      });
+}
+
+/*
+paths: [
+  {from 'tmp/abc', to: 'abc'},
   ...
 ]
 */
-function moveFileWithinDB(app, paths, contentId = 'htrshjtzjdz5'){
-  console.log('moveFileWithinDB');
-  //1. SEARCH FOR NOT TEMP FILE STRUCT and insert paths.to
-  const insertPromise = app.service('content_filepaths').find({query: {contentId: contentId, isTemporary: false}}).then((response) => {
-    if(response.data.length != 1){
-      throw new Error('Es existiert mehr als ein Object mit der eigenschaft isTemporary=false für die contentId:'+contentId);
-    }
-    const receivedpaths = paths.map(filepath => filepath.to)
-    var oldPaths = response.data[0].filesIds;
-    let newPaths = receivedpaths.filter(item => {return oldPaths.indexOf(item) == -1;});
-    newPaths = oldPaths.concat(newPaths);
-    return app.service('content_filepaths').patch(response.data[0]._id, {filesIds: newPaths});
-  });
-  //1. SEARCH FOR TEMP FILE STRUCT TO DELETE paths.from
-
-  const deletePromise = app.service('content_filepaths').find({query: {contentId: contentId, isTemporary: true, userId: '73632d636f6e74656e742d31'}}).then(response => {
-    const removeList = response.data.map((entry) => {
-      return app.service('content_filepaths').remove(entry._id);
-    });
-    return Promise.all(removeList);
-  });
-
- return Promise.all([insertPromise, deletePromise]);
-}
-
-
-function removeFileFromDB(app,sourcePath, contentId = 'htrshjtzjdz5'){
- return app.service('content_filepaths').find({query: {contentId: contentId, filesIds: sourcePath}}).then((response) => {
-    let newFileIds = response.data[0].filesIds;
-    newFileIds.splice(newFileIds.indexOf(sourcePath), 1);
-    if(newFileIds.length == 0){
-      return app.service('content_filepaths').remove(response.data[0]._id);
-    }else{
-      return app.service('content_filepaths').patch(response.data[0]._id, {filesIds: newFileIds});
-    }
-  }).catch(error => {
-    if(error instanceof TypeError){
-      console.log('Type Error !')
-    }else{
-      console.log('No type error ?')
-    }
-    console.log(error);
-  });
+function moveFilesWithinDB(app, paths, contentId, userId) {
+  if(paths.length === 0){
+    return Promise.resolve();
+  }
+  const addPromise = addFilesToDB(app, paths.map(entry => entry.to), { isTemporary: false, userId: userId });
+  const removePromise = removeFilesFromDB(app, paths.map(entry => entry.from), contentId);
+  return Promise.all([addPromise, removePromise]);
 }
 
 module.exports = {
-  addFileToDB,
-  moveFileWithinDB,
-  removeFileFromDB
+  addFilesToDB,
+  moveFilesWithinDB,
+  removeFilesFromDB
 };

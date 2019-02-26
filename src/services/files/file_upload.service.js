@@ -4,7 +4,7 @@ const {
   removeTrailingSlashes,
   getUploadStream
 } = require('./helperMethods.js');
-const { addFileToDB } = require('./fileDBHelper.js');
+const { addFilesToDB } = require('./fileDBHelper.js');
 
 class FileUploadService {
   constructor(app) {
@@ -28,7 +28,7 @@ class FileUploadService {
           // managedUpload object allows you to abort ongoing upload or track file upload progress.
           return promisePipe(part, getUploadStream(uploadPath))
             .then((/* result */) => {
-              return addFileToDB(this.app, uploadPath)
+              return addFilesToDB(this.app, [uploadPath])
                 .then(() => {
                   return resolve({status: 200, message: uploadPath});
                 })

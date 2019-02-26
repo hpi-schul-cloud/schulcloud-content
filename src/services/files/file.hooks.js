@@ -10,7 +10,7 @@ const distributionHooks = {
 const manageHooks = {
   ...defaultHooks,
   before: {
-    all: [commonHooks.disable("external")]
+    all: [commonHooks.disallow("external")]
   }
 };
 

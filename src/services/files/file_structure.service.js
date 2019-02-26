@@ -1,17 +1,17 @@
-function getPathRec(path, fullPath) {
-  if (path.length == 1) {
+function getPathRec(filepath, fullPath) {
+  if (filepath.length == 1) {
     //Es ist eine Datei
     return {
       id: fullPath.join("/"),
       type: "file",
-      name: path[0]
+      name: filepath[0]
     };
   } else {
     //Es ist ein Ordner
     let name = path.shift();
     let object = getPathRec(path, fullPath);
     fullPath.reverse();
-    path.forEach(element => {
+    filepath.forEach(element => {
       fullPath.shift();
     });
     fullPath.reverse();
@@ -46,14 +46,20 @@ class FileStructureService {
   constructor(app) {
     this.app = app;
   }
-
+  async find(){
+    console.log("FIND")
+  }
   async get(contentId, { req }) {
+    console.log("GET")
     return this.app
       .service("content_filepaths")
       .find({ query: { contentId: contentId, isTemporary: false } })
       .then(response => {
-        if(response.total === 0){ return; }
-        let fileIds = response.data[0].filesIds;
+        // TODO
+        //if(response.total === 0){ return; }
+
+        let fileIds = response.data[0].fileIds;
+        console.log("fileIds", fileIds)
 
         // build trees
         let trees = [];
