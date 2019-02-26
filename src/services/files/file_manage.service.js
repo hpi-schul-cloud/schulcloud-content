@@ -1,4 +1,4 @@
-const { removeFileFromDB, moveFileWithinDB } = require('./fileDBHelper.js');
+const { removeFilesFromDB, moveFilesWithinDB } = require('./fileDBHelper.js');
 const {
   promisePipe,
   removeTrailingSlashes,
@@ -29,49 +29,46 @@ class FileManageService {
   patch(contentId, data) {
     console.log('DATA', data);
     // TODO permission check, contentId must be owned by current user, ...
+
     const tmpPrefix = `tmp/${data.userId}/`;
-    const deleteOperations = data.delete || [];
-    const moveOperations = data.save || [];
+
+    const deleteOperations = (data.delete || []).map(sourcePath => removeTrailingSlashes(sourcePath));
+    const moveOperations = (data.save || []).map(tmpfilepath => {
+      return {
+        from: tmpfilepath,
+        to: removeTrailingSlashes(tmpfilepath).replace(tmpPrefix, '')
+      }
+    });
 
     const deletePromises = deleteOperations.map(sourcePath => {
-      const filePath = removeTrailingSlashes(sourcePath);
-      return removeFile(filePath);
+      return removeFile(sourcePath);
     });
-    const movePromises = moveOperations.map(sourcePath => {
-      const filePath = removeTrailingSlashes(sourcePath);
-      const targetPath = filePath.replace(tmpPrefix, '');
-      console.log('move', filePath, targetPath);
-      return moveFile(filePath, targetPath);
+    const movePromises = moveOperations.map(operation => {
+      return moveFile(operation.from, operation.to);
     });
-    const operations = Object.assign(deletePromises, movePromises);
-    return Promise.all(operations)
-      .then(result => {
-        console.log('MANAGED:', result);
+    return Promise.all(Object.assign(deletePromises, movePromises))
+      .then(() => {
 
-        const manageDeletePromises = deleteOperations.forEach(sourcePath =>
-          removeFileFromDB(this.app, sourcePath)
+        const manageDeletePromise = removeFilesFromDB(this.app, deleteOperations, contentId);
+
+        const manageMovePromise = moveFilesWithinDB(this.app, moveOperations, contentId, data.userId);
+
+        const manageDeleteTmpPromise = Promise.all(
+          moveOperations.map((operation) => removeFile(operation.from))
         );
-        const manageMovePromises = moveOperations.forEach(sourcePath =>
-          Promise.all(
-            moveFileWithinDB(this.app, {
-              from: sourcePath,
-              to: sourcePath.replace(tmpPrefix, '')
-            }),
-            removeFile(sourcePath)
-          )
-        );
-        const manageOperations = Object.assign(manageDeletePromises, manageMovePromises);
-        return Promise.all(manageOperations).then(result => {
+
+        return Promise.all([manageDeletePromise, manageMovePromise, manageDeleteTmpPromise]).then((dbResult) => {
+          console.log('MANAGED FILE-DB:', dbResult);
+
           return { status: 200 };
         });
       })
       .catch(error => {
-        console.log('ERROR:', error);
-
+        console.error("CATCH", error);
         if (error.statusCode) {
           return { status: error.statusCode };
         }
-        return { status: 500 };
+        return { status: 500, message: error };
       });
   }
 }
