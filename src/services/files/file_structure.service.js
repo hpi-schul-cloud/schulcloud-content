@@ -30,9 +30,13 @@ function mergeTreesRecursive(tree, objectsArray) {
   });
   if (index === -1) {
     objectsArray.push(tree);
-    objectsArray.sort((a,b) => {
-      return (a.type === b.type) ? a.name.localeCompare(b.name) : a.type === 'file' ? -1 : 1;
-    })
+    objectsArray.sort((a, b) =>
+        a.type === b.type
+          ? a.name.localeCompare(b.name)
+          : a.type === "file"
+          ? -1
+          : 1
+      );
     return objectsArray;
   } else {
     if(tree.type === 'folder'){
