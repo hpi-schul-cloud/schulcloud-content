@@ -26,8 +26,7 @@ module.exports = function() {
 
   /* ##################################################
   # PERSIST
-  # Usage: POST /files/upmanageload/
-  #   with multipart/form-data as body
+  # Usage: For internal use only, see "resource"-hooks
   # Result: fileId of stored File
   ################################################## */
 
