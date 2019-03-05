@@ -17,8 +17,10 @@ class FileDistributionService {
       const fileInfo = await fileExists(filePath);
       const contentType = mime.contentType(path.extname(fileInfo.name)); // 'application/json; charset=utf-8'
 
-      if(contentType){   res.header('Content-Type', contentType); }
-      if(fileInfo.etag){ res.header('ETag', fileInfo.etag); }
+      if(res.header){
+        if(contentType){   res.header('Content-Type', contentType); }
+        if(fileInfo.etag){ res.header('ETag', fileInfo.etag); }
+      }
 
       return promisePipe(getDownloadStream(filePath), res);
     }catch(error){

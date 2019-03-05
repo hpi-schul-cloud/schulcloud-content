@@ -58,6 +58,10 @@ class FileStructureService {
 
   async get(contentId, { query: queryParams }) {
 
+    if(!queryParams){
+      queryParams = {};
+    }
+
     const queryTemp = queryParams.temp === 'true';
     const query = queryTemp
       ? { contentId: contentId, isTemporary: true, userId: queryParams.userId}
