@@ -36,7 +36,7 @@ class FileManageService {
       return {
         from: tmpfilepath,
         to: removeTrailingSlashes(tmpfilepath).replace(tmpPrefix, '')
-      }
+      };
     });
 
     const deletePromises = deleteOperations.map(sourcePath => {
@@ -56,7 +56,7 @@ class FileManageService {
           moveOperations.map((operation) => removeFile(operation.from))
         );
 
-        return Promise.all([manageDeletePromise, manageMovePromise, manageDeleteTmpPromise]).then((dbResult) => {
+        return Promise.all([manageDeletePromise, manageMovePromise, manageDeleteTmpPromise]).then(() => {
           return { status: 200 };
         });
       })

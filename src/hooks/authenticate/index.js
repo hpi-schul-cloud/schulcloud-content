@@ -115,7 +115,7 @@ function authenticateHook(hook) {
       if(hook.data) { hook.data.userId = userId; }
       else { hook.params.query.userId = userId; } // pass userId to custom Services
       return hook;
-    }).catch(_ => {
+    }).catch(() => {
       // TODO: Show Error in Response
       throw new errors.NotAuthenticated('Could not authenticate');
     });

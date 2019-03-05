@@ -1,7 +1,7 @@
 //const authenticate = require('../../hooks/authenticate');
-const commonHooks = require("feathers-hooks-common");
-const defaultHooks = require("./file_default.hook.js");
-const authenticate = require("../../hooks/authenticate");
+const commonHooks = require('feathers-hooks-common');
+const defaultHooks = require('./file_default.hook.js');
+const authenticate = require('../../hooks/authenticate');
 
 const distributionHooks = {
   ...defaultHooks
@@ -10,7 +10,7 @@ const distributionHooks = {
 const manageHooks = {
   ...defaultHooks,
   before: {
-    all: [commonHooks.disallow("external")]
+    all: [commonHooks.disallow('external')]
   }
 };
 

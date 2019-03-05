@@ -23,6 +23,7 @@
   "scripts": {
     "test": "npm run eslint && npm run mocha",
     "eslint": "eslint src/. test/. --config .eslintrc.json",
+    "eslint:fix": "eslint src/. test/. --config .eslintrc.json --fix",
     "start": "node src/",
     "debug": "nodemon --inspect src/",
     "mocha": "mocha test/ --recursive"
@@ -54,6 +55,7 @@
     "winston": "^3.0.0"
   },
   "devDependencies": {
+    "babel-eslint": "^8.2.6",
     "eslint": "^5.2.0",
     "mocha": "^5.2.0",
     "request": "^2.87.0",

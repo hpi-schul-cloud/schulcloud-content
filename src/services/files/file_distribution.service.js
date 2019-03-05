@@ -1,7 +1,6 @@
-const { client } = require("./storage-client.js");
 const mime = require('mime-types');
-const path = require("path");
-const { promisePipe, getDownloadStream, fileExists } = require("./helperMethods.js");
+const path = require('path');
+const { promisePipe, getDownloadStream, fileExists } = require('./helperMethods.js');
 
 
 
@@ -12,18 +11,18 @@ class FileDistributionService {
 
   async find({ req }) {
     const res = req.res;
-    const filePath = req.params["0"].replace(/^\//, "");
+    const filePath = req.params['0'].replace(/^\//, '');
     // check if file exists to prevent crash during download
     try{
       const fileInfo = await fileExists(filePath);
-      const contentType = mime.contentType(path.extname(fileInfo.name)) // 'application/json; charset=utf-8'
+      const contentType = mime.contentType(path.extname(fileInfo.name)); // 'application/json; charset=utf-8'
 
-      if(contentType){   res.header("Content-Type", contentType); }
-      if(fileInfo.etag){ res.header("ETag", fileInfo.etag); }
+      if(contentType){   res.header('Content-Type', contentType); }
+      if(fileInfo.etag){ res.header('ETag', fileInfo.etag); }
 
       return promisePipe(getDownloadStream(filePath), res);
     }catch(error){
-      return error
+      return error;
     }
   }
 }

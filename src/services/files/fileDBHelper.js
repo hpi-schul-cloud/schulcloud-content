@@ -28,12 +28,12 @@ function addFilesToDB(app, sourcePaths, options) {
             ...options
           });
       }else if(response.total === 1){ // PATCH
-        const newFileIds = response.data[0].fileIds
+        const newFileIds = response.data[0].fileIds;
         sourcePaths.forEach((sourcePath) => {
           if(!newFileIds.includes(sourcePath)){
             newFileIds.push(sourcePath);
           }
-        })
+        });
         return app
           .service('content_filepaths')
           .patch(response.data[0]._id, { fileIds: newFileIds });

@@ -5,6 +5,7 @@
     "mocha": true
   },
   "extends": "eslint:recommended",
+  "parser": "babel-eslint",
   "rules": {
     "linebreak-style": [
       "error",

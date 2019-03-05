@@ -9,8 +9,6 @@ module.exports = function (hook) {
       deserializeObject = hook.data.data.attributes;
     }
     hook.data = deserializeObject;
-  } else if(hook.type === 'after') {
-
   }
 
 };
