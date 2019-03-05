@@ -33,7 +33,7 @@ function mergeTreesRecursive(tree, objectsArray) {
     objectsArray.sort((a, b) =>
         a.type === b.type
           ? a.name.localeCompare(b.name)
-          : a.type === "file"
+          : a.type === 'file'
           ? -1
           : 1
       );
@@ -58,7 +58,7 @@ class FileStructureService {
 
   async get(contentId, { query: queryParams }) {
 
-    const queryTemp = queryParams.temp === "true";
+    const queryTemp = queryParams.temp === 'true';
     const query = queryTemp
       ? { contentId: contentId, isTemporary: true, userId: queryParams.userId}
       : { contentId: contentId, isTemporary: false };
@@ -72,7 +72,7 @@ class FileStructureService {
         let fileIds = response.data[0].fileIds;
 
         if(queryTemp){
-          const tmpPrefix = `tmp/${queryParams.userId}/`
+          const tmpPrefix = `tmp/${queryParams.userId}/`;
           fileIds = fileIds.map(id => id.substring(tmpPrefix.length));
         }
 

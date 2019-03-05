@@ -23,7 +23,7 @@ const restrictToPublicIfUnauthorized = (hook) => {
     return hook;
   }
   return hook;
-}
+};
 
 const manageFiles = (hook) => {
   hook = authenticate(hook);
@@ -31,7 +31,7 @@ const manageFiles = (hook) => {
   const files = hook.data.files;
   const fileManagementService = hook.app.service('/files/manage');
 	return fileManagementService.patch(hook.id, { ...files, userId: hook.data.userId }, hook).then(() => hook);
-}
+};
 
 module.exports = {
   before: {

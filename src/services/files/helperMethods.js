@@ -39,7 +39,6 @@ function getDownloadStream(filePath) {
 }
 
 function fileExists(filePath) {
-  filePath = filePath;
   return new Promise((resolve, reject) => {
     return client.getFile(container, filePath, (error, file) => {
       if (error !== null) { return reject(error); }
