@@ -56,15 +56,25 @@ class FileStructureService {
     this.app = app;
   }
 
-  async get(contentId, { req }) {
+  async get(contentId, { query: queryParams }) {
+
+    const queryTemp = queryParams.temp === "true";
+    const query = queryTemp
+      ? { contentId: contentId, isTemporary: true, userId: queryParams.userId}
+      : { contentId: contentId, isTemporary: false };
+
     return this.app
       .service('content_filepaths')
-      .find({ query: { contentId: contentId, isTemporary: false } })
+      .find({ query })
       .then(response => {
         // TODO
-        //if(response.total === 0){ return; }
 
         let fileIds = response.data[0].fileIds;
+
+        if(queryTemp){
+          const tmpPrefix = `tmp/${queryParams.userId}/`
+          fileIds = fileIds.map(id => id.substring(tmpPrefix.length));
+        }
 
         // build trees
         let trees = [];
