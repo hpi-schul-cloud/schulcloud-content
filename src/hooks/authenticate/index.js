@@ -71,11 +71,17 @@ function authenticateHook(hook) {
   if (!authHeader) { throw new errors.NotAuthenticated('Could not authenticate! Missing auth header'); }
 
   if(!hook.data){ hook.data = {}; }
+  
+  // prevent userId injection
+  hook.params.query.userId = undefined;
+
   // JWT AUTH
   // TODO: Validate JWT Token against Server
   // TODO: Error Handling
   if(authHeader.startsWith('Bearer ')) {
     hook.data.userId = parseJwtToken(authHeader);
+    // pass userId to custom Services
+    hook.params.query.userId = hook.data.userId;
     return hook;
   }
 
@@ -92,7 +98,8 @@ function authenticateHook(hook) {
     if(localUser) {
       // check hook.data is available, otherwise store userId as query param
       hook.data.userId = localUser.userId;
-      hook.params.query.userId = localUser.userId; // TODO WHY???
+      // pass userId to custom Services
+      hook.params.query.userId = hook.data.userId;
       return hook;
     }
 
@@ -106,7 +113,7 @@ function authenticateHook(hook) {
       let userId = parseJwtToken(response.accessToken);
       // check hook.data is available, otherwise store userId as query param
       if(hook.data) { hook.data.userId = userId; }
-      else { hook.params.query.userId = userId; }
+      else { hook.params.query.userId = userId; } // pass userId to custom Services
       return hook;
     }).catch(_ => {
       // TODO: Show Error in Response

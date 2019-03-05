@@ -15,7 +15,10 @@ const manageHooks = {
 };
 
 const structureHooks = {
-  ...defaultHooks
+  ...defaultHooks,
+  before: {
+    get: [authenticate]
+  }
 };
 
 const uploadHooks = {
