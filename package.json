@@ -26,7 +26,7 @@
     "eslint:fix": "eslint src/. test/. --config .eslintrc.json --fix",
     "start": "node src/",
     "debug": "nodemon --inspect src/",
-    "mocha": "mocha test/ --recursive"
+    "mocha": "mocha test/ --recursive --exit"
   },
   "dependencies": {
     "@feathersjs/configuration": "^1.0.2",
@@ -59,6 +59,7 @@
     "eslint": "^5.2.0",
     "mocha": "^5.2.0",
     "request": "^2.87.0",
-    "request-promise": "^4.2.2"
+    "request-promise": "^4.2.2",
+    "stream-mock": "^1.2.0"
   }
 }

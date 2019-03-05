@@ -65,7 +65,7 @@ function parseJwtToken(token) {
  */
 function authenticateHook(hook) {
 
-  let authHeader = hook.params.req.headers['authorization'];
+  let authHeader = (((hook.params||{}).req||{}).headers||{})['authorization'];
 
   // gracefully exits instead of checking undefined variable
   if (!authHeader) { throw new errors.NotAuthenticated('Could not authenticate! Missing auth header'); }

@@ -1,10 +1,14 @@
 const { client } = require('./storage-client.js');
+const { ReadableMock, WritableMock } = require('stream-mock');
 
 function promisePipe(source, target) {
   return new Promise((resolve, reject) => {
     source
       .pipe(target)
       .on('success', result => {
+        return resolve(result);
+      })
+      .on('finish', result => {
         return resolve(result);
       })
       .on('error', error => {
@@ -21,6 +25,11 @@ function removeTrailingSlashes(filePath) {
 const container = process.env['STORAGE_CONTAINER'] || 'content-hosting';
 
 function getUploadStream(filePath) {
+
+  if(process.env.NODE_ENV === 'test'){
+    return new WritableMock();
+  }
+
   return client.upload({
     queueSize: 1, // == default value
     partSize: 5 * 1024 * 1024, // == default value of 5MB
@@ -30,6 +39,11 @@ function getUploadStream(filePath) {
 }
 
 function getDownloadStream(filePath) {
+
+  if(process.env.NODE_ENV === 'test'){
+    return new ReadableMock('{"test": true}', {objectMode: true});
+  }
+
   return client.download({
     queueSize: 1, // == default value
     partSize: 5 * 1024 * 1024, // == default value of 5MB
@@ -39,6 +53,11 @@ function getDownloadStream(filePath) {
 }
 
 function fileExists(filePath) {
+  if(process.env.NODE_ENV === 'test' && filePath === 'test.txt'){
+    return Promise.resolve({
+      name: 'test.txt',
+    });
+  }
   return new Promise((resolve, reject) => {
     return client.getFile(container, filePath, (error, file) => {
       if (error !== null) { return reject(error); }
@@ -48,6 +67,9 @@ function fileExists(filePath) {
 }
 
 function removeFile(filePath) {
+  if(process.env.NODE_ENV === 'test'){
+    return Promise.resolve();
+  }
   return new Promise((resolve, reject) => {
     return client.removeFile(container, filePath, (error) => {
       if (error !== null) { return reject(error); }
