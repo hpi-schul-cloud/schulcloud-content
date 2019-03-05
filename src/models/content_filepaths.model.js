@@ -22,6 +22,8 @@ module.exports = function (app) {
       isTemporary: {type: Boolean, required: true},
       createdAt: { type: Date, default: Date.now },
       updatedAt: { type: Date, default: Date.now },
+    },{
+      timestamps: true
     });
 
     return mongooseClient.model('content_filepaths', content_filepaths);
