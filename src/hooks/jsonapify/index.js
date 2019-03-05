@@ -30,7 +30,7 @@ function checkIfRequestIsJsonApi(hook) {
   // TODO: Implement me!
 
   // Check for JSON-API Header
-  if(hook.params.req && hook.params.req.headers['content-type']
+  if((hook.params || {}).req && hook.params.req.headers['content-type']
     !== 'application/vnd.api+json') {
     return false;
   }
