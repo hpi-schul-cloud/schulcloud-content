@@ -13,6 +13,9 @@ class FileUploadService {
 
   create(data, { req }) {
     // TODO permission check, content-id must be owned by current user, ...
+    if(!req.query.path){
+      throw new Error('param \'path\' is missing');
+    }
     return new Promise((resolve, reject) => {
       const uploadPath = `tmp/${data.userId}/${removeTrailingSlashes(req.query.path)}`;
       const form = new multiparty.Form();

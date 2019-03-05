@@ -10,7 +10,7 @@ describe('\'files/get*\' service', () => {
     assert.ok(service, 'Registered the service');
   });
 
-  it('returns correct filetree', () => {
+  it('returns file', () => {
     const service = app.service('files/get*');
     const expectedResult = '{"test": true}';
 
