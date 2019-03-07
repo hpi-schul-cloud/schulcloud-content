@@ -1,6 +1,6 @@
 const mime = require('mime-types');
 const path = require('path');
-const { promisePipe, getDownloadStream, fileExists } = require('./helperMethods.js');
+const { promisePipe, getDownloadStream, fileExists } = require('./storageHelper.js');
 
 
 

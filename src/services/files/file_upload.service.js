@@ -3,7 +3,7 @@ const {
   promisePipe,
   removeTrailingSlashes,
   getUploadStream
-} = require('./helperMethods.js');
+} = require('./storageHelper.js');
 const { addFilesToDB } = require('./fileDBHelper.js');
 
 class FileUploadService {
