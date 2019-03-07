@@ -15,26 +15,24 @@ class FileManageService {
     const deleteOperationIds = (data.delete || []); // id array
     const moveOperationIds = (data.save || []); // id array
 
-    const deletePromises = deleteOperationIds.map(deleteOperationId => {
-      return removeFile(deleteOperationId);
-    });
-    return Promise.all(deletePromises)
-      .then(() => {
+    try{
+      const deletePromises = deleteOperationIds.map(deleteOperationId => {
+        return removeFile(deleteOperationId);
+      });    
 
-        const manageDeletePromise = removeFilesFromDB(this.app, deleteOperationIds);
+      const manageDeletePromise = removeFilesFromDB(this.app, deleteOperationIds);
 
-        const manageMovePromise = replaceFilesInDB(this.app, moveOperationIds);
+      const manageMovePromise = replaceFilesInDB(this.app, moveOperationIds);
 
-        return Promise.all([manageDeletePromise, manageMovePromise]).then(() => {
-          return { status: 200 };
-        });
-      })
-      .catch(error => {
+      return Promise.all([manageDeletePromise, manageMovePromise, deletePromises]).then(() => {
+        return { status: 200 };
+      });
+    }catch(error){
         if (error.statusCode) {
           return { status: error.statusCode };
         }
         return { status: 500, message: error };
-      });
+      }
   }
 }
 
