@@ -21,11 +21,11 @@ class FileDistributionService {
       .then(async fileObjects => {
         // TODO what happens if we got more than 1 result?
         if(fileObjects.data.length === 0){
-          throw 'Can\'t find requested file';
+          throw new Error('Can\'t find requested file');
         }
-        const fileId = fileObjects[0]._id;
+        const fileId = fileObjects.data[0]._id.toString();
 
-        try{
+        try {
           // check if file exists to prevent crash during download
           const fileInfo = await fileExists(fileId);
 
@@ -36,13 +36,9 @@ class FileDistributionService {
           }
 
           return promisePipe(getDownloadStream(fileId), res);
-        }catch(error){
-          return error;
+        } catch(error) {
+          throw error;
         }
-
-      })
-      .catch(error => {
-        return error;
       });
   }
 }
