@@ -51,8 +51,6 @@ describe('`files/structure` service', () => {
 
   it('returns correct filetree', () => {
     const service = app.service('files/structure');
-    console.log('Path',`${mockContentId}/index.html`);
-    console.log('resolved',mockFiles[`${mockContentId}/index.html`]);
     const expectedResult = [
       {
         id: `${mockContentId}`,

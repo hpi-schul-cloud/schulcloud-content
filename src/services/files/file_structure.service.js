@@ -77,7 +77,7 @@ class FileStructureService {
         // build trees
         let trees = [];
         Object.keys(pathDictionary).forEach(key => {
-          let result = getPathRecursive(pathDictionary[key].split('/'), pathDictionary[key].split('/'),key);
+          let result = getPathRecursive(pathDictionary[key].split('/'), pathDictionary[key].split('/'), key);
           trees.push(result);
         });
 
