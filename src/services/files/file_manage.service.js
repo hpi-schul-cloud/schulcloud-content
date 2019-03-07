@@ -1,25 +1,8 @@
-const { removeFilesFromDB, moveFilesWithinDB } = require('./fileDBHelper.js');
+const { removeFilesFromDB, replaceFilesInDB } = require('./fileDBHelper.js');
 const {
-  promisePipe,
-  removeTrailingSlashes,
-  fileExists,
-  getDownloadStream,
-  getUploadStream,
   removeFile
 } = require('./storageHelper.js');
 
-async function moveFile(from, to) {
-  try {
-    await fileExists(from);
-    const downloadStream = getDownloadStream(from);
-    const uploadStream = getUploadStream(to);
-    return promisePipe(downloadStream, uploadStream).then(
-      () => `moved from '${from}' to '${to}'`
-    );
-  } catch (error) {
-    return error;
-  }
-}
 
 class FileManageService {
   constructor(app) {
@@ -29,34 +12,20 @@ class FileManageService {
   patch(contentId, data) {
     // TODO permission check, contentId must be owned by current user, ...
 
-    const tmpPrefix = `tmp/${data.userId}/`;
+    const deleteOperationIds = (data.delete || []); // id array
+    const moveOperationIds = (data.save || []); // id array
 
-    const deleteOperations = (data.delete || []).map(sourcePath => removeTrailingSlashes(sourcePath));
-    const moveOperations = (data.save || []).map(tmpfilepath => {
-      return {
-        from: tmpfilepath,
-        to: removeTrailingSlashes(tmpfilepath).replace(tmpPrefix, '')
-      };
+    const deletePromises = deleteOperationIds.map(deleteOperationId => {
+      return removeFile(deleteOperationId);
     });
-
-    const deletePromises = deleteOperations.map(sourcePath => {
-      return removeFile(sourcePath);
-    });
-    const movePromises = moveOperations.map(operation => {
-      return moveFile(operation.from, operation.to);
-    });
-    return Promise.all(Object.assign(deletePromises, movePromises))
+    return Promise.all(deletePromises)
       .then(() => {
 
-        const manageDeletePromise = removeFilesFromDB(this.app, deleteOperations, contentId);
+        const manageDeletePromise = removeFilesFromDB(this.app, deleteOperationIds);
 
-        const manageMovePromise = moveFilesWithinDB(this.app, moveOperations, contentId, data.userId);
+        const manageMovePromise = replaceFilesInDB(this.app, moveOperationIds);
 
-        const manageDeleteTmpPromise = Promise.all(
-          moveOperations.map((operation) => removeFile(operation.from))
-        );
-
-        return Promise.all([manageDeletePromise, manageMovePromise, manageDeleteTmpPromise]).then(() => {
+        return Promise.all([manageDeletePromise, manageMovePromise]).then(() => {
           return { status: 200 };
         });
       })
