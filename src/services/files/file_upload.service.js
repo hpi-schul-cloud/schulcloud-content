@@ -40,9 +40,6 @@ class FileUploadService {
               return addFilesToDB(this.app, [uploadPath], req.query.contentId, req.query.userId)
                 .then((fileIdDictionary) => {
                   return resolve({status: 200, message: fileIdDictionary[uploadPath]});
-                })
-                .catch(error => {
-                  throw error;
                 });
             })
             .catch(error => {

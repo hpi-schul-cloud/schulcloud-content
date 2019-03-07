@@ -5,14 +5,11 @@ function promisePipe(source, target) {
   return new Promise((resolve, reject) => {
     source
       .pipe(target)
-      .on('success', result => {
-        return resolve(result);
-      })
-      .on('finish', result => {
-        return resolve(result);
-      })
       .on('error', error => {
         return reject(error);
+      })
+      .on('success', result => {
+        return resolve(result);
       });
   });
 }
@@ -27,7 +24,9 @@ const container = process.env['STORAGE_CONTAINER'] || 'content-hosting';
 function getUploadStream(fileId) {
 
   if(process.env.NODE_ENV === 'test'){
-    return new WritableMock();
+    return (new WritableMock()).on('finish', function() {
+      this.emit('success');
+    });
   }
 
   return client.upload({
