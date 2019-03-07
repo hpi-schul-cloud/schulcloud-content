@@ -38,7 +38,9 @@ describe('\'files/upload\' service', () => {
         if (err || resp.statusCode < 200 || resp.statusCode >= 300) {
           return reject('Server returned error' + JSON.stringify(body, null, 2));
         } else {
-          assert.ok(JSON.parse(body).message.includes(mockFilename));
+          body = JSON.parse(body);
+          assert.equal(body.status, 200);
+          assert.ok(body.message.includes(mockFilename));
           return resolve();
         }
       });

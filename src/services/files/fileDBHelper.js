@@ -36,7 +36,8 @@ function addFilesToDB(app, sourcePaths, options) {
         });
         return app
           .service('content_filepaths')
-          .patch(response.data[0]._id, { fileIds: newFileIds });
+          .patch(response.data[0]._id, { fileIds: newFileIds })
+          .catch(console.error);
       }else{
         throw new Error('Found more than one matching entry');
       }
@@ -58,7 +59,7 @@ function removeFilesFromDB(app, paths, contentId) {
         } }
       })
       .then(response => {
-        const removePromises = response.data.forEach((entry) => {
+        const removePromises = response.data.map((entry) => {
           const newFileIds = (entry.fileIds).filter(fileId => !paths.includes(fileId));
           return app
             .service('content_filepaths')
