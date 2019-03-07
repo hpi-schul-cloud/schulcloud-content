@@ -1,15 +1,15 @@
 const logger = require('winston');
 
-function getPathRecursive(filepathArray, fullPath) {
+function getPathRecursive(filepathArray, fullPath, id) {
   if (filepathArray.length == 1) {
     return { // file
-      id: fullPath.join('/'),
+      id: id,
       type: 'file',
       name: filepathArray[0]
     };
   } else { // folder
     const name = filepathArray.shift();
-    const object = getPathRecursive(filepathArray, fullPath);
+    const object = getPathRecursive(filepathArray, fullPath, id);
     filepathArray.forEach(() => {
       fullPath.pop();
     });
@@ -61,29 +61,23 @@ class FileStructureService {
     if(!queryParams){
       queryParams = {};
     }
-
     const queryTemp = queryParams.temp === 'true';
     const query = queryTemp
-      ? { contentId: contentId, isTemporary: true, userId: queryParams.userId}
-      : { contentId: contentId, isTemporary: false };
-
+      ? { contentId: contentId, isTemp: true, userId: queryParams.userId}
+      : { contentId: contentId, isTemp: false };
     return this.app
       .service('content_filepaths')
       .find({ query })
       .then(response => {
         // TODO
-
-        let fileIds = response.data[0].fileIds;
-
-        if(queryTemp){
-          const tmpPrefix = `tmp/${queryParams.userId}/`;
-          fileIds = fileIds.map(id => id.substring(tmpPrefix.length));
-        }
-
+        const pathDictionary = {};
+        response.data.forEach(data => {
+          pathDictionary[data._id] = data.path;
+        });
         // build trees
         let trees = [];
-        fileIds.forEach(fileId => {
-          let result = getPathRecursive(fileId.split('/'), fileId.split('/'));
+        Object.keys(pathDictionary).forEach(key => {
+          let result = getPathRecursive(pathDictionary[key].split('/'), pathDictionary[key].split('/'),key);
           trees.push(result);
         });
 
