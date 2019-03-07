@@ -6,7 +6,7 @@ const {
   getDownloadStream,
   getUploadStream,
   removeFile
-} = require('./helperMethods.js');
+} = require('./storageHelper.js');
 
 async function moveFile(from, to) {
   try {
