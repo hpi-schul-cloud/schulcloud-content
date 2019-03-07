@@ -16,6 +16,12 @@ class FileUploadService {
     if(!req.query.path){
       throw new Error('param \'path\' is missing');
     }
+    if(!req.query.contentId){
+      throw new Error('param \'contentId\' is missing');
+    }
+    if(!req.query.userId){
+      throw new Error('Unauthorized request');
+    }
     return new Promise((resolve, reject) => {
       const uploadPath = removeTrailingSlashes(req.query.path);
       const form = new multiparty.Form();
@@ -31,7 +37,7 @@ class FileUploadService {
           // managedUpload object allows you to abort ongoing upload or track file upload progress.
           return promisePipe(part, getUploadStream(uploadPath))
             .then((/* result */) => {
-              return addFilesToDB(this.app, [uploadPath])
+              return addFilesToDB(this.app, [uploadPath], req.query.contentId, req.query.userId)
                 .then((fileIdDictionary) => {
                   return resolve({status: 200, message: fileIdDictionary[uploadPath]});
                 })
