@@ -17,7 +17,7 @@ function addFilesToDB(app, filePaths, contentId, userId) {
 
 function removeFilesFromDB(app, fileIds) {
   // TODO permission check
-  const deletePromises = fileIds.map(fileId => app.service('content_filepaths').delete(fileId));
+  const deletePromises = fileIds.map(fileId => app.service('content_filepaths').remove(fileId));
   return Promise.all(deletePromises);
 }
 

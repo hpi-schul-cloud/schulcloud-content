@@ -17,14 +17,14 @@ function promisePipe(source, target) {
   });
 }
 
-function removeTrailingSlashes(filePath) {
+function removeTrailingSlashes(fileId) {
   // remove trailing slashes and dots
-  return filePath.replace(/^[/.]*/, '');
+  return fileId.replace(/^[/.]*/, '');
 }
 
 const container = process.env['STORAGE_CONTAINER'] || 'content-hosting';
 
-function getUploadStream(filePath) {
+function getUploadStream(fileId) {
 
   if(process.env.NODE_ENV === 'test'){
     return new WritableMock();
@@ -34,11 +34,11 @@ function getUploadStream(filePath) {
     queueSize: 1, // == default value
     partSize: 5 * 1024 * 1024, // == default value of 5MB
     container: container,
-    remote: filePath
+    remote: fileId
   });
 }
 
-function getDownloadStream(filePath) {
+function getDownloadStream(fileId) {
 
   if(process.env.NODE_ENV === 'test'){
     return new ReadableMock('{"test": true}', {objectMode: true});
@@ -48,30 +48,30 @@ function getDownloadStream(filePath) {
     queueSize: 1, // == default value
     partSize: 5 * 1024 * 1024, // == default value of 5MB
     container: container,
-    remote: filePath
+    remote: fileId
   });
 }
 
-function fileExists(filePath) {
-  if(process.env.NODE_ENV === 'test' && filePath === 'test.txt'){
+function fileExists(fileId) {
+  if(process.env.NODE_ENV === 'test' && fileId === 'test.txt'){
     return Promise.resolve({
       name: 'test.txt',
     });
   }
   return new Promise((resolve, reject) => {
-    return client.getFile(container, filePath, (error, file) => {
+    return client.getFile(container, fileId, (error, file) => {
       if (error !== null) { return reject(error); }
       return resolve(file);
     });
   });
 }
 
-function removeFile(filePath) {
+function removeFile(fileId) {
   if(process.env.NODE_ENV === 'test'){
     return Promise.resolve();
   }
   return new Promise((resolve, reject) => {
-    return client.removeFile(container, filePath, (error) => {
+    return client.removeFile(container, fileId, (error) => {
       if (error !== null) { return reject(error); }
       return resolve();
     });
