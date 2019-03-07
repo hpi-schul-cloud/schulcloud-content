@@ -53,9 +53,9 @@ function getDownloadStream(fileId) {
 }
 
 function fileExists(fileId) {
-  if(process.env.NODE_ENV === 'test' && fileId === '5c7510725822a18234e48519'){
+  if(process.env.NODE_ENV === 'test'){
     return Promise.resolve({
-      name: '5c7510725822a18234e48519',
+      name: fileId,
     });
   }
   return new Promise((resolve, reject) => {

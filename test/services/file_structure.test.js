@@ -2,25 +2,36 @@ const assert = require('assert');
 const app = require('../../src/app');
 const contentFilepaths = app.service('content_filepaths');
 
+const { mockUserId, mockContentId } = require('./mockData');
+
+const mockFiles = {};
+
 const insertMock = () => {
-  const mockData = {
-    fileIds: [
-      'content_mock_id/index.html',
-      'content_mock_id/menue/clip_2_1.html',
-      'content_mock_id/menue/clip_3_1.html',
-      'content_mock_id/menue/clip_5_1.html',
-      'content_mock_id/menue/clip_6_1.html'
-    ],
-    contentId: 'content_mock_id',
-    isTemporary: false,
-    userId: 'user_mock_id'
+  const paths = [
+    `${mockContentId}/index.html`,
+    `${mockContentId}/menue/clip_2_1.html`,
+    `${mockContentId}/menue/clip_3_1.html`,
+    `${mockContentId}/menue/clip_5_1.html`,
+    `${mockContentId}/menue/clip_6_1.html`
+  ];
+  const persistentMockData = {
+    contentId: mockContentId,
+    isTemp: false,
+    createdBy: mockUserId
   };
-  return contentFilepaths.create(mockData);
+  const mockCreatePromises = paths.map(filePath => {
+    return contentFilepaths.create({path: filePath, ...persistentMockData})
+      .then(fileObj => {
+      mockFiles[fileObj.path] = fileObj._id;
+    });
+  });
+
+  return Promise.all(mockCreatePromises);
 };
 
 const removeMock = () => {
   contentFilepaths
-    .find({ query: { contentId: 'content_mock_id' } })
+    .find({ query: { contentId: `${mockContentId}` } })
     .then(res => {
       return Promise.all(
         res.data.map(mockData => contentFilepaths.remove(mockData._id))
@@ -28,7 +39,7 @@ const removeMock = () => {
     });
 };
 
-describe('\'files/structure\' service', () => {
+describe('`files/structure` service', () => {
   before(insertMock);
   after(removeMock);
 
@@ -40,39 +51,41 @@ describe('\'files/structure\' service', () => {
 
   it('returns correct filetree', () => {
     const service = app.service('files/structure');
+    console.log('Path',`${mockContentId}/index.html`);
+    console.log('resolved',mockFiles[`${mockContentId}/index.html`]);
     const expectedResult = [
       {
-        id: 'content_mock_id',
+        id: `${mockContentId}`,
         type: 'folder',
-        name: 'content_mock_id',
+        name: `${mockContentId}`,
         objects: [
           {
-            id: 'content_mock_id/index.html',
+            id: mockFiles[`${mockContentId}/index.html`],
             type: 'file',
             name: 'index.html'
           },
           {
-            id: 'content_mock_id/menue',
+            id: `${mockContentId}/menue`,
             type: 'folder',
             name: 'menue',
             objects: [
               {
-                id: 'content_mock_id/menue/clip_2_1.html',
+                id: mockFiles[`${mockContentId}/menue/clip_2_1.html`],
                 type: 'file',
                 name: 'clip_2_1.html'
               },
               {
-                id: 'content_mock_id/menue/clip_3_1.html',
+                id: mockFiles[`${mockContentId}/menue/clip_3_1.html`],
                 type: 'file',
                 name: 'clip_3_1.html'
               },
               {
-                id: 'content_mock_id/menue/clip_5_1.html',
+                id: mockFiles[`${mockContentId}/menue/clip_5_1.html`],
                 type: 'file',
                 name: 'clip_5_1.html'
               },
               {
-                id: 'content_mock_id/menue/clip_6_1.html',
+                id: mockFiles[`${mockContentId}/menue/clip_6_1.html`],
                 type: 'file',
                 name: 'clip_6_1.html'
               }
@@ -81,7 +94,7 @@ describe('\'files/structure\' service', () => {
         ]
       }
     ];
-    return service.get('content_mock_id').then(res => {
+    return service.get(`${mockContentId}`).then(res => {
       assert.equal(JSON.stringify(res), JSON.stringify(expectedResult));
     });
   });

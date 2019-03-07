@@ -3,19 +3,24 @@ const app = require('../../src/app');
 const { WritableMock } = require('stream-mock');
 const contentFilepaths = app.service('content_filepaths');
 
+const { mockUserId, mockContentId } = require('./mockData');
+
+let mockFileId;
+
 const insertMock = () => {
   const mockData = {
-    path: 'test.txt',
-    contentId: 'content_mock_id',
+    path: `${mockContentId}/test.txt`,
+    contentId: mockContentId,
     isTemp: false,
-    createdBy: 'user_mock_id'
+    createdBy: mockUserId
   };
-  // _id must match [a-f0-9]{25} to be accepted by feathers
-  return contentFilepaths.update('5c7510725822a18234e48519', mockData, { mongoose: { upsert: true }});
+  return contentFilepaths.create(mockData).then(fileObj => {
+    mockFileId = fileObj._id;
+  });
 };
 
 const removeMock = () => {
-  return contentFilepaths.remove('5c7510725822a18234e48519');
+  return contentFilepaths.remove(mockFileId);
 };
 
 describe('\'files/get*\' service', () => {
@@ -41,7 +46,7 @@ describe('\'files/get*\' service', () => {
         resolve();
       });
       resStream.on('error', reject);
-      service.find({req: {params: {'0':'test.txt'}, res: resStream}}).catch(reject);
+      service.find({req: {params: {'0':`${mockContentId}/test.txt`}, res: resStream}}).catch(reject);
     });
   });
 });
