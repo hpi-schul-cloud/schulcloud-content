@@ -1,91 +1,48 @@
-function addFilesToDB(app, sourcePaths, options) {
-  if(sourcePaths.length === 0){
-    return Promise.resolve();
-  }
-  // TODO make this hack pretty
-  let contentId;
-  if(options === undefined){
-    const userId = sourcePaths[0].split('/')[1]; // TODO
-    contentId = sourcePaths[0].split('/')[2]; // TODO
-    options = {
-      userId: userId,
-      isTemporary: true
-    };
-  }else{
-    contentId = sourcePaths[0].split('/')[0]; // TODO
-  }
-
-  return app.service('content_filepaths').find({ query: {
+function addFilesToDB(app, filePaths, contentId, userId) {
+  const addPromises = filePaths.map((filePath) => app.service('content_filepaths').create({
+      path: filePath,
       contentId: contentId,
-      ...options
-    }}).then(response => {
-      if(response.total === 0){ // CREATE
-        return app
-          .service('content_filepaths')
-          .create({
-            fileIds: sourcePaths,
-            contentId: contentId,
-            ...options
-          });
-      }else if(response.total === 1){ // PATCH
-        const newFileIds = response.data[0].fileIds;
-        sourcePaths.forEach((sourcePath) => {
-          if(!newFileIds.includes(sourcePath)){
-            newFileIds.push(sourcePath);
-          }
-        });
-        return app
-          .service('content_filepaths')
-          .patch(response.data[0]._id, { fileIds: newFileIds })
-          .catch(console.error);
-      }else{
-        throw new Error('Found more than one matching entry');
-      }
+      createdBy: userId,
+      isTemp: true,
+    })
+  );
+  return Promise.all(addPromises).then(newFileObjects => {
+    const pathDictionary = {};
+    newFileObjects.forEach(newFileObject => {
+      pathDictionary[newFileObject.path] = newFileObject._id;
     });
+    return pathDictionary;
+  });
 }
 
-/*
-paths: [ 'path1/folder1', ... ]
-*/
-function removeFilesFromDB(app, paths, contentId) {
+function removeFilesFromDB(app, fileIds) {
   // TODO permission check
-  if(paths.length === 0){
-    return Promise.resolve();
-  }
-  return app.service('content_filepaths').find({ query: {
-        contentId: contentId,
-        fileIds: {
-          $in: paths
-        } }
-      })
-      .then(response => {
-        const removePromises = response.data.map((entry) => {
-          const newFileIds = (entry.fileIds).filter(fileId => !paths.includes(fileId));
-          return app
-            .service('content_filepaths')
-            .patch(entry._id, { fileIds: newFileIds });
-        });
-        return Promise.all(removePromises);
-      });
+  const deletePromises = fileIds.map(fileId => app.service('content_filepaths').delete(fileId));
+  return Promise.all(deletePromises);
 }
 
-/*
-paths: [
-  {from 'tmp/abc', to: 'abc'},
-  ...
-]
-*/
-function moveFilesWithinDB(app, paths, contentId, userId) {
-  if(paths.length === 0){
-    return Promise.resolve();
-  }
-  const addPromise = addFilesToDB(app, paths.map(entry => entry.to), { isTemporary: false, userId: userId });
-  const removePromise = removeFilesFromDB(app, paths.map(entry => entry.from), contentId);
-  return Promise.all([addPromise, removePromise]);
+function replaceFilesInDB(app, fileIds) {
+  fileIds.map(fileId => {
+    const deleteExistingPromise = app.service('content_filepaths').get(fileId)
+      .then(fileObject => {
+        const filePath = fileObject.path;
+        return app.service('content_filepaths').find({ query: { _id: { $ne: fileId }, path: filePath, isTemp: false } });
+      })
+      .then(searchResults => {
+        const currentFiles = searchResults.data;
+        // TODO throw error if got >1 file
+        // TODO throw error if we got fileId
+        const deletePromises = currentFiles.map(currentFile => app.service('content_filepaths').remove(currentFile._id));
+        return Promise.all(deletePromises);
+      });
+
+    const publishNewPromise = app.service('content_filepaths').patch(fileId, { isTemp: false });
+    return Promise.all([deleteExistingPromise, publishNewPromise]);
+  });
 }
 
 module.exports = {
   addFilesToDB,
-  moveFilesWithinDB,
+  replaceFilesInDB,
   removeFilesFromDB
 };
