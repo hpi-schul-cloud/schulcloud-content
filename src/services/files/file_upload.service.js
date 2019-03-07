@@ -17,7 +17,7 @@ class FileUploadService {
       throw new Error('param \'path\' is missing');
     }
     return new Promise((resolve, reject) => {
-      const uploadPath = `tmp/${data.userId}/${removeTrailingSlashes(req.query.path)}`;
+      const uploadPath = removeTrailingSlashes(req.query.path);
       const form = new multiparty.Form();
       form.on('error', (error) => {
         reject({status: 400, message: error});
@@ -32,8 +32,8 @@ class FileUploadService {
           return promisePipe(part, getUploadStream(uploadPath))
             .then((/* result */) => {
               return addFilesToDB(this.app, [uploadPath])
-                .then(() => {
-                  return resolve({status: 200, message: uploadPath});
+                .then((fileIdDictionary) => {
+                  return resolve({status: 200, message: fileIdDictionary[uploadPath]});
                 })
                 .catch(error => {
                   throw error;
