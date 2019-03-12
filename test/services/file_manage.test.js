@@ -59,11 +59,10 @@ describe('\'files/manage\' service', () => {
     assert.ok(service, 'Registered the service');
   });
 
-  
   before(function() {
     return insertMock();
   });
-  
+
   after(function() {
     return removeMock();
   });
