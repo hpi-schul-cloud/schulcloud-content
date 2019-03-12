@@ -12,16 +12,27 @@ const S3rver = require('s3rver');
 let instance;
 
 const startS3MockServer = () => { 
-  instance = new S3rver({
-		port: 9001,
-		hostname: 'localhost',
-		silent: false,
-		directory: './tmp'
-	}).run((err, host, port) => {
-		if(!err) {
-			console.log(`local S3 is running on ${host}:${port}`);
-		}
-	});
+  return new Promise((resolve) => {
+    instance = new S3rver({
+      port: 9001,
+      hostname: 'localhost',
+      silent: false,
+      directory: './tmp'
+    }).run((err, host, port) => {
+      if(!err) {
+        // eslint-disable-next-line no-console
+        console.log(`local S3 is running on ${host}:${port}`);
+      }
+    });
+    resolve();
+  });
+};
+
+const stopS3MockServer = () => {
+  return new Promise((resolve) => {
+    instance.close();
+    resolve();
+  });
 };
 
 describe('\'files/upload\' service', () => {
@@ -31,23 +42,27 @@ describe('\'files/upload\' service', () => {
     assert.ok(service, 'Registered the service');
   });
 
-  before((done) => {
-    startS3MockServer();
-    this.server = app.listen(PORT);
-    this.server.once('listening', () => done());
-  });
-
-  after((done) => {
-    instance.close();
-    this.server.close(done);
-    contentFilepaths
-    .find({ query: { contentId: content_mock_id } })
-    .then(res => {
-      return Promise.all(
-        res.data.map(mockData => contentFilepaths.remove(mockData._id))
-      );
+  before(() => {
+    return startS3MockServer().then(()=>{
+      this.server = app.listen(PORT);
+      this.server.once('listening', () => {});
     });
   });
+
+
+  after(() => {
+    return stopS3MockServer().then(()=>{
+      this.server.close(() => {});
+    contentFilepaths
+      .find({ query: { contentId: content_mock_id } })
+      .then(res => {
+        return Promise.all(
+          res.data.map(mockData => contentFilepaths.remove(mockData._id))
+        );
+      });
+    });
+  });
+
 
   it('returns fileId', () => {
 
