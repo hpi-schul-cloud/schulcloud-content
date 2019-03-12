@@ -34,6 +34,7 @@ const startS3MockServer = () => {
 		directory: './tmp'
 	}).run((err, host, port) => {
 		if(!err) {
+      // eslint-disable-next-line no-console
 			console.log(`local S3 is running on ${host}:${port}`);
 		}
 	});
