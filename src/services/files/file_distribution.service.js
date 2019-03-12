@@ -29,7 +29,7 @@ class FileDistributionService {
           // check if file exists to prevent crash during download
           const fileInfo = await fileExists(fileId);
 
-          const contentType = mime.contentType(path.extname(fileInfo.name)); // 'application/json; charset=utf-8'
+          const contentType = mime.contentType(path.extname(filePath)); // 'application/json; charset=utf-8'
           if(res.header){
             if(contentType){   res.header('Content-Type', contentType); }
             if(fileInfo.etag){ res.header('ETag', fileInfo.etag); }
