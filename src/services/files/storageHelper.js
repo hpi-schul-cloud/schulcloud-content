@@ -22,13 +22,6 @@ function removeTrailingSlashes(fileId) {
 const container = process.env['STORAGE_CONTAINER'] || 'content-hosting';
 
 function getUploadStream(fileId) {
-
-  if(process.env.NODE_ENV === 'test'){
-    return (new WritableMock()).on('finish', function() {
-      this.emit('success');
-    });
-  }
-
   return client.upload({
     queueSize: 1, // == default value
     partSize: 5 * 1024 * 1024, // == default value of 5MB
@@ -47,7 +40,7 @@ function getDownloadStream(fileId) {
     queueSize: 1, // == default value
     partSize: 5 * 1024 * 1024, // == default value of 5MB
     container: container,
-    remote: fileId
+    remote: fileId.toString()
   });
 }
 
@@ -58,7 +51,7 @@ function fileExists(fileId) {
     });
   }
   return new Promise((resolve, reject) => {
-    return client.getFile(container, fileId, (error, file) => {
+    return client.getFile(container, fileId.toString(), (error, file) => {
       if (error !== null) { return reject(error); }
       return resolve(file);
     });
@@ -66,11 +59,8 @@ function fileExists(fileId) {
 }
 
 function removeFile(fileId) {
-  if(process.env.NODE_ENV === 'test'){
-    return Promise.resolve();
-  }
   return new Promise((resolve, reject) => {
-    return client.removeFile(container, fileId, (error) => {
+    return client.removeFile(container, fileId.toString(), (error) => {
       if (error !== null) { return reject(error); }
       return resolve();
     });
