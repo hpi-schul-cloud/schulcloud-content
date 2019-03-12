@@ -1,5 +1,5 @@
-const assert = require('assert');
-const validateResourceSchema = require('../../src/hooks/validate-resource-schema/index');
+//const assert = require('assert');
+//const validateResourceSchema = require('../../src/hooks/validate-resource-schema/index');
 
 describe('\'validate-resource-schema\' hook', () => {
   /*
