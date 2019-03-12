@@ -7,6 +7,9 @@ const { mockUserId, mockContentId } = require('./mockData');
 
 let mockFileId;
 
+const S3rver = require('s3rver');
+let instance;
+
 const insertMock = () => {
   const mockData = {
     path: `${mockContentId}/test.txt`,
@@ -23,10 +26,33 @@ const removeMock = () => {
   return contentFilepaths.remove(mockFileId);
 };
 
+const startS3MockServer = () => { 
+  instance = new S3rver({
+		port: 9001,
+		hostname: 'localhost',
+		silent: false,
+		directory: './tmp'
+	}).run((err, host, port) => {
+		if(!err) {
+			console.log(`local S3 is running on ${host}:${port}`);
+		}
+	});
+};
+
 describe('\'files/get*\' service', () => {
 
-  before(insertMock);
-  after(removeMock);
+  before(function() {
+    return insertMock().then(() => {
+      startS3MockServer();
+      process.env['STORAGE_ENDPOINT'] = 'http://localhost:9001';
+    });
+  });
+
+   after(function() {
+    return removeMock().then(() => {
+      instance.close();
+    });
+  });
 
   it('registered the service', () => {
     const service = app.service('files/get*');

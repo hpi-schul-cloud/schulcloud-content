@@ -8,6 +8,22 @@ const fs = require('fs');
 const PORT = 3031;
 const content_mock_id = 'content_mock_id';
 
+const S3rver = require('s3rver');
+let instance;
+
+const startS3MockServer = () => { 
+  instance = new S3rver({
+		port: 9001,
+		hostname: 'localhost',
+		silent: false,
+		directory: './tmp'
+	}).run((err, host, port) => {
+		if(!err) {
+			console.log(`local S3 is running on ${host}:${port}`);
+		}
+	});
+};
+
 describe('\'files/upload\' service', () => {
   it('registered the service', () => {
     const service = app.service('files/upload');
@@ -16,11 +32,13 @@ describe('\'files/upload\' service', () => {
   });
 
   before((done) => {
+    startS3MockServer();
     this.server = app.listen(PORT);
     this.server.once('listening', () => done());
   });
 
   after((done) => {
+    instance.close();
     this.server.close(done);
     contentFilepaths
     .find({ query: { contentId: content_mock_id } })

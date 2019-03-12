@@ -59,8 +59,14 @@ describe('\'files/manage\' service', () => {
     assert.ok(service, 'Registered the service');
   });
 
-  before(insertMock);
-  after(removeMock);
+  
+  before(function() {
+    return insertMock();
+  });
+  
+  after(function() {
+    return removeMock();
+  });
 
   it('manages files in DB', () => {
     const service = app.service('files/manage');
