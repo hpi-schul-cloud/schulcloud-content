@@ -9,7 +9,7 @@ function addFilesToDB(app, filePaths, contentId, userId) {
   return Promise.all(addPromises).then(newFileObjects => {
     const pathDictionary = {};
     newFileObjects.forEach(newFileObject => {
-      pathDictionary[newFileObject.path] = newFileObject._id;
+      pathDictionary[newFileObject.path] = newFileObject._id.toString();
     });
     return pathDictionary;
   });

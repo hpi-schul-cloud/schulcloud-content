@@ -35,12 +35,12 @@ class FileUploadService {
         if (part.filename && uploadPath) {
           //writableStream.managedUpload === https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3/ManagedUpload.html
           // managedUpload object allows you to abort ongoing upload or track file upload progress.
-          return promisePipe(part, getUploadStream(uploadPath))
-            .then((/* result */) => {
-              return addFilesToDB(this.app, [uploadPath], req.query.contentId, req.query.userId)
-                .then((fileIdDictionary) => {
-                  return resolve({status: 200, message: fileIdDictionary[uploadPath]});
-                });
+          return addFilesToDB(this.app, [uploadPath], req.query.contentId, req.query.userId)
+            .then((fileIdDictionary) => {
+              return promisePipe(part, getUploadStream(fileIdDictionary[uploadPath]))
+              .then((/* result */) => {
+                return resolve({status: 200, message: fileIdDictionary[uploadPath]});
+              });
             })
             .catch(error => {
               if(error.statusCode){

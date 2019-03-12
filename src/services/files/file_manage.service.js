@@ -18,7 +18,7 @@ class FileManageService {
     try{
       const deletePromises = deleteOperationIds.map(deleteOperationId => {
         return removeFile(deleteOperationId);
-      });    
+      });
 
       const manageDeletePromise = removeFilesFromDB(this.app, deleteOperationIds);
 
