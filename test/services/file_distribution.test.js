@@ -26,7 +26,7 @@ const removeMock = () => {
   return contentFilepaths.remove(mockFileId);
 };
 
-const startS3MockServer = () => { 
+const startS3MockServer = () => {
   instance = new S3rver({
 		port: 9001,
 		hostname: 'localhost',

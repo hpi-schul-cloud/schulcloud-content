@@ -16,5 +16,5 @@ function createClient(){
 }
 
 module.exports = {
-	client: createClient()
+	client: createClient
 };
