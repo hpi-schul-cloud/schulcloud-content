@@ -7,8 +7,11 @@ const { mockUserId, mockContentId } = require('./mockData');
 
 let mockFileId;
 
-const S3rver = require('s3rver');
-let instance;
+const path = require('path');
+const { startS3MockServer, stopS3MockServer, serverDirectory, container } = require('./s3mock');
+const ncp = require('ncp').ncp;
+const source =  path.resolve('test/mockData/5c87ad3757fc628ed4a258e0');
+const destination = path.resolve(`${serverDirectory}/${container}/5c87ad3757fc628ed4a258e0`);
 
 const insertMock = () => {
   const mockData = {
@@ -26,32 +29,26 @@ const removeMock = () => {
   return contentFilepaths.remove(mockFileId);
 };
 
-const startS3MockServer = () => {
-  instance = new S3rver({
-		port: 9001,
-		hostname: 'localhost',
-		silent: false,
-		directory: './tmp'
-	}).run((err, host, port) => {
-		if(!err) {
-      // eslint-disable-next-line no-console
-			console.log(`local S3 is running on ${host}:${port}`);
-		}
-	});
-};
-
 describe('\'files/get*\' service', () => {
 
   before(function() {
-    return insertMock().then(() => {
-      startS3MockServer();
-      process.env['STORAGE_ENDPOINT'] = 'http://localhost:9001';
-    });
+    return insertMock()
+      .then(() => startS3MockServer())
+      .then(() => {
+        return new Promise((resolve, reject) => {
+          ncp(source, destination, (err) => {
+            if (err) {
+              return reject();
+            }
+            resolve();
+          });
+        });
+      });
   });
 
    after(function() {
     return removeMock().then(() => {
-      instance.close();
+      return stopS3MockServer();
     });
   });
 

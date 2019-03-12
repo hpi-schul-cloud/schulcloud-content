@@ -40,5 +40,7 @@ const stopS3MockServer = () => {
 
 module.exports = {
   startS3MockServer,
-  stopS3MockServer
+  stopS3MockServer,
+  serverDirectory,
+  container
 };

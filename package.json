@@ -59,6 +59,7 @@
     "babel-eslint": "^8.2.6",
     "eslint": "^5.2.0",
     "mocha": "^5.2.0",
+    "ncp": "^2.0.0",
     "request": "^2.87.0",
     "request-promise": "^4.2.2",
     "stream-mock": "^1.2.0"
