@@ -7,30 +7,32 @@ const { mockUserId, mockContentId } = require('./mockData');
 const mockFiles = {};
 
 const insertMock = () => {
-  const paths = [
-    `${mockContentId}/index.html`,
-    `${mockContentId}/menue/clip_2_1.html`,
-    `${mockContentId}/menue/clip_3_1.html`,
-    `${mockContentId}/menue/clip_5_1.html`,
-    `${mockContentId}/menue/clip_6_1.html`
-  ];
-  const persistentMockData = {
-    contentId: mockContentId,
-    isTemp: false,
-    createdBy: mockUserId
-  };
-  const mockCreatePromises = paths.map(filePath => {
-    return contentFilepaths.create({path: filePath, ...persistentMockData})
-      .then(fileObj => {
-      mockFiles[fileObj.path] = fileObj._id;
+  return removeMock().then(() => {
+    const paths = [
+      `${mockContentId}/index.html`,
+      `${mockContentId}/menue/clip_2_1.html`,
+      `${mockContentId}/menue/clip_3_1.html`,
+      `${mockContentId}/menue/clip_5_1.html`,
+      `${mockContentId}/menue/clip_6_1.html`
+    ];
+    const persistentMockData = {
+      contentId: mockContentId,
+      isTemp: false,
+      createdBy: mockUserId
+    };
+    const mockCreatePromises = paths.map(filePath => {
+      return contentFilepaths.create({path: filePath, ...persistentMockData})
+        .then(fileObj => {
+        mockFiles[fileObj.path] = fileObj._id;
+      });
     });
-  });
 
-  return Promise.all(mockCreatePromises);
+    return Promise.all(mockCreatePromises);
+  });
 };
 
 const removeMock = () => {
-  contentFilepaths
+  return contentFilepaths
     .find({ query: { contentId: `${mockContentId}` } })
     .then(res => {
       return Promise.all(

@@ -20,29 +20,30 @@ const insertMock = () => {
     isTemp: false,
     createdBy: mockUserId
   };
-  const insertPersistent = paths.map(filePath => {
-    contentFilepaths.create({path: filePath, ...persistentMockData}).then(fileObj => {
-      deleteMockFiles.push(fileObj._id);
-    });
-  });
-
   const tempMockData = {
     path: `${mockContentId}/test.txt`,
     contentId: `${mockContentId}`,
     isTemp: true,
     createdBy: mockUserId
   };
-  const insertTemp = contentFilepaths.create(tempMockData).then(fileObj => {
-    saveMockFiles.push(fileObj._id);
-  });
 
+  return removeMock()
+    .then(() => {
+      const insertPersistent = paths.map(filePath => {
+        contentFilepaths.create({path: filePath, ...persistentMockData}).then(fileObj => {
+          deleteMockFiles.push(fileObj._id);
+        });
+      });
+      const insertTemp = contentFilepaths.create(tempMockData).then(fileObj => {
+        saveMockFiles.push(fileObj._id);
+      });
 
-
-  return Promise.all([...insertPersistent, insertTemp]);
+      return Promise.all([...insertPersistent, insertTemp]);
+    });
 };
 
 const removeMock = () => {
-  contentFilepaths
+  return contentFilepaths
     .find({ query: { contentId: `${mockContentId}` } })
     .then(res => {
       return Promise.all(
