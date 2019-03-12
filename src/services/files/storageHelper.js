@@ -1,5 +1,4 @@
 const { client } = require('./storage-client.js');
-const { ReadableMock, WritableMock } = require('stream-mock');
 
 function promisePipe(source, target) {
   return new Promise((resolve, reject) => {
@@ -31,11 +30,6 @@ function getUploadStream(fileId) {
 }
 
 function getDownloadStream(fileId) {
-
-  if(process.env.NODE_ENV === 'test'){
-    return new ReadableMock('{"test": true}', {objectMode: true});
-  }
-
   return client().download({
     queueSize: 1, // == default value
     partSize: 5 * 1024 * 1024, // == default value of 5MB
@@ -45,11 +39,6 @@ function getDownloadStream(fileId) {
 }
 
 function fileExists(fileId) {
-  if(process.env.NODE_ENV === 'test'){
-    return Promise.resolve({
-      name: fileId,
-    });
-  }
   return new Promise((resolve, reject) => {
     return client().getFile(container, fileId.toString(), (error, file) => {
       if (error !== null) { return reject(error); }
