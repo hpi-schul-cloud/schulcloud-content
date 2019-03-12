@@ -7,11 +7,11 @@ const { mockUserId, mockContentId } = require('./mockData');
 
 let mockFileId;
 
+const fs = require('fs');
 const path = require('path');
 const { startS3MockServer, stopS3MockServer, serverDirectory, container } = require('./s3mock');
 const ncp = require('ncp').ncp;
-const source =  path.resolve('test/mockData/5c87ad3757fc628ed4a258e0');
-const destination = path.resolve(`${serverDirectory}/${container}/5c87ad3757fc628ed4a258e0`);
+const source = path.resolve('test/mockData/test_txt');
 
 const insertMock = () => {
   const mockData = {
@@ -36,6 +36,7 @@ describe('\'files/get*\' service', () => {
       .then(() => startS3MockServer())
       .then(() => {
         return new Promise((resolve, reject) => {
+          const destination = path.resolve(`${serverDirectory}/${container}/${mockFileId}`);
           ncp(source, destination, (err) => {
             if (err) {
               return reject();
@@ -60,7 +61,7 @@ describe('\'files/get*\' service', () => {
 
   it('returns file', () => {
     const service = app.service('files/get*');
-    const expectedResult = '{"test": true}';
+    const expectedResult = fs.readFileSync(source + '/.dummys3_content', 'utf8');
 
     const resStream = new WritableMock({objectMode: true});
 
