@@ -33,6 +33,19 @@ const manageFiles = (hook) => {
 	return fileManagementService.patch(hook.id, { ...files, userId: hook.data.userId }, hook).then(() => hook);
 };
 
+const patchContentIdInDb = (hook) => {
+  const ids = hook.data.files.save;
+  const contentId = hook.result._id.toString();
+  const replacePromise = hook.app.service('content_filepaths').find({ tags: { $in: ids}}).then(response => {
+    const patchList = response.data.map((entry) => {
+      let newPath = contentId + '/' + entry.path;
+      return hook.app.service('content_filepaths').patch(entry._id, {contentId: contentId, path: newPath});
+    });
+    return Promise.all(patchList);
+  });
+  return replacePromise.then(() => hook);
+};
+
 module.exports = {
   before: {
     all: [],
@@ -48,7 +61,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [patchContentIdInDb],
     update: [],
     patch: [],
     remove: []
