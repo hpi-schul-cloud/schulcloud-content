@@ -16,9 +16,11 @@ class FileUploadService {
     if(!req.query.path){
       throw new Error('param \'path\' is missing');
     }
+    /* // TODO is optional now
     if(!req.query.contentId){
       throw new Error('param \'contentId\' is missing');
     }
+    */
     if(!req.query.userId){
       throw new Error('Unauthorized request');
     }
