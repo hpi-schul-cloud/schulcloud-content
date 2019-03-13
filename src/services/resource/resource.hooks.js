@@ -35,7 +35,7 @@ const manageFiles = (hook) => {
 
 const patchContentIdInDb = (hook) => {
   const ids = hook.data.files.save;
-  const contentId = hook.result._id.toString();
+  const contentId = hook.id || hook.result._id.toString();
   const replacePromise = hook.app.service('content_filepaths').find({ tags: { $in: ids}}).then(response => {
     const patchList = response.data.map((entry) => {
       let newPath = contentId + '/' + entry.path;
@@ -53,7 +53,7 @@ module.exports = {
     get: [],
     create: [authenticate, validateResourceSchema(), createThumbnail],
     update: [],
-    patch: [manageFiles],
+    patch: [patchContentIdInDb, manageFiles],
     remove: []
   },
 
