@@ -38,8 +38,12 @@ const patchContentIdInDb = (hook) => {
   const contentId = hook.id || hook.result._id.toString();
   const replacePromise = hook.app.service('content_filepaths').find({ tags: { $in: ids}}).then(response => {
     const patchList = response.data.map((entry) => {
-      let newPath = contentId + '/' + entry.path;
-      return hook.app.service('content_filepaths').patch(entry._id, {contentId: contentId, path: newPath});
+      if(entry.path.indexOf(contentId) !== 0){
+        let newPath = contentId + '/' + entry.path;
+        return hook.app.service('content_filepaths').patch(entry._id, {contentId: contentId, path: newPath});
+      }else{
+        return Promise.resolve(entry);
+      }
     });
     return Promise.all(patchList);
   });
