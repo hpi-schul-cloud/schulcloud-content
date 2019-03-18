@@ -19,13 +19,14 @@ function removeTrailingSlashes(fileId) {
 }
 
 const container = process.env['STORAGE_CONTAINER'] || 'content-hosting';
+const filenamePrefix = 'files/';
 
 function getUploadStream(fileId) {
   return client().upload({
     queueSize: 1, // == default value
     partSize: 5 * 1024 * 1024, // == default value of 5MB
     container: container,
-    remote: fileId
+    remote: filenamePrefix + fileId.toString()
   });
 }
 
@@ -34,25 +35,33 @@ function getDownloadStream(fileId) {
     queueSize: 1, // == default value
     partSize: 5 * 1024 * 1024, // == default value of 5MB
     container: container,
-    remote: fileId.toString()
+    remote: filenamePrefix + fileId.toString()
   });
 }
 
 function fileExists(fileId) {
   return new Promise((resolve, reject) => {
-    return client().getFile(container, fileId.toString(), (error, file) => {
-      if (error !== null) { return reject(error); }
-      return resolve(file);
-    });
+    return client().getFile(
+      container,
+      filenamePrefix + fileId.toString(),
+      (error, file) => {
+        if (error !== null) { return reject(error); }
+        return resolve(file);
+      }
+    );
   });
 }
 
 function removeFile(fileId) {
   return new Promise((resolve, reject) => {
-    return client().removeFile(container, fileId.toString(), (error) => {
-      if (error !== null) { return reject(error); }
-      return resolve();
-    });
+    return client().removeFile(
+      container,
+      filenamePrefix + fileId.toString(),
+      (error) => {
+        if (error !== null) { return reject(error); }
+        return resolve();
+      }
+    );
   });
 }
 
