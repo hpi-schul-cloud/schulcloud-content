@@ -79,7 +79,7 @@ class FileStructureService {
             mainTreeObj
           );
         });
-        return mainTreeObj.objects;
+        return mainTreeObj.objects[0];
       })
       .catch(error => {
         logger.error(error);
