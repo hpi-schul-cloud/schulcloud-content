@@ -1,49 +1,53 @@
 const logger = require('winston');
 
-const getCurrentId = (filepathArray, fullPath) => {
-  let idArray = fullPath.slice(0);
-  filepathArray.forEach(() => {
-    idArray.pop();
-  });
-  return idArray.join('/');
-};
-
-function getPathRecursive(filepathArray, fullPath, id, mainTreeObj) {
+function getPathRecursive(filepathArray, fullPath, id) {
   if (filepathArray.length == 1) {
-    return {
-      // file
+    return { // file
       id: id,
       type: 'file',
       name: filepathArray[0]
     };
-  } else {
+  } else { // folder
     const name = filepathArray.shift();
-    let found = mainTreeObj.objects.some(element => {
-      if (element.id == getCurrentId(filepathArray, fullPath)) {
-        element = getPathRecursive(filepathArray, fullPath, id, element);
-        return true;
-      }
+    const object = getPathRecursive(filepathArray, fullPath, id);
+    filepathArray.forEach(() => {
+      fullPath.pop();
     });
-    if (!found) {
-      const object = getPathRecursive(filepathArray, fullPath, id, {
-        objects: []
-      });
-      mainTreeObj.objects.push({
-        // folder
-        id: getCurrentId(filepathArray, fullPath),
-        type: 'folder',
-        name: name,
-        objects: [object]
-      });
-      mainTreeObj.objects.sort((a, b) =>
+
+    const folder = {
+      id: fullPath.join('/'),
+      type: 'folder',
+      name: name,
+      objects: [object]
+    };
+    return folder;
+  }
+}
+
+function mergeTreesRecursive(tree, objectsArray) {
+  let index = objectsArray.findIndex(element => {
+    return element.name == tree.name;
+  });
+  if (index === -1) {
+    objectsArray.push(tree);
+    objectsArray.sort((a, b) =>
         a.type === b.type
           ? a.name.localeCompare(b.name)
           : a.type === 'file'
           ? -1
           : 1
       );
+    return objectsArray;
+  } else {
+    if(tree.type === 'folder'){
+      objectsArray[index].objects = mergeTreesRecursive(
+        tree.objects[0],
+        objectsArray[index].objects
+      );
+    }else{
+      logger.warn('found duplicate item: ' + JSON.stringify(tree, undefined, 2));
     }
-    return mainTreeObj;
+    return objectsArray;
   }
 }
 
@@ -53,12 +57,13 @@ class FileStructureService {
   }
 
   async get(contentId, { query: queryParams }) {
-    if (!queryParams) {
+
+    if(!queryParams){
       queryParams = {};
     }
     const queryTemp = queryParams.temp === 'true';
     const query = queryTemp
-      ? { contentId: contentId, isTemp: true, userId: queryParams.userId }
+      ? { contentId: contentId, isTemp: true, userId: queryParams.userId}
       : { contentId: contentId, isTemp: false };
     return this.app
       .service('content_filepaths')
@@ -69,21 +74,24 @@ class FileStructureService {
         response.data.forEach(data => {
           pathDictionary[data._id] = data.path;
         });
-        // build tree
-        let mainTreeObj = { objects: [] };
+        // build trees
+        let trees = [];
         Object.keys(pathDictionary).forEach(key => {
-          mainTreeObj = getPathRecursive(
-            pathDictionary[key].split('/'),
-            pathDictionary[key].split('/'),
-            key,
-            mainTreeObj
-          );
+          let result = getPathRecursive(pathDictionary[key].split('/'), pathDictionary[key].split('/'), key);
+          trees.push(result);
         });
-        return mainTreeObj.objects[0];
+
+        // merge trees
+        let GlobalTree = [];
+        trees.forEach(tree => {
+          GlobalTree = mergeTreesRecursive(tree, GlobalTree);
+        });
+
+        return GlobalTree[0];
       })
       .catch(error => {
         logger.error(error);
-        return [];
+        return { id: contentId, type: 'folder', objects: []};
       });
   }
 }
