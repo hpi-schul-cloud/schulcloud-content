@@ -82,11 +82,11 @@ class FileStructureService {
         });
 
         // merge trees
-        let GlobalTree = { id: contentId, type: 'folder', objects: []};
+        let GlobalTree = [];
         trees.forEach(tree => {
-          GlobalTree.objects = mergeTreesRecursive(tree, GlobalTree.objects);
+          GlobalTree = mergeTreesRecursive(tree, GlobalTree);
         });
-        return GlobalTree;
+        return GlobalTree.length ? GlobalTree[0]: { id: contentId, type: 'folder', objects: []};
       })
       .catch(error => {
         logger.error(error);

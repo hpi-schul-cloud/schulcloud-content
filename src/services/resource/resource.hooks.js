@@ -30,7 +30,8 @@ const manageFiles = (hook) => {
   if(!hook.data.files || !hook.data.userId) { return hook; }
   const files = hook.data.files;
   const fileManagementService = hook.app.service('/files/manage');
-	return fileManagementService.patch(hook.id, { ...files, userId: hook.data.userId }, hook).then(() => hook);
+  const contentId = hook.id || hook.result._id.toString();
+	return fileManagementService.patch(contentId, { ...files, userId: hook.data.userId }, hook).then(() => hook);
 };
 
 const patchContentIdInDb = (hook) => {
@@ -65,7 +66,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [patchContentIdInDb],
+    create: [patchContentIdInDb,manageFiles],
     update: [],
     patch: [],
     remove: []
