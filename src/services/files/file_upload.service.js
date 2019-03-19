@@ -1,3 +1,4 @@
+const logger = require('winston');
 const multiparty = require('multiparty');
 const {
   promisePipe,
@@ -45,6 +46,7 @@ class FileUploadService {
               });
             })
             .catch(error => {
+              logger.error(error);
               if(error.statusCode){
                 return reject(reject({status: error.statusCode, message: error}));
               }
