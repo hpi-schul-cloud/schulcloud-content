@@ -3,7 +3,7 @@ const app = require('../../src/app');
 const { WritableMock } = require('stream-mock');
 const contentFilepaths = app.service('content_filepaths');
 
-const { mockUserId, mockContentId } = require('./mockData');
+const { mockUserId, mockResourceId } = require('./mockData');
 
 let mockFileId;
 
@@ -15,8 +15,8 @@ const source = path.resolve('test/mockData/test_txt');
 
 const insertMock = () => {
   const mockData = {
-    path: `${mockContentId}/test.txt`,
-    contentId: mockContentId,
+    path: `${mockResourceId}/test.txt`,
+    resourceId: mockResourceId,
     isTemp: false,
     createdBy: mockUserId
   };
@@ -71,7 +71,7 @@ describe('\'files/get*\' service', () => {
         resolve();
       });
       resStream.on('error', reject);
-      service.find({req: {params: {'0':`${mockContentId}/test.txt`}, res: resStream}}).catch(reject);
+      service.find({req: {params: {'0':`${mockResourceId}/test.txt`}, res: resStream}}).catch(reject);
     });
   });
 });

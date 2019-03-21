@@ -30,18 +30,18 @@ const manageFiles = (hook) => {
   if(!hook.data.files || !hook.data.userId) { return hook; }
   const files = hook.data.files;
   const fileManagementService = hook.app.service('/files/manage');
-  const contentId = hook.id || hook.result._id.toString();
-	return fileManagementService.patch(contentId, { ...files, userId: hook.data.userId }, hook).then(() => hook);
+  const resourceId = hook.id || hook.result._id.toString();
+	return fileManagementService.patch(resourceId, { ...files, userId: hook.data.userId }, hook).then(() => hook);
 };
 
-const patchContentIdInDb = (hook) => {
+const patchResourceIdInDb = (hook) => {
   const ids = hook.data.files.save;
-  const contentId = hook.id || hook.result._id.toString();
+  const resourceId = hook.id || hook.result._id.toString();
   const replacePromise = hook.app.service('content_filepaths').find({ tags: { $in: ids}}).then(response => {
     const patchList = response.data.map((entry) => {
-      if(entry.path.indexOf(contentId) !== 0){
-        let newPath = contentId + '/' + entry.path;
-        return hook.app.service('content_filepaths').patch(entry._id, {contentId: contentId, path: newPath});
+      if(entry.path.indexOf(resourceId) !== 0){
+        let newPath = resourceId + '/' + entry.path;
+        return hook.app.service('content_filepaths').patch(entry._id, {resourceId: resourceId, path: newPath});
       }else{
         return Promise.resolve(entry);
       }
@@ -58,7 +58,7 @@ module.exports = {
     get: [],
     create: [authenticate, validateResourceSchema(), createThumbnail],
     update: [],
-    patch: [patchContentIdInDb, manageFiles],
+    patch: [patchResourceIdInDb, manageFiles],
     remove: []
   },
 
@@ -66,7 +66,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [patchContentIdInDb,manageFiles],
+    create: [patchResourceIdInDb,manageFiles],
     update: [],
     patch: [],
     remove: []

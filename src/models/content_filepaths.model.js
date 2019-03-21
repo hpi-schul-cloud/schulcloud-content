@@ -9,8 +9,8 @@ module.exports = function (app) {
 
     const content_filepaths = new mongooseClient.Schema({
       // _id = fileId as used in StorageServer
-      path: {type: String, required: true}, // "/contentId/folderA/fileB.txt",
-      contentId: {type: String},
+      path: {type: String, required: true}, // "/resourceId/folderA/fileB.txt",
+      resourceId: {type: String},
       createdBy: {type: String, required: true},
       isTemp: {type: Boolean, required: true},
 

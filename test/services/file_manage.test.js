@@ -2,27 +2,27 @@ const assert = require('assert');
 const app = require('../../src/app');
 const contentFilepaths = app.service('content_filepaths');
 
-const { mockUserId, mockContentId } = require('./mockData');
+const { mockUserId, mockResourceId } = require('./mockData');
 
 const deleteMockFiles = [];
 const saveMockFiles = [];
 
 const insertMock = () => {
   const paths = [
-    `${mockContentId}/index.html`,
-    `${mockContentId}/menue/clip_2_1.html`,
-    `${mockContentId}/menue/clip_3_1.html`,
-    `${mockContentId}/menue/clip_5_1.html`,
-    `${mockContentId}/menue/clip_6_1.html`
+    `${mockResourceId}/index.html`,
+    `${mockResourceId}/menue/clip_2_1.html`,
+    `${mockResourceId}/menue/clip_3_1.html`,
+    `${mockResourceId}/menue/clip_5_1.html`,
+    `${mockResourceId}/menue/clip_6_1.html`
   ];
   const persistentMockData = {
-    contentId: `${mockContentId}`,
+    resourceId: `${mockResourceId}`,
     isTemp: false,
     createdBy: mockUserId
   };
   const tempMockData = {
-    path: `${mockContentId}/test.txt`,
-    contentId: `${mockContentId}`,
+    path: `${mockResourceId}/test.txt`,
+    resourceId: `${mockResourceId}`,
     isTemp: true,
     createdBy: mockUserId
   };
@@ -44,7 +44,7 @@ const insertMock = () => {
 
 const removeMock = () => {
   return contentFilepaths
-    .find({ query: { contentId: `${mockContentId}` } })
+    .find({ query: { resourceId: `${mockResourceId}` } })
     .then(res => {
       return Promise.all(
         res.data.map(mockData => contentFilepaths.remove(mockData._id))
@@ -73,7 +73,7 @@ describe('\'files/manage\' service', () => {
     const itemsToDelete = [deleteMockFiles[0], deleteMockFiles[deleteMockFiles.length - 1]];
     const itemsToSave = saveMockFiles;
 
-    return service.patch(`${mockContentId}`, {
+    return service.patch(`${mockResourceId}`, {
         delete: itemsToDelete,
         save: itemsToSave,
         userId: mockUserId
@@ -82,21 +82,21 @@ describe('\'files/manage\' service', () => {
         assert.equal(res.status, 200);
         const findDeleted = contentFilepaths.find({query: {
           _id: {$in: itemsToDelete},
-          contentId: `${mockContentId}`,
+          resourceId: `${mockResourceId}`,
           createdBy: mockUserId,
           isTemp: false,
         }});
 
         const findSavedSrc = contentFilepaths.find({query: {
           _id: {$in: itemsToSave},
-          contentId: `${mockContentId}`,
+          resourceId: `${mockResourceId}`,
           createdBy: mockUserId,
           isTemp: true,
         }});
 
         const findSaved = contentFilepaths.find({query: {
           _id: {$in: itemsToSave},
-          contentId: `${mockContentId}`,
+          resourceId: `${mockResourceId}`,
           createdBy: mockUserId,
           isTemp: false,
         }});

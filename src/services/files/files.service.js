@@ -50,7 +50,7 @@ module.exports = function() {
 
   /* ##################################################
   # FILETREE
-  # Usage: GET /files/structure/{contentId}
+  # Usage: GET /files/structure/{resourceId}
   #   add ?temp=true to get current temp files
   # Result: Filetree of uploaded files
   ################################################## */

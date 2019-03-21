@@ -1,7 +1,7 @@
-function addFilesToDB(app, filePaths, contentId, userId) {
+function addFilesToDB(app, filePaths, resourceId, userId) {
   const addPromises = filePaths.map((filePath) => app.service('content_filepaths').create({
       path: filePath,
-      contentId: contentId,
+      resourceId: resourceId,
       createdBy: userId,
       isTemp: true,
     })
