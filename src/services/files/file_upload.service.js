@@ -18,8 +18,8 @@ class FileUploadService {
       throw new Error('param \'path\' is missing');
     }
     /* // TODO is optional now
-    if(!req.query.contentId){
-      throw new Error('param \'contentId\' is missing');
+    if(!req.query.resourceId){
+      throw new Error('param \'resourceId\' is missing');
     }
     */
     if(!req.query.userId){
@@ -38,7 +38,7 @@ class FileUploadService {
         if (part.filename && uploadPath) {
           //writableStream.managedUpload === https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3/ManagedUpload.html
           // managedUpload object allows you to abort ongoing upload or track file upload progress.
-          return addFilesToDB(this.app, [uploadPath], req.query.contentId, req.query.userId)
+          return addFilesToDB(this.app, [uploadPath], req.query.resourceId, req.query.userId)
             .then((fileIdDictionary) => {
               return promisePipe(part, getUploadStream(fileIdDictionary[uploadPath]))
               .then((/* result */) => {

@@ -56,15 +56,15 @@ class FileStructureService {
     this.app = app;
   }
 
-  async get(contentId, { query: queryParams }) {
+  async get(resourceId, { query: queryParams }) {
 
     if(!queryParams){
       queryParams = {};
     }
     const queryTemp = queryParams.temp === 'true';
     const query = queryTemp
-      ? { contentId: contentId, isTemp: true, userId: queryParams.userId}
-      : { contentId: contentId, isTemp: false };
+      ? { resourceId: resourceId, isTemp: true, userId: queryParams.userId}
+      : { resourceId: resourceId, isTemp: false };
     return this.app
       .service('content_filepaths')
       .find({ query })
@@ -86,11 +86,11 @@ class FileStructureService {
         trees.forEach(tree => {
           GlobalTree = mergeTreesRecursive(tree, GlobalTree);
         });
-        return GlobalTree.length ? GlobalTree[0]: { id: contentId, type: 'folder', objects: []};
+        return GlobalTree.length ? GlobalTree[0]: { id: resourceId, type: 'folder', objects: []};
       })
       .catch(error => {
         logger.error(error);
-        return { id: contentId, type: 'folder', objects: []};
+        return { id: resourceId, type: 'folder', objects: []};
       });
   }
 }

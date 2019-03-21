@@ -9,8 +9,8 @@ class FileManageService {
     this.app = app;
   }
 
-  patch(contentId, data) {
-    // TODO permission check, contentId must be owned by current user, ...
+  patch(resourceId, data) {
+    // TODO permission check, resourceId must be owned by current user, ...
 
     const deleteOperationIds = (data.delete || []); // id array
     const moveOperationIds = (data.save || []); // id array
