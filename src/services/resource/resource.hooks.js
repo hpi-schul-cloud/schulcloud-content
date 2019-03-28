@@ -26,8 +26,8 @@ const restrictToPublicIfUnauthorized = (hook) => {
 };
 
 const manageFiles = (hook) => {
-  hook = authenticate(hook);
   if(!hook.data.files || !hook.data.userId) { return hook; }
+  hook = authenticate(hook);
   const files = hook.data.files;
   const fileManagementService = hook.app.service('/files/manage');
   const resourceId = hook.id || hook.result._id.toString();
@@ -35,7 +35,15 @@ const manageFiles = (hook) => {
 };
 
 const patchResourceIdInDb = (hook) => {
-  const ids = hook.data.files.save;
+  let ids;
+  try {
+    ids = hook.data.files.save;
+  } catch (e) {
+    if (e instanceof TypeError) {
+      return hook;
+    }
+    throw e;
+  }
   const resourceId = hook.id || hook.result._id.toString();
   const replacePromise = hook.app.service('content_filepaths').find({query: { _id: { $in: ids}}}).then(response => {
     const patchList = response.data.map((entry) => {
@@ -49,6 +57,20 @@ const patchResourceIdInDb = (hook) => {
     return Promise.all(patchList);
   });
   return replacePromise.then(() => hook);
+};
+
+const patchResourceUrlInDb = (hook) => {
+  const preUrl = 'http://127.0.0.1:4040/files/get/';
+  const resourceId = hook.id || hook.result._id.toString();
+  const replacePromise = hook.app.service('resources').get(resourceId).then(response => {
+    if(response.url.indexOf(preUrl) == 0){
+      let newUrl = response.url.substring(0,preUrl.length) + resourceId + response.url.substring(preUrl.length);
+      return hook.app.service('resources').patch(response._id, {url: newUrl});
+    }else{
+      return Promise.resolve();
+    }
+  });
+  return Promise.all([replacePromise]).then(() => hook);
 };
 
 module.exports = {
@@ -66,7 +88,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [patchResourceIdInDb,manageFiles],
+    create: [patchResourceIdInDb,manageFiles,patchResourceUrlInDb],
     update: [],
     patch: [],
     remove: []
