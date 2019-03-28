@@ -37,7 +37,7 @@ const manageFiles = (hook) => {
 const patchResourceIdInDb = (hook) => {
   const ids = hook.data.files.save;
   const resourceId = hook.id || hook.result._id.toString();
-  const replacePromise = hook.app.service('content_filepaths').find({ tags: { $in: ids}}).then(response => {
+  const replacePromise = hook.app.service('content_filepaths').find({query: { _id: { $in: ids}}}).then(response => {
     const patchList = response.data.map((entry) => {
       if(entry.path.indexOf(resourceId) !== 0){
         let newPath = resourceId + '/' + entry.path;
