@@ -2,6 +2,7 @@
 const commonHooks = require('feathers-hooks-common');
 const defaultHooks = require('./file_default.hook.js');
 const authenticate = require('../../hooks/authenticate');
+const errors = require('@feathersjs/errors');
 
 const forceHookResolve = forcedHook => {
   return hook => {
@@ -16,8 +17,20 @@ const forceHookResolve = forcedHook => {
   };
 };
 
+const hasViewPermission = (hook) => {
+  // TODO implement permission check
+  if(!hook){
+    throw new errors.Forbidden('Permissions missing');
+  }
+  return;
+};
+
 const distributionHooks = {
-  ...defaultHooks
+  ...defaultHooks,
+  before: {
+    get: [hasViewPermission],
+    find: [hasViewPermission],
+  }
 };
 
 const manageHooks = {
