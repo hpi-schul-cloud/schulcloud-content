@@ -59,18 +59,28 @@ const patchResourceIdInDb = (hook) => {
   return replacePromise.then(() => hook);
 };
 
-const patchResourceUrlInDb = (hook) => {
-  const preUrl = 'http://127.0.0.1:4040/files/get/';
-  const resourceId = hook.id || hook.result._id.toString();
-  const replacePromise = hook.app.service('resources').get(resourceId).then(response => {
-    if(response.url.indexOf(preUrl) == 0){
-      let newUrl = response.url.substring(0,preUrl.length) + resourceId + response.url.substring(preUrl.length);
+const patchNewResourceUrlInDb = (hook) => {
+  if(hook.data.patchResourceUrl){
+    hook.data.patchResourceUrl = false;
+    const preUrl = 'http://127.0.0.1:4040/files/get/';
+    const resourceId = hook.id || hook.result._id.toString();
+    const replacePromise = hook.app.service('resources').get(resourceId).then(response => {
+      let newUrl = preUrl + resourceId + response.url;
       return hook.app.service('resources').patch(response._id, {url: newUrl});
-    }else{
-      return Promise.resolve();
-    }
-  });
-  return Promise.all([replacePromise]).then(() => hook);
+    });
+    return Promise.all([replacePromise]).then(() => hook);
+  }
+  return hook;  
+};
+
+const patchResourceUrlInDb = (hook) => {
+  if(hook.data.patchResourceUrl){
+    hook.data.patchResourceUrl = false;
+    const preUrl = 'http://127.0.0.1:4040/files/get/';
+    const resourceId = hook.id || hook.result._id.toString();
+      hook.data.url = preUrl + resourceId + hook.data.url;
+  }
+  return hook;
 };
 
 module.exports = {
@@ -80,7 +90,7 @@ module.exports = {
     get: [],
     create: [authenticate, validateResourceSchema(), createThumbnail],
     update: [],
-    patch: [patchResourceIdInDb, manageFiles],
+    patch: [patchResourceIdInDb, manageFiles,patchResourceUrlInDb],
     remove: []
   },
 
@@ -88,7 +98,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [patchResourceIdInDb,manageFiles,patchResourceUrlInDb],
+    create: [patchResourceIdInDb,manageFiles,patchNewResourceUrlInDb],
     update: [],
     patch: [],
     remove: []
