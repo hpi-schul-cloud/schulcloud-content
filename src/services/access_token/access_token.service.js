@@ -3,8 +3,8 @@
 */
 
 const createService = require('feathers-mongoose');
-const createModel = require('../../models/resource.model');
-const hooks = require('./resource.hooks');
+const createModel = require('../../models/access_token.model');
+const hooks = require('./access_token.hooks');
 
 module.exports = function () {
   const app = this;
