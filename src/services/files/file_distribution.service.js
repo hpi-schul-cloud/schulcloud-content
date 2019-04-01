@@ -2,8 +2,6 @@ const mime = require('mime-types');
 const path = require('path');
 const { promisePipe, getDownloadStream, fileExists } = require('./storageHelper.js');
 
-
-
 class FileDistributionService {
   constructor(app) {
     this.app = app;
