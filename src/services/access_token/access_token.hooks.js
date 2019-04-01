@@ -3,7 +3,7 @@ const commonHooks = require('feathers-hooks-common');
 module.exports = {
   before: {
     all: [],
-    find: [commonHooks.disallow()],
+    find: [commonHooks.disallow('external')], // TODO disallow find when rewriten to cookies
     get: [commonHooks.disallow('external')],
     create: [commonHooks.disallow('external')],
     update: [commonHooks.disallow()],
