@@ -74,7 +74,7 @@ const patchNewResourceUrlInDb = (hook) => {
 };
 
 const patchResourceUrlInDb = (hook) => {
-  if(hook.data.patchResourceUrl){
+  if(hook.data.patchResourceUrl&&!hook.data.url.startsWith('http')){
     hook.data.patchResourceUrl = false;
     const preUrl = 'http://127.0.0.1:4040/files/get/';
     const resourceId = hook.id || hook.result._id.toString();
