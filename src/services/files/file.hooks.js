@@ -29,7 +29,7 @@ const hasViewPermission = (hook) => {
         2.2.1 if access_token exists => allow access
   */
   const app = hook.app;
-  return app.service('content_filepaths')
+  return app.service('resource_filepaths')
     .find({ query: {
       path: hook.params.route[0].replace(/^\//, ''),
       isTemp: false

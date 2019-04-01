@@ -1,6 +1,6 @@
 const assert = require('assert');
 const app = require('../../src/app');
-const contentFilepaths = app.service('content_filepaths');
+const contentFilepaths = app.service('resource_filepaths');
 
 const request = require('request');
 const fs = require('fs');

@@ -45,11 +45,11 @@ const patchResourceIdInDb = (hook) => {
     throw e;
   }
   const resourceId = hook.id || hook.result._id.toString();
-  const replacePromise = hook.app.service('content_filepaths').find({query: { _id: { $in: ids}}}).then(response => {
+  const replacePromise = hook.app.service('resource_filepaths').find({query: { _id: { $in: ids}}}).then(response => {
     const patchList = response.data.map((entry) => {
       if(entry.path.indexOf(resourceId) !== 0){
         let newPath = resourceId + '/' + entry.path;
-        return hook.app.service('content_filepaths').patch(entry._id, {resourceId: resourceId, path: newPath});
+        return hook.app.service('resource_filepaths').patch(entry._id, {resourceId: resourceId, path: newPath});
       }else{
         return Promise.resolve(entry);
       }
@@ -85,9 +85,9 @@ const patchResourceUrlInDb = (hook) => {
 
 const isItThis = (hook) => {
   const resourceId = hook.id;
-  const removePromise = hook.app.service('content_filepaths').find({query: {resourceId: resourceId}}).then(response => {
+  const removePromise = hook.app.service('resource_filepaths').find({query: {resourceId: resourceId}}).then(response => {
     const removeList = response.data.map((entry) => {
-      return hook.app.service('content_filepaths').remove(entry._id);
+      return hook.app.service('resource_filepaths').remove(entry._id);
     });
     return Promise.all(removeList);
   });

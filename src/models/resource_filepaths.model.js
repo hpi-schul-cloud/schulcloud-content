@@ -7,7 +7,7 @@
 module.exports = function (app) {
     const mongooseClient = app.get('mongooseClient');
 
-    const content_filepaths = new mongooseClient.Schema({
+    const resource_filepaths = new mongooseClient.Schema({
       // _id = fileId as used in StorageServer
       path: {type: String, required: true}, // "/resourceId/folderA/fileB.txt",
       resourceId: {type: String},
@@ -20,5 +20,5 @@ module.exports = function (app) {
       timestamps: true
     });
 
-    return mongooseClient.model('content_filepaths', content_filepaths);
+    return mongooseClient.model('resource_filepaths', resource_filepaths);
   };
