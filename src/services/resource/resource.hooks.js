@@ -83,6 +83,17 @@ const patchResourceUrlInDb = (hook) => {
   return hook;
 };
 
+const isItThis = (hook) => {
+  const resourceId = hook.id;
+  const removePromise = hook.app.service('content_filepaths').find({query: {resourceId: resourceId}}).then(response => {
+    const removeList = response.data.map((entry) => {
+      return hook.app.service('content_filepaths').remove(entry._id);
+    });
+    return Promise.all(removeList);
+  });
+  return removePromise.then(() => hook);
+};
+
 module.exports = {
   before: {
     all: [],
@@ -91,7 +102,7 @@ module.exports = {
     create: [authenticate, validateResourceSchema(), createThumbnail],
     update: [],
     patch: [patchResourceIdInDb, manageFiles,patchResourceUrlInDb],
-    remove: []
+    remove: [isItThis]
   },
 
   after: {
