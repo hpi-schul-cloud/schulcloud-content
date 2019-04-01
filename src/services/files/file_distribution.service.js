@@ -12,7 +12,7 @@ class FileDistributionService {
     const filePath = req.params['0'].replace(/^\//, '');
 
     // get fileId
-    return this.app.service('content_filepaths').find({ query: {
+    return this.app.service('resource_filepaths').find({ query: {
         path: filePath,
         isTemp: false
       } })

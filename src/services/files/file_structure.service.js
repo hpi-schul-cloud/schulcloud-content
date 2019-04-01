@@ -66,7 +66,7 @@ class FileStructureService {
       ? { resourceId: resourceId, isTemp: true, userId: queryParams.userId}
       : { resourceId: resourceId, isTemp: false };
     return this.app
-      .service('content_filepaths')
+      .service('resource_filepaths')
       .find({ query })
       .then(response => {
         // TODO
