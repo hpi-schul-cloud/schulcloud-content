@@ -3,7 +3,7 @@ const fs = require('fs');
 
 let instance;
 const serverDirectory = './test/s3mock';
-const container = process.env['STORAGE_CONTAINER'] || 'resource-hosting';
+const container = () => process.env['STORAGE_CONTAINER'] || 'resource-hosting';
 
 
 const startS3MockServer = () => {
@@ -15,15 +15,17 @@ const startS3MockServer = () => {
       removeBucketsOnClose: true,
       configureBuckets: [
         {
-          name: container,
+          name: container(),
         }
       ]
-    }).run((err, host, port) => {
+    }).run((err, {address, port}) => {
       if(err) {
         return reject(err);
       }
-      process.env['STORAGE_ENDPOINT'] = `http://${host}:${port}`;
-      process.env['STORAGE_KEY'] = 'STORAGE_KEY';
+      process.env['STORAGE_ENDPOINT'] = `http://${address}:${port}`;
+      process.env['STORAGE_KEY_ID'] = 'S3RVER';
+      process.env['STORAGE_KEY'] = 'S3RVER';
+      process.env['STORAGE_FILENAME_PREFIX'] = '';
       resolve();
     });
   });
@@ -32,7 +34,7 @@ const startS3MockServer = () => {
 const stopS3MockServer = () => {
   return new Promise((resolve) => {
     instance.close(() => {
-      fs.rmdirSync(serverDirectory);
+      //fs.rmdirSync(serverDirectory);
       resolve();
     });
   });
