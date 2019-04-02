@@ -11,7 +11,7 @@ const startS3MockServer = () => {
     instance = new S3rver({
       port: 9001,
       directory: serverDirectory,
-      removeBucketsOnClose: true,
+      resetOnClose: true,
       configureBuckets: [
         {
           name: container(),
