@@ -68,7 +68,7 @@ module.exports = function() {
   # Result: Thumbnail in Storage Server
   ################################################## */
   // Initialize our service with any options it requires
-  app.use('/thumbnail', new ThumbnailService(app));
-  const thumbnailService = app.service('thumbnail');
+  app.use('/files/thumbnail', new ThumbnailService(app));
+  const thumbnailService = app.service('files/thumbnail');
   thumbnailService.hooks(hooks.thumbnail);
 };

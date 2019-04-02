@@ -61,15 +61,11 @@ class FileUploadService {
               return reject({status: error.statusCode, message: error});
             }
             return reject({status: 500, message: error});
-          });/*addFilesToDB(this.app, [uploadPath], req.query.resourceId, req.query.userId)
-            .then((fileIdDictionary) => {
-              return promisePipe(part, getUploadStream(fileIdDictionary[uploadPath]))
-                .then(() => fileIdDictionary[uploadPath]);
-            })*/
+          });
             
         } else {
           if(!uploadPath){
-            logger.error('uploadpath (req.query.path) is missing.');
+            logger.error('uploadPath (req.query.path) is missing.');
           }else{
             logger.error('part is no file.');
           }

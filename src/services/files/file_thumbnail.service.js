@@ -1,7 +1,5 @@
-const logger = require('winston');
 const request = require('request');
-const hooks = require('./thumbnail.hooks');
-
+const { uploadFile } = require('./file_upload.service');
 
 
 
@@ -12,26 +10,15 @@ class ThumbnailService {
 
   async patch(resourceId, data, params) {
     const resource = await this.app.service('resources').get(resourceId);
-
-
-
-    const newReq2 = request({
-      uri: 'http://localhost',
-      method: 'POST'
+    uploadFile({
+      app: this.app,
+      userId: undefined,
+      resourceId,
+      uploadPath: resourceId+'/thumbnail.png',
+      sourceStream: request('http://127.0.0.1:3000/thumbnail?file='+resource.url)
+    }).then((fileId)=>{
+      this.app.service('resource_filepaths').patch(fileId, { isTemp: false });
     });
-    newReq2.query = { path: 'UPLOAD'};
-    var form = newReq2.form();
-    form.append('file', request('http://127.0.0.1:3000/thumbnail?file='+resource.url));
-
-
-
-/*
-    const newReq = params.req;
-    newReq.query = { path: 'UPLOAD'};
-    const form = newReq.form();
-    form.append('file', request('http://127.0.0.1:3000/thumbnail?file='+resource.url));
-*/
-    this.app.service('files/upload').create({}, { req: newReq2 });
   }
 }
 
