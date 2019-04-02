@@ -7,7 +7,13 @@ const {
 } = require('./storageHelper.js');
 const { addFilesToDB } = require('./fileDBHelper.js');
 
-
+const uploadFile = ({app, resourceId, userId, uploadPath, sourceStream}) => {
+  return addFilesToDB(app, [uploadPath], resourceId, userId)
+    .then((fileIdDictionary) => {
+      return promisePipe(sourceStream, getUploadStream(fileIdDictionary[uploadPath]))
+        .then(() => fileIdDictionary[uploadPath]);
+    });
+};
 
 class FileUploadService {
   constructor(app) {
@@ -40,21 +46,27 @@ class FileUploadService {
         if (part.filename && uploadPath) {
           //writableStream.managedUpload === https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3/ManagedUpload.html
           // managedUpload object allows you to abort ongoing upload or track file upload progress.
-          return addFilesToDB(this.app, [uploadPath], req.query.resourceId, req.query.userId)
+          return uploadFile({
+            app: this.app,
+            userId: req.query.userId,
+            resourceId: req.query.resourceId,
+            uploadPath,
+            sourceStream: part
+          }).then((uploadedId) => {
+            return resolve({status: 200, message: uploadedId});
+          })
+          .catch(error => {
+            logger.error(error);
+            if(error.statusCode){
+              return reject({status: error.statusCode, message: error});
+            }
+            return reject({status: 500, message: error});
+          });/*addFilesToDB(this.app, [uploadPath], req.query.resourceId, req.query.userId)
             .then((fileIdDictionary) => {
               return promisePipe(part, getUploadStream(fileIdDictionary[uploadPath]))
                 .then(() => fileIdDictionary[uploadPath]);
-            })
-            .then((uploadedId) => {
-              return resolve({status: 200, message: uploadedId});
-            })
-            .catch(error => {
-              logger.error(error);
-              if(error.statusCode){
-                return reject({status: error.statusCode, message: error});
-              }
-              return reject({status: 500, message: error});
-            });
+            })*/
+            
         } else {
           if(!uploadPath){
             logger.error('uploadpath (req.query.path) is missing.');
@@ -70,5 +82,6 @@ class FileUploadService {
 }
 
 module.exports = {
-  FileUploadService
+  FileUploadService,
+  uploadFile
 };
