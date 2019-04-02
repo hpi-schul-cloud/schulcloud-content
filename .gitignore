@@ -39,7 +39,7 @@ node_modules
 *.sublime-workspace
 
 # IDE - VSCode
-.vscode/**/*
+.vscode/settings.json
 
 ### Linux ###
 *~

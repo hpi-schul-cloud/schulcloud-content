@@ -51,7 +51,7 @@
     "multiparty": "^4.2.1",
     "pkgcloud": "^1.7.0",
     "request-promise-native": "^1.0.5",
-    "s3rver": "^2.2.8",
+    "s3rver": "^3.0.2",
     "serve-favicon": "^2.5.0",
     "winston": "^3.0.0"
   },

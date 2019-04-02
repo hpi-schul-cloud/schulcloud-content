@@ -53,8 +53,7 @@ describe('`files/structure` service', () => {
 
   it('returns correct filetree', () => {
     const service = app.service('files/structure');
-    const expectedResult = [
-      {
+    const expectedResult = {
         id: `${mockResourceId}`,
         type: 'folder',
         name: `${mockResourceId}`,
@@ -92,8 +91,7 @@ describe('`files/structure` service', () => {
             ]
           }
         ]
-      }
-    ];
+      };
     return service.get(`${mockResourceId}`).then(res => {
       assert.equal(JSON.stringify(res), JSON.stringify(expectedResult));
     });

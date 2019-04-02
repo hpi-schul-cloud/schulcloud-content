@@ -65,6 +65,11 @@ function parseJwtToken(token) {
  */
 function authenticateHook(hook) {
 
+  // skip for internal calls
+  if(typeof (hook.params.provider) === 'undefined'){
+    return hook;
+  }
+
   let authHeader = (((hook.params||{}).req||{}).headers||{})['authorization'];
 
   // gracefully exits instead of checking undefined variable
@@ -76,6 +81,7 @@ function authenticateHook(hook) {
   if(!hook.params){ hook.params = {}; }
   if(!hook.params.query){ hook.params.query = {}; }
   hook.params.query.userId = undefined;
+
 
   // JWT AUTH
   // TODO: Validate JWT Token against Server

@@ -1,29 +1,30 @@
 const S3rver = require('s3rver');
-const fs = require('fs');
 
 let instance;
 const serverDirectory = './test/s3mock';
-const container = process.env['STORAGE_CONTAINER'] || 'content-hosting';
+const container = () => process.env['STORAGE_CONTAINER'] || 'resource-hosting';
 
 
 const startS3MockServer = () => {
   // CREATE BUCKET
-  const bucketDir = `${serverDirectory}/${container}`;
-  if (!fs.existsSync(bucketDir)){
-    fs.mkdirSync(bucketDir, { recursive: true });
-  }
-
   return new Promise((resolve, reject) => {
     instance = new S3rver({
       port: 9001,
       directory: serverDirectory,
-      removeBucketsOnClose: true
-    }).run((err, host, port) => {
+      resetOnClose: true,
+      configureBuckets: [
+        {
+          name: container(),
+        }
+      ]
+    }).run((err, {address, port}) => {
       if(err) {
         return reject(err);
       }
-      process.env['STORAGE_ENDPOINT'] = `http://${host}:${port}`;
-      process.env['STORAGE_KEY'] = 'STORAGE_KEY';
+      process.env['STORAGE_ENDPOINT'] = `http://${address}:${port}`;
+      process.env['STORAGE_KEY_ID'] = 'S3RVER';
+      process.env['STORAGE_KEY'] = 'S3RVER';
+      process.env['STORAGE_FILENAME_PREFIX'] = '';
       resolve();
     });
   });
@@ -32,7 +33,6 @@ const startS3MockServer = () => {
 const stopS3MockServer = () => {
   return new Promise((resolve) => {
     instance.close(() => {
-      fs.rmdirSync(serverDirectory);
       resolve();
     });
   });

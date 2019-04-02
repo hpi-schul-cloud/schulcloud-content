@@ -1,56 +1,87 @@
 const assert = require('assert');
 const app = require('../../src/app');
 const { WritableMock } = require('stream-mock');
-const contentFilepaths = app.service('resource_filepaths');
+const resources = app.service('resources');
+const resourceFilepaths = app.service('resource_filepaths');
 
-const { mockUserId, mockResourceId } = require('./mockData');
+const { mockUserId } = require('./mockData');
+const { uploadMockFile, PORT } = require('./file_upload.test');
 
-let mockFileId;
+let mockResourceId;
+let mockFilePath;
 
 const fs = require('fs');
-const path = require('path');
-const { startS3MockServer, stopS3MockServer, serverDirectory, container } = require('./s3mock');
-const ncp = require('ncp').ncp;
-const source = path.resolve('test/mockData/test_txt');
+const { startS3MockServer, stopS3MockServer } = require('./s3mock');
 
 const insertMock = () => {
-  const mockData = {
-    path: `${mockResourceId}/test.txt`,
-    resourceId: mockResourceId,
-    isTemp: false,
-    createdBy: mockUserId
+  const mockResourceData = {
+    'originId' : Date.now().toString(),
+    'providerName' : 'Test',
+    'url' : 'https://de.khanacademy.org/video/number-grid',
+    'title' : 'Testinhalt',
+    'description' : 'Testinhalt',
+    'contentCategory' : 'atomic',
+    'mimeType' : 'application',
+    'userId' : mockUserId,
+    'licenses' : [ 'CC BY-SA' ],
+    'tags' : [ 'Test' ],
+    isPublished: true
   };
-  return contentFilepaths.create(mockData).then(fileObj => {
-    mockFileId = fileObj._id;
-  });
+
+  return resources.create(mockResourceData)
+    .then(resourceObj => {
+      mockResourceId = resourceObj._id.toString();
+    });
 };
 
 const removeMock = () => {
-  return contentFilepaths.remove(mockFileId);
+  return resources.remove(mockResourceId);
 };
 
 describe('\'files/get*\' service', () => {
 
-  before(function() {
+  before(() => {
     return insertMock()
-      .then(() => startS3MockServer())
       .then(() => {
-        return new Promise((resolve, reject) => {
-          const destination = path.resolve(`${serverDirectory}/${container}/${mockFileId}`);
-          ncp(source, destination, (err) => {
-            if (err) {
-              return reject();
-            }
-            resolve();
-          });
+        return startS3MockServer();
+      })
+      .then(() => {
+        this.server = app.listen(PORT);
+        return new Promise((resolve) => {
+          this.server.once('listening', resolve);
         });
+      })
+      .then(() => uploadMockFile({
+          filename: 'test.txt',
+          filepath: __filename,
+          resourceId: mockResourceId,
+        }))
+      .then(({ body }) => {
+        const {message: fileId} = JSON.parse(body);
+        return resourceFilepaths.patch(fileId, { isTemp: false });
+      })
+      .then((fileObj) => {
+        mockFilePath = fileObj.path;
+      })
+      .catch(err => {
+        // eslint-disable-next-line no-console
+        console.error(err);
       });
   });
 
-   after(function() {
-    return removeMock().then(() => {
-      return stopS3MockServer();
-    });
+   after(() => {
+    return removeMock()
+      .then(() => {
+        return stopS3MockServer();
+      })
+      .then(() => new Promise((resolve) => {
+          this.server.close(resolve);
+        })
+      )
+      .catch(err => {
+        // eslint-disable-next-line no-console
+        console.error(err);
+      });
   });
 
   it('registered the service', () => {
@@ -61,7 +92,7 @@ describe('\'files/get*\' service', () => {
 
   it('returns file', () => {
     const service = app.service('files/get*');
-    const expectedResult = fs.readFileSync(source + '/.dummys3_content', 'utf8');
+    const expectedResult = fs.readFileSync(__filename, 'utf8');
 
     const resStream = new WritableMock({objectMode: true});
 
@@ -71,7 +102,21 @@ describe('\'files/get*\' service', () => {
         resolve();
       });
       resStream.on('error', reject);
-      service.find({req: {params: {'0':`${mockResourceId}/test.txt`}, res: resStream}}).catch(reject);
+      service.find({
+        req: {
+          params: {
+            '0':mockFilePath
+          },
+          res: resStream,
+          headers: {
+            'Authorization': 'Basic c2NodWxjbG91ZC1jb250ZW50LTE6Y29udGVudC0x',
+          }
+        },
+        query: {
+          userId: mockUserId
+        },
+        route: [mockFilePath]
+      }).catch(reject);
     });
   });
 });

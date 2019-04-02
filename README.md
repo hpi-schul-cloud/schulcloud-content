@@ -57,5 +57,5 @@ node-env | default | info
 --- | --- | ---
 STORAGE_KEY_ID | `sc-devteam` | S3 Credentials KEY_ID, provided by Alex / Falco
 STORAGE_KEY | `undefined` | S3 Credentials KEY, provided by Alex / Falco
-STORAGE_CONTAINER | `content-hosting` | S3 Containername for content hosting
+STORAGE_CONTAINER | `resource-hosting` | S3 Containername for content hosting
 STORAGE_ENDPOINT | `https://dev-storage.schul-cloud.org:9001` | S3 Storage Endpoint URL
