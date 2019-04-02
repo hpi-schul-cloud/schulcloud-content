@@ -11,7 +11,6 @@ let mockResourceId;
 let mockFilePath;
 
 const fs = require('fs');
-const path = require('path');
 const { startS3MockServer, stopS3MockServer } = require('./s3mock');
 
 const insertMock = () => {
@@ -103,7 +102,21 @@ describe('\'files/get*\' service', () => {
         resolve();
       });
       resStream.on('error', reject);
-      service.find({req: {params: {'0':mockFilePath}, res: resStream}, route: [mockFilePath]}).catch(reject);
+      service.find({
+        req: {
+          params: {
+            '0':mockFilePath
+          },
+          res: resStream,
+          headers: {
+            'Authorization': 'Basic c2NodWxjbG91ZC1jb250ZW50LTE6Y29udGVudC0x',
+          }
+        },
+        query: {
+          userId: mockUserId
+        },
+        route: [mockFilePath]
+      }).catch(reject);
     });
   });
 });

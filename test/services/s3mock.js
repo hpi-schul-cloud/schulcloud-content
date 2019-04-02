@@ -1,5 +1,4 @@
 const S3rver = require('s3rver');
-const fs = require('fs');
 
 let instance;
 const serverDirectory = './test/s3mock';
@@ -34,7 +33,6 @@ const startS3MockServer = () => {
 const stopS3MockServer = () => {
   return new Promise((resolve) => {
     instance.close(() => {
-      //fs.rmdirSync(serverDirectory);
       resolve();
     });
   });

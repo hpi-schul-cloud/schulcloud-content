@@ -65,16 +65,8 @@ function parseJwtToken(token) {
  */
 function authenticateHook(hook) {
 
-  if(!hook.params){ hook.params = {}; }
-  if(!hook.params.query){ hook.params.query = {}; }
-  
-  // prevent userId injection
-  hook.params.query.userId = 'abc';
-
-  return hook;
-
-  // TODO remove this hack for the tests
-  if(process.env.NODE_ENV === 'test'){
+  // skip for internal calls
+  if(typeof (hook.params.provider) === 'undefined'){
     return hook;
   }
 
@@ -87,6 +79,7 @@ function authenticateHook(hook) {
   
   // prevent userId injection
   hook.params.query.userId = undefined;
+
 
   // JWT AUTH
   // TODO: Validate JWT Token against Server
