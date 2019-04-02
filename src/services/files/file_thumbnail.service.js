@@ -1,6 +1,7 @@
 const request = require('request');
 const { uploadFile } = require('./file_upload.service');
-
+const config = require('config');
+const pichassoConfig = config.get('pichasso');
 
 
 class ThumbnailService {
@@ -20,10 +21,10 @@ class ThumbnailService {
       userId: undefined,
       resourceId,
       uploadPath: resourceId+'/thumbnail.png',
-      sourceStream: request('http://127.0.0.1:3000/thumbnail?file='+resource.url)
+      sourceStream: request(`${pichassoConfig.url}:${pichassoConfig.port}/thumbnail?file=${resource.url}`)
     });
     await this.app.service('resource_filepaths').patch(fileId, { isTemp: false });
-    await this.app.service('resources').patch(resourceId, { thumbnail: `http://127.0.0.1:4040/files/get/${resourceId}/thumbnail.png` });
+    await this.app.service('resources').patch(resourceId, { thumbnail: `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/${resourceId}/thumbnail.png` });
     return 'CREATED :D'; // TODO
   }
 }

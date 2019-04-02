@@ -1,6 +1,7 @@
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 const authenticate = require('../../hooks/authenticate');
 const createThumbnail = require('../../hooks/createThumbnail');
+const config = require('config');
 
 /*
 Anfrage so manipulieren, dass nur isPublished=true angezeigt wird
@@ -62,7 +63,7 @@ const patchResourceIdInDb = (hook) => {
 const patchNewResourceUrlInDb = (hook) => {
   if(hook.data.patchResourceUrl){
     hook.data.patchResourceUrl = false;
-    const preUrl = 'http://127.0.0.1:4040/files/get/';
+    const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/`;
     const resourceId = hook.id || hook.result._id.toString();
     const replacePromise = hook.app.service('resources').get(resourceId).then(response => {
       let newUrl = preUrl + resourceId + response.url;
@@ -76,7 +77,7 @@ const patchNewResourceUrlInDb = (hook) => {
 const patchResourceUrlInDb = (hook) => {
   if(hook.data.patchResourceUrl&&!hook.data.url.startsWith('http')){
     hook.data.patchResourceUrl = false;
-    const preUrl = 'http://127.0.0.1:4040/files/get/';
+    const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/`;
     const resourceId = hook.id || hook.result._id.toString();
       hook.data.url = preUrl + resourceId + hook.data.url;
   }
