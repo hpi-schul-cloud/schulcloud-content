@@ -1,5 +1,4 @@
 //const authenticate = require('../../hooks/authenticate');
-const logger = require('winston');
 const commonHooks = require('feathers-hooks-common');
 const defaultHooks = require('./file_default.hook.js');
 const authenticate = require('../../hooks/authenticate');

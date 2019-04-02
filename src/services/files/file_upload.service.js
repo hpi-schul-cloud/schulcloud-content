@@ -7,6 +7,8 @@ const {
 } = require('./storageHelper.js');
 const { addFilesToDB } = require('./fileDBHelper.js');
 
+
+
 class FileUploadService {
   constructor(app) {
     this.app = app;
@@ -41,18 +43,24 @@ class FileUploadService {
           return addFilesToDB(this.app, [uploadPath], req.query.resourceId, req.query.userId)
             .then((fileIdDictionary) => {
               return promisePipe(part, getUploadStream(fileIdDictionary[uploadPath]))
-              .then((/* result */) => {
-                return resolve({status: 200, message: fileIdDictionary[uploadPath]});
-              });
+                .then(() => fileIdDictionary[uploadPath]);
+            })
+            .then((uploadedId) => {
+              return resolve({status: 200, message: uploadedId});
             })
             .catch(error => {
               logger.error(error);
               if(error.statusCode){
-                return reject(reject({status: error.statusCode, message: error}));
+                return reject({status: error.statusCode, message: error});
               }
-              return reject(reject({status: 500, message: error}));
+              return reject({status: 500, message: error});
             });
         } else {
+          if(!uploadPath){
+            logger.error('uploadpath (req.query.path) is missing.');
+          }else{
+            logger.error('part is no file.');
+          }
           return reject({status: 400});
         }
       });
