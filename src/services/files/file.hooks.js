@@ -81,9 +81,14 @@ const uploadHooks = {
   }
 };
 
+const thumbnailHooks = {
+  ...defaultHooks,
+};
+
 module.exports = {
   distribution: distributionHooks,
   manage: manageHooks,
   structure: structureHooks,
-  upload: uploadHooks
+  upload: uploadHooks,
+  thumbnail: thumbnailHooks
 };

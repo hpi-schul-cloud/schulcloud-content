@@ -35,11 +35,6 @@ class ThumbnailService {
   }
 }
 
-module.exports = function () {
-  const app = this;
-
-  // Initialize our service with any options it requires
-  app.use('/thumbnail', new ThumbnailService(app));
-  const service = app.service('thumbnail');
-  //service.hooks(hooks);
+module.exports = {
+  ThumbnailService
 };
