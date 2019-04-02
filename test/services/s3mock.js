@@ -3,21 +3,21 @@ const fs = require('fs');
 
 let instance;
 const serverDirectory = './test/s3mock';
-const container = process.env['STORAGE_CONTAINER'] || 'content-hosting';
+const container = process.env['STORAGE_CONTAINER'] || 'resource-hosting';
 
 
 const startS3MockServer = () => {
   // CREATE BUCKET
-  const bucketDir = `${serverDirectory}/${container}`;
-  if (!fs.existsSync(bucketDir)){
-    fs.mkdirSync(bucketDir, { recursive: true });
-  }
-
   return new Promise((resolve, reject) => {
     instance = new S3rver({
       port: 9001,
       directory: serverDirectory,
-      removeBucketsOnClose: true
+      removeBucketsOnClose: true,
+      configureBuckets: [
+        {
+          name: container,
+        }
+      ]
     }).run((err, host, port) => {
       if(err) {
         return reject(err);

@@ -1,10 +1,12 @@
 const assert = require('assert');
 const app = require('../../src/app');
 const { WritableMock } = require('stream-mock');
-const contentFilepaths = app.service('resource_filepaths');
+const resources = app.service('resources');
+const resourceFilepaths = app.service('resource_filepaths');
 
-const { mockUserId, mockResourceId } = require('./mockData');
+const { mockUserId } = require('./mockData');
 
+let mockResourceId;
 let mockFileId;
 
 const fs = require('fs');
@@ -14,19 +16,41 @@ const ncp = require('ncp').ncp;
 const source = path.resolve('test/mockData/test_txt');
 
 const insertMock = () => {
-  const mockData = {
-    path: `${mockResourceId}/test.txt`,
-    resourceId: mockResourceId,
-    isTemp: false,
-    createdBy: mockUserId
+  const mockResourceData = {
+    'originId' : Date.now().toString(),
+    'providerName' : 'Test',
+    'url' : 'https://de.khanacademy.org/video/number-grid',
+    'title' : 'Testinhalt',
+    'description' : 'Testinhalt',
+    'contentCategory' : 'atomic',
+    'mimeType' : 'application',
+    'userId' : mockUserId,
+    'licenses' : [ 'CC BY-SA' ],
+    'tags' : [ 'Test' ],
+    isPublished: true
   };
-  return contentFilepaths.create(mockData).then(fileObj => {
-    mockFileId = fileObj._id;
-  });
+
+  return resources.create(mockResourceData)
+    .then(resourceObj => {
+      mockResourceId = resourceObj._id;
+
+      const mockFileData = {
+        path: `${mockResourceId}/test.txt`,
+        resourceId: mockResourceId,
+        isTemp: false,
+        createdBy: mockUserId
+      };
+      return resourceFilepaths.create(mockFileData);
+    })
+    .then(fileObj => {
+      mockFileId = fileObj._id;
+    });
 };
 
 const removeMock = () => {
-  return contentFilepaths.remove(mockFileId);
+  return resources.remove(mockResourceId)
+    .then(() => resourceFilepaths.remove(mockFileId));
+
 };
 
 describe('\'files/get*\' service', () => {
@@ -44,12 +68,18 @@ describe('\'files/get*\' service', () => {
             resolve();
           });
         });
+      }).catch(err => {
+        // eslint-disable-next-line no-console
+        console.error(err);
       });
   });
 
    after(function() {
     return removeMock().then(() => {
       return stopS3MockServer();
+    }).catch(err => {
+      // eslint-disable-next-line no-console
+      console.error(err);
     });
   });
 
@@ -71,7 +101,8 @@ describe('\'files/get*\' service', () => {
         resolve();
       });
       resStream.on('error', reject);
-      service.find({req: {params: {'0':`${mockResourceId}/test.txt`}, res: resStream}}).catch(reject);
+      const mockFilePath = `${mockResourceId}/test.txt`;
+      service.find({req: {params: {'0':mockFilePath}, res: resStream}, route: [mockFilePath]}).catch(reject);
     });
   });
 });

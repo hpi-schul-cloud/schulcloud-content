@@ -18,7 +18,7 @@ function removeTrailingSlashes(fileId) {
   return fileId.replace(/^[/.]*/, '');
 }
 
-const container = process.env['STORAGE_CONTAINER'] || 'content-hosting';
+const container = process.env['STORAGE_CONTAINER'] || 'resource-hosting';
 const filenamePrefix = 'files/';
 
 function getUploadStream(fileId) {
