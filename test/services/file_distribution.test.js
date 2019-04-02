@@ -5,15 +5,14 @@ const resources = app.service('resources');
 const resourceFilepaths = app.service('resource_filepaths');
 
 const { mockUserId } = require('./mockData');
+const { uploadMockFile, PORT } = require('./file_upload.test');
 
 let mockResourceId;
-let mockFileId;
+let mockFilePath;
 
 const fs = require('fs');
 const path = require('path');
-const { startS3MockServer, stopS3MockServer, serverDirectory, container } = require('./s3mock');
-const ncp = require('ncp').ncp;
-const source = path.resolve('test/mockData/test_txt');
+const { startS3MockServer, stopS3MockServer } = require('./s3mock');
 
 const insertMock = () => {
   const mockResourceData = {
@@ -32,55 +31,58 @@ const insertMock = () => {
 
   return resources.create(mockResourceData)
     .then(resourceObj => {
-      mockResourceId = resourceObj._id;
-
-      const mockFileData = {
-        path: `${mockResourceId}/test.txt`,
-        resourceId: mockResourceId,
-        isTemp: false,
-        createdBy: mockUserId
-      };
-      return resourceFilepaths.create(mockFileData);
-    })
-    .then(fileObj => {
-      mockFileId = fileObj._id;
+      mockResourceId = resourceObj._id.toString();
     });
 };
 
 const removeMock = () => {
-  return resources.remove(mockResourceId)
-    .then(() => resourceFilepaths.remove(mockFileId));
-
+  return resources.remove(mockResourceId);
 };
 
 describe('\'files/get*\' service', () => {
 
-  before(function() {
+  before(() => {
     return insertMock()
-      .then(() => startS3MockServer())
       .then(() => {
-        return new Promise((resolve, reject) => {
-          const destination = path.resolve(`${serverDirectory}/${container}/${mockFileId}`);
-          ncp(source, destination, (err) => {
-            if (err) {
-              return reject();
-            }
-            resolve();
-          });
+        return startS3MockServer();
+      })
+      .then(() => {
+        this.server = app.listen(PORT);
+        return new Promise((resolve) => {
+          this.server.once('listening', resolve);
         });
-      }).catch(err => {
+      })
+      .then(() => uploadMockFile({
+          filename: 'test.txt',
+          filepath: __filename,
+          resourceId: mockResourceId,
+        }))
+      .then(({ body }) => {
+        const {message: fileId} = JSON.parse(body);
+        return resourceFilepaths.patch(fileId, { isTemp: false });
+      })
+      .then((fileObj) => {
+        mockFilePath = fileObj.path;
+      })
+      .catch(err => {
         // eslint-disable-next-line no-console
         console.error(err);
       });
   });
 
-   after(function() {
-    return removeMock().then(() => {
-      return stopS3MockServer();
-    }).catch(err => {
-      // eslint-disable-next-line no-console
-      console.error(err);
-    });
+   after(() => {
+    return removeMock()
+      .then(() => {
+        return stopS3MockServer();
+      })
+      .then(() => new Promise((resolve) => {
+          this.server.close(resolve);
+        })
+      )
+      .catch(err => {
+        // eslint-disable-next-line no-console
+        console.error(err);
+      });
   });
 
   it('registered the service', () => {
@@ -91,7 +93,7 @@ describe('\'files/get*\' service', () => {
 
   it('returns file', () => {
     const service = app.service('files/get*');
-    const expectedResult = fs.readFileSync(source + '/.dummys3_content', 'utf8');
+    const expectedResult = fs.readFileSync(__filename, 'utf8');
 
     const resStream = new WritableMock({objectMode: true});
 
@@ -101,7 +103,6 @@ describe('\'files/get*\' service', () => {
         resolve();
       });
       resStream.on('error', reject);
-      const mockFilePath = `${mockResourceId}/test.txt`;
       service.find({req: {params: {'0':mockFilePath}, res: resStream}, route: [mockFilePath]}).catch(reject);
     });
   });
