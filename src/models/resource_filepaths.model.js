@@ -11,7 +11,7 @@ module.exports = function (app) {
       // _id = fileId as used in StorageServer
       path: {type: String, required: true}, // "/resourceId/folderA/fileB.txt",
       resourceId: {type: String},
-      createdBy: {type: String, required: true},
+      createdBy: {type: String, required: false}, // TODO FIX
       isTemp: {type: Boolean, required: true},
 
       createdAt: { type: Date, default: Date.now },
