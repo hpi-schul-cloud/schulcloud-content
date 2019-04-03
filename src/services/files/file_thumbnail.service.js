@@ -23,13 +23,13 @@ class ThumbnailService {
 
   async patch(resourceId /*, data, params */) {
     if (!pichassoConfig.enabled) {
-      throw new errors.Unavailable('{status: 503, message: "service disabled"}');
+      throw new errors.Unavailable('service disabled');
     }
 
     const resource = await this.app.service('resources').get(resourceId);
 
     if(resource.thumbnail){
-      throw new PreconditionFailed('{status: 412, message: "thumbnail already exists"}');
+      throw new PreconditionFailed('thumbnail already exists');
     }
 
     const pichassoHost = `${pichassoConfig.url}:${pichassoConfig.port}`;
@@ -40,11 +40,11 @@ class ThumbnailService {
 
     // verify token
     if (verifyResponse.statusCode !== 200) {
-      throw new errors.GeneralError('{status: 500, message:"verification failed getting thumbnail url"}');
+      throw new errors.GeneralError('verification failed getting thumbnail url');
     }
     const authtoken = verifyResponse.body;
     if(!authtoken || authtoken.length !== 6){
-      throw new errors.GeneralError('{status: 500, message: "received token seems to be wrong"}');
+      throw new errors.GeneralError('received token seems to be wrong');
     }
 
     // create thumbnail
@@ -60,7 +60,7 @@ class ThumbnailService {
     // patch thumbnail into resource
     await this.app.service('resources').patch(resourceId, { thumbnail: `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/${resourceId}/thumbnail.png` });
 
-    return `{status: 200, message: ${fileId}}`;
+    return `{code: 200, message: ${fileId}}`;
   }
 }
 
