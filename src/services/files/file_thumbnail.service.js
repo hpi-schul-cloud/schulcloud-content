@@ -10,6 +10,10 @@ class ThumbnailService {
   }
 
   async patch(resourceId, data, params) {
+    if (!pichassoConfig.enabled) {
+      return 'DISABLED :\'('; // TODO
+    }
+
     const resource = await this.app.service('resources').get(resourceId);
 
     if(resource.thumbnail){
