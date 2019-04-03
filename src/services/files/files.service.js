@@ -64,6 +64,7 @@ module.exports = function() {
 
    /* ##################################################
   # THUMBNAIL
+  # For internal use only, see "resource"-hooks
   # Usage: GET /files/thumbnail/{resourceId}
   # Result: Thumbnail in Storage Server
   ################################################## */
