@@ -2,7 +2,7 @@ const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 const authenticate = require('../../hooks/authenticate');
 const createThumbnail = require('../../hooks/createThumbnail');
 const config = require('config');
-
+const pichassoConfig = config.get('pichasso');
 /*
 Anfrage so manipulieren, dass nur isPublished=true angezeigt wird
 Außer: userId = currentUser._id (hook.data.userId)
@@ -94,13 +94,23 @@ const isItThis = (hook) => {
   });
   return removePromise.then(() => hook);
 };
+const  createNewThumbnail = (hook) => {
+  console.log(hook);
+  if (pichassoConfig.enabled && hook.data.thumbnail == ''){
+    const resourceId = hook.id || hook.result._id.toString();
+    return hook.app.service('files/thumbnail')
+      .patch(resourceId, {})
+      .then(() => hook);
+  }
+  return hook;
+};
 
 module.exports = {
   before: {
     all: [],
     find: [restrictToPublicIfUnauthorized],
     get: [],
-    create: [authenticate, validateResourceSchema(), createThumbnail],
+    create: [authenticate, validateResourceSchema(), /*createThumbnail, */],
     update: [],
     patch: [patchResourceIdInDb, manageFiles,patchResourceUrlInDb],
     remove: [isItThis]
@@ -110,7 +120,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [patchResourceIdInDb,manageFiles,patchNewResourceUrlInDb],
+    create: [patchResourceIdInDb,manageFiles,patchNewResourceUrlInDb,createNewThumbnail],
     update: [],
     patch: [],
     remove: []
