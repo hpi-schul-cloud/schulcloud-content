@@ -84,15 +84,16 @@ const patchResourceUrlInDb = (hook) => {
   return hook;
 };
 
-const isItThis = (hook) => {
+const deleteRelatedFiles = async (hook) => {
   const resourceId = hook.id;
-  const removePromise = hook.app.service('resource_filepaths').find({query: {resourceId: resourceId}}).then(response => {
-    const removeList = response.data.map((entry) => {
-      return hook.app.service('resource_filepaths').remove(entry._id);
-    });
-    return Promise.all(removeList);
-  });
-  return removePromise.then(() => hook);
+  const existingFiles = await hook.app.service('resource_filepaths').find({query: {resourceId: resourceId}});
+  const filesToRemove = existingFiles.data.map((entry) => entry._id);
+  const manageObject = {
+    save: [],
+    delete: filesToRemove,
+  };
+  await hook.app.service('/files/manage').patch(resourceId, manageObject, hook);
+  return hook;
 };
 const  createNewThumbnail = (hook) => {
   console.log(hook);
@@ -113,7 +114,7 @@ module.exports = {
     create: [authenticate, validateResourceSchema(), /*createThumbnail, */],
     update: [],
     patch: [patchResourceIdInDb, manageFiles,patchResourceUrlInDb],
-    remove: [isItThis]
+    remove: [deleteRelatedFiles]
   },
 
   after: {

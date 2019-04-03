@@ -47,10 +47,10 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
   return function (hook) {
 
     // Check request is json-api, or jsonapify ran before
-    //let isFirstJsonapifyCall = false;
+    let isFirstJsonapifyCall = false;
     if(typeof hook.jsonapify === 'undefined') {
       hook.jsonapify = checkIfRequestIsJsonApi(hook);
-      //isFirstJsonapifyCall = true;
+      isFirstJsonapifyCall = true;
     }
     if(hook.jsonapify !== true) {
       return Promise.resolve(hook);
