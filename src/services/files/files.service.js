@@ -5,6 +5,7 @@ const { FileDistributionService } = require('./file_distribution.service.js');
 const { FileUploadService } = require('./file_upload.service.js');
 const { FileManageService } = require('./file_manage.service.js');
 const { ThumbnailService } = require('./file_thumbnail.service.js');
+const { DrmService } = require('./file_drm.service.js');
 
 const hooks = require('./file.hooks');
 
@@ -72,4 +73,16 @@ module.exports = function() {
   app.use('/files/thumbnail', new ThumbnailService(app));
   const thumbnailService = app.service('files/thumbnail');
   thumbnailService.hooks(hooks.thumbnail);
+
+
+   /* ##################################################
+  # DRM-PROTECTION (currently only Pdf)
+  # For internal use only
+  # Usage: GET /files/drm/{resourceId}
+  # Result: Protect all files in resource with DRM-Protection
+  ################################################## */
+  // Initialize our service with any options it requires
+  app.use('/files/drm', new DrmService(app));
+  const drmService = app.service('files/drm');
+  drmService.hooks(hooks.drm);
 };
