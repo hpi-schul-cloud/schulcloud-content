@@ -96,14 +96,20 @@ const deleteRelatedFiles = async (hook) => {
   return hook;
 };
 const  createNewThumbnail = (hook) => {
-  console.log(hook);
+  const resourceId = hook.id || hook.result._id.toString();
   if (pichassoConfig.enabled && hook.data.thumbnail == ''){
-    const resourceId = hook.id || hook.result._id.toString();
     return hook.app.service('files/thumbnail')
       .patch(resourceId, {})
       .then(() => hook);
+  }else{
+    const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/`;
+    const replacePromise = hook.app.service('resources').get(resourceId).then(response => {
+      console.log(response);
+      let newUrl = preUrl + resourceId + response.thumbnail;
+      return hook.app.service('resources').patch(response._id, {thumbnail: newUrl});
+    });
+    return Promise.all([replacePromise]).then(() => hook);
   }
-  return hook;
 };
 
 module.exports = {
