@@ -123,6 +123,24 @@ class DrmService {
       await addWatermark(optionsImageWatermark);
       let sourceStream = fs.createReadStream(sourceFilePath);
       await promisePipe(sourceStream, getUploadStream(element.id));      
+    }else if (['PDF'].includes(fileType)) {
+      const outputFilePath = absoluteLocalStoragePath+'\\out_'+element.id;
+      const options = {
+        keyLength: 256,
+        password: {
+          user: '',
+          owner: 'MySuperSecretPassword'},
+        outputFile: outputFilePath,
+        restrictions: {
+          print: 'none',
+          modify: 'none',
+          extract: 'n'
+      }
+    };
+    await qpdf.encrypt(sourceFilePath, options);
+    let sourceStream = fs.createReadStream(outputFilePath);
+    await promisePipe(sourceStream, getUploadStream(element.id));
+    fs.unlinkSync(outputFilePath);
     }
     // delete files
     fs.unlinkSync(sourceFilePath);

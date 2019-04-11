@@ -104,7 +104,6 @@ const  createNewThumbnail = (hook) => {
   }else{
     const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/`;
     const replacePromise = hook.app.service('resources').get(resourceId).then(response => {
-      console.log(response);
       let newUrl = preUrl + resourceId + response.thumbnail;
       return hook.app.service('resources').patch(response._id, {thumbnail: newUrl});
     });
