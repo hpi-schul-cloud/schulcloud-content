@@ -112,6 +112,14 @@ const  createNewThumbnail = (hook) => {
   }
 };
 
+const addDrmProtection = (hook) => {
+  const resourceId = hook.id || hook.result._id.toString();
+  if (hook.data.isProtected) {
+    return hook.app.service('files/drm').get(resourceId).then(()=>hook);
+  } 
+};
+
+
 module.exports = {
   before: {
     all: [],
@@ -127,7 +135,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [patchResourceIdInDb,manageFiles,patchNewResourceUrlInDb,createNewThumbnail],
+    create: [patchResourceIdInDb,manageFiles,patchNewResourceUrlInDb,createNewThumbnail,addDrmProtection],
     update: [],
     patch: [],
     remove: []
