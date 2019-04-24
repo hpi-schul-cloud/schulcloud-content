@@ -1,7 +1,8 @@
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 const authenticate = require('../../hooks/authenticate');
 const createThumbnail = require('../../hooks/createThumbnail');
-
+const config = require('config');
+const pichassoConfig = config.get('pichasso');
 /*
 Anfrage so manipulieren, dass nur isPublished=true angezeigt wird
 Außer: userId = currentUser._id (hook.data.userId)
@@ -62,7 +63,7 @@ const patchResourceIdInDb = (hook) => {
 const patchNewResourceUrlInDb = (hook) => {
   if(hook.data.patchResourceUrl){
     hook.data.patchResourceUrl = false;
-    const preUrl = 'http://127.0.0.1:4040/files/get/';
+    const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/`;
     const resourceId = hook.id || hook.result._id.toString();
     const replacePromise = hook.app.service('resources').get(resourceId).then(response => {
       let newUrl = preUrl + resourceId + response.url;
@@ -70,28 +71,39 @@ const patchNewResourceUrlInDb = (hook) => {
     });
     return Promise.all([replacePromise]).then(() => hook);
   }
-  return hook;  
+  return hook;
 };
 
 const patchResourceUrlInDb = (hook) => {
   if(hook.data.patchResourceUrl&&!hook.data.url.startsWith('http')){
     hook.data.patchResourceUrl = false;
-    const preUrl = 'http://127.0.0.1:4040/files/get/';
+    const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/`;
     const resourceId = hook.id || hook.result._id.toString();
       hook.data.url = preUrl + resourceId + hook.data.url;
   }
   return hook;
 };
 
-const isItThis = (hook) => {
+const deleteRelatedFiles = async (hook) => {
   const resourceId = hook.id;
-  const removePromise = hook.app.service('resource_filepaths').find({query: {resourceId: resourceId}}).then(response => {
-    const removeList = response.data.map((entry) => {
-      return hook.app.service('resource_filepaths').remove(entry._id);
-    });
-    return Promise.all(removeList);
-  });
-  return removePromise.then(() => hook);
+  const existingFiles = await hook.app.service('resource_filepaths').find({query: {resourceId: resourceId}});
+  const filesToRemove = existingFiles.data.map((entry) => entry._id);
+  const manageObject = {
+    save: [],
+    delete: filesToRemove,
+  };
+  await hook.app.service('/files/manage').patch(resourceId, manageObject, hook);
+  return hook;
+};
+
+const  createNewThumbnail = (hook) => {
+  if (pichassoConfig.enabled && hook.data.thumbnail == ''){
+    const resourceId = hook.id || hook.result._id.toString();
+    return hook.app.service('files/thumbnail')
+      .patch(resourceId, {})
+      .then(() => hook);
+  }
+  return hook;
 };
 
 module.exports = {
@@ -99,17 +111,17 @@ module.exports = {
     all: [],
     find: [restrictToPublicIfUnauthorized],
     get: [],
-    create: [authenticate, validateResourceSchema(), createThumbnail],
+    create: [authenticate, validateResourceSchema(), /*createThumbnail, */],
     update: [],
     patch: [patchResourceIdInDb, manageFiles,patchResourceUrlInDb],
-    remove: [isItThis]
+    remove: [deleteRelatedFiles]
   },
 
   after: {
     all: [],
     find: [],
     get: [],
-    create: [patchResourceIdInDb,manageFiles,patchNewResourceUrlInDb],
+    create: [patchResourceIdInDb,manageFiles,patchNewResourceUrlInDb,createNewThumbnail],
     update: [],
     patch: [],
     remove: []

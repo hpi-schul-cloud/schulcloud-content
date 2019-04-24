@@ -4,6 +4,7 @@ const { FileStructureService } = require('./file_structure.service.js');
 const { FileDistributionService } = require('./file_distribution.service.js');
 const { FileUploadService } = require('./file_upload.service.js');
 const { FileManageService } = require('./file_manage.service.js');
+const { ThumbnailService } = require('./file_thumbnail.service.js');
 
 const hooks = require('./file.hooks');
 
@@ -58,4 +59,17 @@ module.exports = function() {
   app.use('/files/structure', new FileStructureService(app));
   const fileStructureService = app.service('files/structure');
   fileStructureService.hooks(hooks.structure);
+
+
+
+   /* ##################################################
+  # THUMBNAIL
+  # For internal use only, see "resource"-hooks
+  # Usage: GET /files/thumbnail/{resourceId}
+  # Result: Thumbnail in Storage Server
+  ################################################## */
+  // Initialize our service with any options it requires
+  app.use('/files/thumbnail', new ThumbnailService(app));
+  const thumbnailService = app.service('files/thumbnail');
+  thumbnailService.hooks(hooks.thumbnail);
 };
