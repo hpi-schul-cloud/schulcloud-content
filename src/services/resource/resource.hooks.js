@@ -1,6 +1,7 @@
+const commonHooks = require('feathers-hooks-common');
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 const authenticate = require('../../hooks/authenticate');
-const createThumbnail = require('../../hooks/createThumbnail');
+// const createThumbnail = require('../../hooks/createThumbnail');
 const config = require('config');
 const pichassoConfig = config.get('pichasso');
 /*
@@ -95,7 +96,6 @@ const deleteRelatedFiles = async (hook) => {
   await hook.app.service('/files/manage').patch(resourceId, manageObject, hook);
   return hook;
 };
-
 const  createNewThumbnail = (hook) => {
   if (pichassoConfig.enabled && hook.data.thumbnail == ''){
     const resourceId = hook.id || hook.result._id.toString();
@@ -106,14 +106,66 @@ const  createNewThumbnail = (hook) => {
   return hook;
 };
 
+const validateResource = (hook) => {
+  if( hook.data.isPublished || hook.result.isPublished){
+    try {
+      validateResourceSchema()(hook);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+  return true;
+};
+
+const unpublishInvalidResources = async (hook) => {
+  if (!Array.isArray(hook.result)) { // patch single
+    hook.data = hook.result;
+    if(!validateResource(hook)){
+      hook.result.isPublished = false;
+      await hook.app.service('resources').patch(hook.result._id, { isPublished: false });
+    }
+  } else { // patch multiple
+    const validatePromises = hook.result.map((resource, index) => {
+      const newHook = { ...hook }; // copy by value
+      newHook.data = resource;
+      newHook.result = resource;
+      if(!validateResource(newHook)){
+        hook.result[index].isPublished = false;
+        return hook.app.service('resources').patch(resource._id, { isPublished: false });
+      }
+    });
+    await Promise.all(validatePromises);
+  }
+  return hook;
+};
+
+const validateResourceHook = (hook) => {
+  if (!Array.isArray(hook.data) && hook.data.isPublished) { // create single
+    if(!validateResource(hook)){
+      hook.data.isPublished = false;
+    }
+  } else { // create multiple
+    hook.data = hook.data.map((resource) => {
+      const newHook = { ...hook }; // copy by value
+      newHook.data = resource;
+      if(!validateResource(newHook)){
+        resource.isPublished = false;
+      }
+      return resource;
+    });
+  }
+  return hook;
+};
+
 module.exports = {
   before: {
     all: [],
     find: [restrictToPublicIfUnauthorized],
     get: [],
-    create: [authenticate, validateResourceSchema(), /*createThumbnail, */],
-    update: [],
-    patch: [patchResourceIdInDb, manageFiles,patchResourceUrlInDb],
+    create: [authenticate, validateResourceHook, /*createThumbnail, */],
+    update: [commonHooks.disallow()],
+    patch: [patchResourceIdInDb, manageFiles, patchResourceUrlInDb],
     remove: [deleteRelatedFiles]
   },
 
@@ -123,7 +175,7 @@ module.exports = {
     get: [],
     create: [patchResourceIdInDb,manageFiles,patchNewResourceUrlInDb,createNewThumbnail],
     update: [],
-    patch: [],
+    patch: [unpublishInvalidResources],
     remove: []
   },
 
