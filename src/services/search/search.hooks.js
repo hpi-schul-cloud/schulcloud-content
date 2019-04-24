@@ -1,9 +1,15 @@
-
+const allowDisableLimit = (hook) => {
+  if(hook.params.query.$select === '_id' && hook.params.query.$limit === '-1') {
+    hook.params.paginate = false;
+    hook.params.query.$limit = 10000; // just deleting $limit causes the default value :(
+  }
+  return hook;
+};
 
 module.exports = {
   before: {
     all: [],
-    find: [],
+    find: [allowDisableLimit],
     get: [],
     create: [],
     update: [],

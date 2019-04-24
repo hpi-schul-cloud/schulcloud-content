@@ -12,13 +12,13 @@ module.exports = function (app) {
 
     url: { type: String, required: true },
     title: { type: String, required: true },
-    description: { type: String, required: true },
+    description: { type: String },
     thumbnail: {type: String },
 
     tags: { type: [String] },
-    licenses: { type: [String], required: true },
-    contentCategory: { type: String, enum: ['atomic', 'learning-object', 'proven-learning-object', 'tool'], required: true },
-    mimeType: { type: String, required: true },
+    licenses: { type: [String]},
+    contentCategory: { type: String, enum: ['atomic', 'learning-object', 'proven-learning-object', 'tool'] },
+    mimeType: { type: String },
 
     promoUntil: { type: Date },
     featuredUntil: { type: Date },
@@ -27,8 +27,7 @@ module.exports = function (app) {
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 
-    isPublished:{ type: Boolean, default: false, required: true}
-
+    isPublished:{ type: Boolean, default: false }
   });
 
   return mongooseClient.model('resource', resource);
