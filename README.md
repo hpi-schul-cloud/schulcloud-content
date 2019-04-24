@@ -1,5 +1,7 @@
 # schulcloud-content
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/schul-cloud/schulcloud-content.svg)](https://greenkeeper.io/)
+
 This is the content search engine for schul-cloud,
 including a database to store the resources.
 
