@@ -60,7 +60,7 @@
   "definitions": {
     "URL": {
       "type": "string",
-      "pattern": "^https?://.+$"
+      "pattern": "^(?:/|https?://).+$"
     },
     "ContentCategory": {
       "enum": ["atomic", "learning-object", "proven-learning-object", "tool"]

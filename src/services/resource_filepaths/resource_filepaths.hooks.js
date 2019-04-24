@@ -1,9 +1,9 @@
-// Application hooks that run for every service
-const logger = require('./hooks/logger');
+//const authenticate = require('../../hooks/authenticate');
+
 
 module.exports = {
   before: {
-    all: [  ],
+    all: [],
     find: [],
     get: [],
     create: [],
@@ -13,7 +13,7 @@ module.exports = {
   },
 
   after: {
-    all: [ ],
+    all: [],
     find: [],
     get: [],
     create: [],
@@ -23,7 +23,7 @@ module.exports = {
   },
 
   error: {
-    all: [ logger() ],
+    all: [],
     find: [],
     get: [],
     create: [],

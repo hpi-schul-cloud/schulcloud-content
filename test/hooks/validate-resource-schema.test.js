@@ -1,7 +1,8 @@
-const assert = require('assert');
-const validateResourceSchema = require('../../src/hooks/validate-resource-schema/index');
+//const assert = require('assert');
+//const validateResourceSchema = require('../../src/hooks/validate-resource-schema/index');
 
 describe('\'validate-resource-schema\' hook', () => {
+  /*
   it('runs the hook', () => {
     // A mock hook object
     const mock = {};
@@ -14,4 +15,5 @@ describe('\'validate-resource-schema\' hook', () => {
       assert.equal(result, mock, 'Returns the expected hook object');
     });
   });
+  */
 });

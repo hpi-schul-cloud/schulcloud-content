@@ -65,16 +65,29 @@ function parseJwtToken(token) {
  */
 function authenticateHook(hook) {
 
-  let authHeader = hook.params.req.headers['authorization'];
+  // skip for internal calls
+  if(typeof (hook.params.provider) === 'undefined'){
+    return hook;
+  }
+
+  let authHeader = (((hook.params||{}).req||{}).headers||{})['authorization'];
 
   // gracefully exits instead of checking undefined variable
   if (!authHeader) { throw new errors.NotAuthenticated('Could not authenticate! Missing auth header'); }
+
+  if(!hook.data){ hook.data = {}; }
+  
+  // prevent userId injection
+  hook.params.query.userId = undefined;
+
 
   // JWT AUTH
   // TODO: Validate JWT Token against Server
   // TODO: Error Handling
   if(authHeader.startsWith('Bearer ')) {
     hook.data.userId = parseJwtToken(authHeader);
+    // pass userId to custom Services
+    hook.params.query.userId = hook.data.userId;
     return hook;
   }
 
@@ -90,8 +103,9 @@ function authenticateHook(hook) {
     let localUser = checkLocalAuthentication(credentials.name, credentials.pass);
     if(localUser) {
       // check hook.data is available, otherwise store userId as query param
-      if(hook.data) { hook.data.userId = localUser.userId; }
-      else { hook.params.query.userId = localUser.userId; }
+      hook.data.userId = localUser.userId;
+      // pass userId to custom Services
+      hook.params.query.userId = hook.data.userId;
       return hook;
     }
 
@@ -105,9 +119,9 @@ function authenticateHook(hook) {
       let userId = parseJwtToken(response.accessToken);
       // check hook.data is available, otherwise store userId as query param
       if(hook.data) { hook.data.userId = userId; }
-      else { hook.params.query.userId = userId; }
+      else { hook.params.query.userId = userId; } // pass userId to custom Services
       return hook;
-    }).catch(_ => {
+    }).catch(() => {
       // TODO: Show Error in Response
       throw new errors.NotAuthenticated('Could not authenticate');
     });
