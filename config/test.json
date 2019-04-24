@@ -1,5 +1,4 @@
 {
-  "protocol": "http",
   "host": "localhost",
   "port": 4040,
   "public": "../public/",

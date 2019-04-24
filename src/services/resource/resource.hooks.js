@@ -1,6 +1,6 @@
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 const authenticate = require('../../hooks/authenticate');
-const createThumbnail = require('../../hooks/createThumbnail');
+// const createThumbnail = require('../../hooks/createThumbnail');
 const config = require('config');
 const pichassoConfig = config.get('pichasso');
 /*
@@ -71,7 +71,7 @@ const patchNewResourceUrlInDb = (hook) => {
     });
     return Promise.all([replacePromise]).then(() => hook);
   }
-  return hook;  
+  return hook;
 };
 
 const patchResourceUrlInDb = (hook) => {
@@ -95,29 +95,16 @@ const deleteRelatedFiles = async (hook) => {
   await hook.app.service('/files/manage').patch(resourceId, manageObject, hook);
   return hook;
 };
+
 const  createNewThumbnail = (hook) => {
-  const resourceId = hook.id || hook.result._id.toString();
   if (pichassoConfig.enabled && hook.data.thumbnail == ''){
+    const resourceId = hook.id || hook.result._id.toString();
     return hook.app.service('files/thumbnail')
       .patch(resourceId, {})
       .then(() => hook);
-  }else{
-    const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/`;
-    const replacePromise = hook.app.service('resources').get(resourceId).then(response => {
-      let newUrl = preUrl + resourceId + response.thumbnail;
-      return hook.app.service('resources').patch(response._id, {thumbnail: newUrl});
-    });
-    return Promise.all([replacePromise]).then(() => hook);
   }
+  return hook;
 };
-
-const addDrmProtection = (hook) => {
-  const resourceId = hook.id || hook.result._id.toString();
-  if (hook.data.isProtected) {
-    return hook.app.service('files/drm').get(resourceId).then(()=>hook);
-  } 
-};
-
 
 module.exports = {
   before: {
@@ -134,7 +121,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [patchResourceIdInDb,manageFiles,patchNewResourceUrlInDb,createNewThumbnail,addDrmProtection],
+    create: [patchResourceIdInDb,manageFiles,patchNewResourceUrlInDb,createNewThumbnail],
     update: [],
     patch: [],
     remove: []
