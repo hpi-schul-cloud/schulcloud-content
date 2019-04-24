@@ -32,12 +32,12 @@ function createThumbnail(hook) {
 
     // Check response
     if (response.statusCode !== 200) {
-      Promise.reject('verification failed getting thumbnail url');
+      return Promise.reject('verification failed getting thumbnail url');
     }
     // Check token
     let token = response.body;
     if(!token || token.length !== 6){
-      Promise.reject('received token seems to be wrong');
+      return Promise.reject('received token seems to be wrong');
     }
 
     // Add thumbnail url to resource model

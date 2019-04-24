@@ -111,3 +111,6 @@ data/
 
 # Test Mock Data
 test/s3mock
+
+# Local Overrides
+config/local*

@@ -78,6 +78,8 @@ function authenticateHook(hook) {
   if(!hook.data){ hook.data = {}; }
   
   // prevent userId injection
+  if(!hook.params){ hook.params = {}; }
+  if(!hook.params.query){ hook.params.query = {}; }
   hook.params.query.userId = undefined;
 
 
