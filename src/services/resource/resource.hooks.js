@@ -4,11 +4,12 @@ const authenticate = require('../../hooks/authenticate');
 // const createThumbnail = require('../../hooks/createThumbnail');
 const config = require('config');
 const pichassoConfig = config.get('pichasso');
-/*
-Anfrage so manipulieren, dass nur isPublished=true angezeigt wird
-Außer: userId = currentUser._id (hook.data.userId)
-*/
+
 const restrictToPublicIfUnauthorized = (hook) => {
+  /*
+  Anfrage so manipulieren, dass nur isPublished=true angezeigt wird
+  Außer: userId = currentUser._id (hook.data.userId)
+  */
   try{
     hook = authenticate(hook);
     delete hook.params.query.userId;
@@ -96,8 +97,9 @@ const deleteRelatedFiles = async (hook) => {
   await hook.app.service('/files/manage').patch(resourceId, manageObject, hook);
   return hook;
 };
-const  createNewThumbnail = (hook) => {
-  if (pichassoConfig.enabled && hook.data.thumbnail == ''){
+
+const createNewThumbnail = (hook) => {
+  if (pichassoConfig.enabled && !hook.data.thumbnail){
     const resourceId = hook.id || hook.result._id.toString();
     return hook.app.service('files/thumbnail')
       .patch(resourceId, {})
@@ -106,6 +108,8 @@ const  createNewThumbnail = (hook) => {
   return hook;
 };
 
+
+// VALIDATION
 const validateResource = (hook) => {
   if( hook.data.isPublished || hook.result.isPublished){
     try {
@@ -140,7 +144,7 @@ const unpublishInvalidResources = async (hook) => {
   return hook;
 };
 
-const validateResourceHook = (hook) => {
+const validateNewResources = (hook) => {
   if (!Array.isArray(hook.data)) { // create single
     if(hook.data.isPublished && !validateResource(hook)){
       hook.data.isPublished = false;
@@ -163,7 +167,7 @@ module.exports = {
     all: [],
     find: [restrictToPublicIfUnauthorized],
     get: [],
-    create: [authenticate, validateResourceHook, /*createThumbnail, */],
+    create: [authenticate, validateNewResources, /*createThumbnail, */],
     update: [commonHooks.disallow()],
     patch: [patchResourceIdInDb, manageFiles, patchResourceUrlInDb],
     remove: [deleteRelatedFiles]
@@ -173,7 +177,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [patchResourceIdInDb,manageFiles,patchNewResourceUrlInDb,createNewThumbnail],
+    create: [patchResourceIdInDb, manageFiles, patchNewResourceUrlInDb, createNewThumbnail],
     update: [],
     patch: [unpublishInvalidResources],
     remove: []
