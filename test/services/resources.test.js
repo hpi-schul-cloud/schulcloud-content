@@ -4,10 +4,10 @@ const app = require('../../src/app');
 const mockSubmitResource = () => ({
   contentCategory: 'learning-object',
   description: 'ich bin ein Test',
-  isPublished: true,
+  isPublished: false,
   licenses: ['MIT'],
   mimeType: 'audio',
-  originId: Date.now(),
+  originId: Date.now().toString(),
   providerName: 'Khan Academy',
   tags: ['Test'],
   thumbnail: 'https://schul-cloud.org/images/logo/app-icon-144.png',
@@ -17,14 +17,23 @@ const mockSubmitResource = () => ({
 });
 
 describe('\'resources\' service', () => {
+
   it('registered the service', () => {
     const service = app.service('resources');
     assert.ok(service, 'Registered the service');
   });
 
-  it('short url gets saved on CREATE', async () => {
+  it('saves resource', async () => {
+    const mockData = mockSubmitResource();
+    const dbObject = await app.service('resources').create(mockData);
+    Object.entries(mockData).forEach(([key, value]) => {
+      assert.equal(JSON.stringify(dbObject[key]), JSON.stringify(value));
+    });
+  });
+
+  it('short url gets saved and extended on CREATE', async () => {
     const mockData = {
-      ...mockSubmitResource,
+      ...mockSubmitResource(),
       url: '/59919169c9df580090bc0815/index.html',
       thumbnail: '/escaperoom.png'
     };
@@ -35,7 +44,7 @@ describe('\'resources\' service', () => {
     assert.ok(dbObject.thumbnail.startsWith('http'));
   });
 
-  it('short url gets saved on PATCH', async () => {
+  it('short url gets saved and extended on PATCH', async () => {
     const mockExisting = mockSubmitResource();
     const mockData = {
       ...mockSubmitResource(),
@@ -52,4 +61,5 @@ describe('\'resources\' service', () => {
     assert.ok(dbObject.thumbnail.endsWith(mockData.thumbnail));
     assert.ok(dbObject.thumbnail.startsWith('http'));
   });
+
 });

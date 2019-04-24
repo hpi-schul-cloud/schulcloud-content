@@ -141,8 +141,8 @@ const unpublishInvalidResources = async (hook) => {
 };
 
 const validateResourceHook = (hook) => {
-  if (!Array.isArray(hook.data) && hook.data.isPublished) { // create single
-    if(!validateResource(hook)){
+  if (!Array.isArray(hook.data)) { // create single
+    if(hook.data.isPublished && !validateResource(hook)){
       hook.data.isPublished = false;
     }
   } else { // create multiple
