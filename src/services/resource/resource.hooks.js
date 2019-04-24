@@ -76,8 +76,8 @@ const patchNewResourceUrlInDb = (hook) => {
   return hook;
 };
 
-const patchResourceUrlInDb = (hook) => {
-  if(hook.data.patchResourceUrl&&!hook.data.url.startsWith('http')){
+const extendResourceUrl = (hook) => {
+  if(hook.data.patchResourceUrl && !hook.data.url.startsWith('http')){
     hook.data.patchResourceUrl = false;
     const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/`;
     const resourceId = hook.id || hook.result._id.toString();
@@ -169,7 +169,7 @@ module.exports = {
     get: [],
     create: [authenticate, validateNewResources, /*createThumbnail, */],
     update: [commonHooks.disallow()],
-    patch: [patchResourceIdInDb, manageFiles, patchResourceUrlInDb],
+    patch: [patchResourceIdInDb, manageFiles, extendResourceUrl],
     remove: [deleteRelatedFiles]
   },
 
