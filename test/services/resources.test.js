@@ -13,7 +13,7 @@ const mockSubmitResource = () => ({
   thumbnail: 'https://schul-cloud.org/images/logo/app-icon-144.png',
   title: 'SC-Hosting :D',
   url: 'https://schul-cloud.org',
-  userId: '0000d224816abba584714c9c',
+  userId: '0000d224816abba584714c9c'
 });
 
 describe('\'resources\' service', () => {
@@ -56,11 +56,21 @@ describe('\'resources\' service', () => {
     assert.equal(mockExisting.url, existingObject.url);
     assert.equal(mockExisting.thumbnail, existingObject.thumbnail);
 
-    const dbObject = await app.service('resources').patch(existingObject._id, mockData);
-    assert.ok(dbObject.url.endsWith(mockData.url));
-    assert.ok(dbObject.url.startsWith('http'));
-    assert.ok(dbObject.thumbnail.endsWith(mockData.thumbnail));
-    assert.ok(dbObject.thumbnail.startsWith('http'));
-  });
+    mockData.originId = existingObject.originId;
 
+    const dbResultObject = await app
+      .service('resources')
+      .patch(existingObject._id, {...mockData});
+
+    const dbObject = await app
+      .service('resources')
+      .get(existingObject._id);
+
+    [dbResultObject, dbObject].forEach((obj) => {
+      assert.ok(obj.url.endsWith(mockData.url));
+      assert.ok(obj.url.startsWith('http'));
+      assert.ok(obj.thumbnail.endsWith(mockData.thumbnail));
+      assert.ok(obj.thumbnail.startsWith('http'));
+    });
+  });
 });
