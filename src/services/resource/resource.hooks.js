@@ -4,11 +4,12 @@ const authenticate = require('../../hooks/authenticate');
 // const createThumbnail = require('../../hooks/createThumbnail');
 const config = require('config');
 const pichassoConfig = config.get('pichasso');
-/*
-Anfrage so manipulieren, dass nur isPublished=true angezeigt wird
-Außer: userId = currentUser._id (hook.data.userId)
-*/
+
 const restrictToPublicIfUnauthorized = (hook) => {
+  /*
+  Anfrage so manipulieren, dass nur isPublished=true angezeigt wird
+  Außer: userId = currentUser._id (hook.data.userId)
+  */
   try{
     hook = authenticate(hook);
     delete hook.params.query.userId;
@@ -30,10 +31,12 @@ const restrictToPublicIfUnauthorized = (hook) => {
 const manageFiles = (hook) => {
   if(!hook.data.files || !hook.data.userId) { return hook; }
   hook = authenticate(hook);
+
   const files = hook.data.files;
   const fileManagementService = hook.app.service('/files/manage');
-  const resourceId = hook.id || hook.result._id.toString();
-	return fileManagementService.patch(resourceId, { ...files, userId: hook.data.userId }, hook).then(() => hook);
+  const resourceId = (hook.id || hook.result._id).toString();
+  return fileManagementService.patch(resourceId, { ...files, userId: hook.data.userId }, hook)
+    .then(() => hook);
 };
 
 const patchResourceIdInDb = (hook) => {
@@ -41,12 +44,9 @@ const patchResourceIdInDb = (hook) => {
   try {
     ids = hook.data.files.save;
   } catch (e) {
-    if (e instanceof TypeError) {
-      return hook;
-    }
-    throw e;
+    return hook;
   }
-  const resourceId = hook.id || hook.result._id.toString();
+  const resourceId = (hook.id || hook.result._id).toString();
   const replacePromise = hook.app.service('resource_filepaths').find({query: { _id: { $in: ids}}}).then(response => {
     const patchList = response.data.map((entry) => {
       if(entry.path.indexOf(resourceId) !== 0){
@@ -62,25 +62,31 @@ const patchResourceIdInDb = (hook) => {
 };
 
 const patchNewResourceUrlInDb = (hook) => {
-  if(hook.data.patchResourceUrl){
-    hook.data.patchResourceUrl = false;
-    const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/`;
-    const resourceId = hook.id || hook.result._id.toString();
-    const replacePromise = hook.app.service('resources').get(resourceId).then(response => {
-      let newUrl = preUrl + resourceId + response.url;
-      return hook.app.service('resources').patch(response._id, {url: newUrl});
-    });
-    return Promise.all([replacePromise]).then(() => hook);
+  if(!hook.data.patchResourceUrl){
+    return hook;
   }
-  return hook;
+  hook.data.patchResourceUrl = false;
+  const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/`;
+  const resourceId = hook.id || hook.result._id.toString();
+  return hook.app.service('resources').get(resourceId)
+    .then(response => {
+      let newUrl = preUrl + resourceId + response.url;
+      let newThumbnail = preUrl + resourceId + response.thumbnail;
+      return hook.app.service('resources').patch(response._id, {url: newUrl, thumbnail: newThumbnail});
+    })
+    .then((newObj) => {
+      hook.result = newObj;
+      return hook;
+    });
 };
 
-const patchResourceUrlInDb = (hook) => {
-  if(hook.data.patchResourceUrl&&!hook.data.url.startsWith('http')){
+const extendResourceUrl = (hook) => {
+  if(hook.data.patchResourceUrl && !hook.data.url.startsWith('http')){
     hook.data.patchResourceUrl = false;
     const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/`;
     const resourceId = hook.id || hook.result._id.toString();
-      hook.data.url = preUrl + resourceId + hook.data.url;
+    hook.data.url = preUrl + resourceId + hook.data.url;
+    hook.data.thumbnail = preUrl + resourceId + hook.data.thumbnail;
   }
   return hook;
 };
@@ -96,8 +102,9 @@ const deleteRelatedFiles = async (hook) => {
   await hook.app.service('/files/manage').patch(resourceId, manageObject, hook);
   return hook;
 };
-const  createNewThumbnail = (hook) => {
-  if (pichassoConfig.enabled && hook.data.thumbnail == ''){
+
+const createNewThumbnail = (hook) => {
+  if (pichassoConfig.enabled && !hook.data.thumbnail){
     const resourceId = hook.id || hook.result._id.toString();
     return hook.app.service('files/thumbnail')
       .patch(resourceId, {})
@@ -106,6 +113,8 @@ const  createNewThumbnail = (hook) => {
   return hook;
 };
 
+
+// VALIDATION
 const validateResource = (hook) => {
   if( hook.data.isPublished || hook.result.isPublished){
     try {
@@ -140,9 +149,9 @@ const unpublishInvalidResources = async (hook) => {
   return hook;
 };
 
-const validateResourceHook = (hook) => {
-  if (!Array.isArray(hook.data) && hook.data.isPublished) { // create single
-    if(!validateResource(hook)){
+const validateNewResources = (hook) => {
+  if (!Array.isArray(hook.data)) { // create single
+    if(hook.data.isPublished && !validateResource(hook)){
       hook.data.isPublished = false;
     }
   } else { // create multiple
@@ -163,9 +172,9 @@ module.exports = {
     all: [],
     find: [restrictToPublicIfUnauthorized],
     get: [],
-    create: [authenticate, validateResourceHook, /*createThumbnail, */],
+    create: [authenticate, validateNewResources, /*createThumbnail, */],
     update: [commonHooks.disallow()],
-    patch: [patchResourceIdInDb, manageFiles, patchResourceUrlInDb],
+    patch: [patchResourceIdInDb, manageFiles, extendResourceUrl],
     remove: [deleteRelatedFiles]
   },
 
@@ -173,7 +182,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [patchResourceIdInDb,manageFiles,patchNewResourceUrlInDb,createNewThumbnail],
+    create: [patchResourceIdInDb, manageFiles, patchNewResourceUrlInDb, createNewThumbnail],
     update: [],
     patch: [unpublishInvalidResources],
     remove: []

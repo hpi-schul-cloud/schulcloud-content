@@ -18,17 +18,17 @@ The following variables are defined here:
   - `userId` is the database id of the user.
   - `username` is the user name used for basic authentication.
   - `password` is the password used for basic authentication.
-  
-  If you put this object inside `localAutehntication`,
-  
+
+  If you put this object inside `localAuthentication`,
+
         {
           "userId": "sc-content-1",
           "username": "schulcloud-content-1",
           "password": "content-1"
         },
-  
+
   you can authenticate the database user `sc-content-1` with this curl command:
-  
+
         curl -X POST http://schulcloud-content-1:content-1@localhost:4040/resources
 
 [package]: https://www.npmjs.com/package/config

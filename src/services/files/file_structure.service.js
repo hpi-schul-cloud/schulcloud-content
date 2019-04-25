@@ -56,15 +56,9 @@ class FileStructureService {
     this.app = app;
   }
 
-  async get(resourceId, { query: queryParams }) {
+  async get(resourceId) {
 
-    if(!queryParams){
-      queryParams = {};
-    }
-    const queryTemp = queryParams.temp === 'true';
-    const query = queryTemp
-      ? { resourceId: resourceId, isTemp: true, userId: queryParams.userId}
-      : { resourceId: resourceId, isTemp: false };
+    const query = { resourceId: resourceId, isTemp: false };
     return this.app
       .service('resource_filepaths')
       .find({ query })
