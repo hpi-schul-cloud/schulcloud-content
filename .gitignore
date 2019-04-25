@@ -115,6 +115,7 @@ data/
 
 # Test Mock Data
 test/s3mock
+.nyc_output
 
 # Local Overrides
 config/local*
