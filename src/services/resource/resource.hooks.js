@@ -31,10 +31,12 @@ const restrictToPublicIfUnauthorized = (hook) => {
 const manageFiles = (hook) => {
   if(!hook.data.files || !hook.data.userId) { return hook; }
   hook = authenticate(hook);
+
   const files = hook.data.files;
   const fileManagementService = hook.app.service('/files/manage');
-  const resourceId = hook.id || hook.result._id.toString();
-	return fileManagementService.patch(resourceId, { ...files, userId: hook.data.userId }, hook).then(() => hook);
+  const resourceId = (hook.id || hook.result._id).toString();
+  return fileManagementService.patch(resourceId, { ...files, userId: hook.data.userId }, hook)
+    .then(() => hook);
 };
 
 const patchResourceIdInDb = (hook) => {

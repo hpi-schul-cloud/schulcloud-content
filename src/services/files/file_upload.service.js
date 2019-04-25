@@ -30,7 +30,7 @@ class FileUploadService {
       throw new Error('param \'resourceId\' is missing');
     }
     */
-    if(!req.query.userId){
+    if(!data.userId){
       throw new Error('Unauthorized request');
     }
     return new Promise((resolve, reject) => {
@@ -48,7 +48,7 @@ class FileUploadService {
           // managedUpload object allows you to abort ongoing upload or track file upload progress.
           return uploadFile({
             app: this.app,
-            userId: req.query.userId,
+            userId: data.userId,
             resourceId: req.query.resourceId,
             uploadPath,
             sourceStream: part

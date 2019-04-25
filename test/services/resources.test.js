@@ -13,10 +13,15 @@ const mockSubmitResource = () => ({
   thumbnail: 'https://schul-cloud.org/images/logo/app-icon-144.png',
   title: 'SC-Hosting :D',
   url: 'https://schul-cloud.org',
-  userId: '0000d224816abba584714c9c'
+  userId: '0000d224816abba584714c9c',
+  files: {
+    save: [],
+    delete: [],
+  }
 });
 
 describe('\'resources\' service', () => {
+
   it('registered the service', () => {
     const service = app.service('resources');
     assert.ok(service, 'Registered the service');
@@ -26,6 +31,7 @@ describe('\'resources\' service', () => {
     const mockData = mockSubmitResource();
     const dbObject = await app.service('resources').create(mockData);
     Object.entries(mockData).forEach(([key, value]) => {
+      if(['files'].includes(key)){ return; } // Skip
       assert.equal(JSON.stringify(dbObject[key]), JSON.stringify(value));
     });
   });
@@ -55,8 +61,6 @@ describe('\'resources\' service', () => {
     const existingObject = await app.service('resources').create(mockExisting);
     assert.equal(mockExisting.url, existingObject.url);
     assert.equal(mockExisting.thumbnail, existingObject.thumbnail);
-
-    mockData.originId = existingObject.originId;
 
     const dbResultObject = await app
       .service('resources')
