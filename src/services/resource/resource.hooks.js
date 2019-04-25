@@ -81,7 +81,7 @@ const extendResourceUrl = (hook) => {
     hook.data.patchResourceUrl = false;
     const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/`;
     const resourceId = hook.id || hook.result._id.toString();
-      hook.data.url = preUrl + resourceId + hook.data.url;
+    hook.data.url = preUrl + resourceId + hook.data.url;
   }
   return hook;
 };
