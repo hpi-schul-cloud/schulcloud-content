@@ -3,6 +3,9 @@ node_js:
   - "lts/*"
 services:
   - mongodb
+install:
+  - npm i
+  - npm i -g codecov
 script:
   - npm run eslint
   - npm run coverage
