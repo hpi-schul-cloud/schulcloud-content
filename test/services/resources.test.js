@@ -17,7 +17,6 @@ const mockSubmitResource = () => ({
 });
 
 describe('\'resources\' service', () => {
-
   it('registered the service', () => {
     const service = app.service('resources');
     assert.ok(service, 'Registered the service');
@@ -34,6 +33,7 @@ describe('\'resources\' service', () => {
   it('short url gets saved and extended on CREATE', async () => {
     const mockData = {
       ...mockSubmitResource(),
+      patchResourceUrl: true,
       url: '/59919169c9df580090bc0815/index.html',
       thumbnail: '/escaperoom.png'
     };
@@ -48,6 +48,7 @@ describe('\'resources\' service', () => {
     const mockExisting = mockSubmitResource();
     const mockData = {
       ...mockSubmitResource(),
+      patchResourceUrl: true,
       url: '/59919169c9df580090bc0815/index.html',
       thumbnail: '/escaperoom.png'
     };

@@ -42,12 +42,9 @@ const patchResourceIdInDb = (hook) => {
   try {
     ids = hook.data.files.save;
   } catch (e) {
-    if (e instanceof TypeError) {
-      return hook;
-    }
-    throw e;
+    return hook;
   }
-  const resourceId = hook.id || hook.result._id.toString();
+  const resourceId = (hook.id || hook.result._id).toString();
   const replacePromise = hook.app.service('resource_filepaths').find({query: { _id: { $in: ids}}}).then(response => {
     const patchList = response.data.map((entry) => {
       if(entry.path.indexOf(resourceId) !== 0){
@@ -63,17 +60,22 @@ const patchResourceIdInDb = (hook) => {
 };
 
 const patchNewResourceUrlInDb = (hook) => {
-  if(hook.data.patchResourceUrl){
-    hook.data.patchResourceUrl = false;
-    const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/`;
-    const resourceId = hook.id || hook.result._id.toString();
-    const replacePromise = hook.app.service('resources').get(resourceId).then(response => {
-      let newUrl = preUrl + resourceId + response.url;
-      return hook.app.service('resources').patch(response._id, {url: newUrl});
-    });
-    return Promise.all([replacePromise]).then(() => hook);
+  if(!hook.data.patchResourceUrl){
+    return hook;
   }
-  return hook;
+  hook.data.patchResourceUrl = false;
+  const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/`;
+  const resourceId = hook.id || hook.result._id.toString();
+  return hook.app.service('resources').get(resourceId)
+    .then(response => {
+      let newUrl = preUrl + resourceId + response.url;
+      let newThumbnail = preUrl + resourceId + response.thumbnail;
+      return hook.app.service('resources').patch(response._id, {url: newUrl, thumbnail: newThumbnail});
+    })
+    .then((newObj) => {
+      hook.result = newObj;
+      return hook;
+    });
 };
 
 const extendResourceUrl = (hook) => {
