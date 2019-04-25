@@ -1,5 +1,7 @@
 # schulcloud-content
 
+[![codecov](https://codecov.io/gh/schul-cloud/schulcloud-content/branch/master/graph/badge.svg)](https://codecov.io/gh/schul-cloud/schulcloud-content)
+
 This is the content search engine for schul-cloud,
 including a database to store the resources.
 
