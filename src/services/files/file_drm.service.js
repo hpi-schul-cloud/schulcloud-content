@@ -6,6 +6,7 @@ var fs = require('fs');
 var download = require('download-file');
 const config = require('config');
 var Magic = require('mmmagic').Magic;
+var mv = require('mv');
 const {
   promisePipe,
   getUploadStream
@@ -98,10 +99,13 @@ class DrmService {
     ));
 
   await Promise.all(ResourceFileList.map(async (element) => {
+
     const sourceFilePath = absoluteLocalStoragePath+'\\'+element.id;
     const outputFilePath = absoluteLocalStoragePath+'\\'+element.id;
+
     let fileType = await getFileType(sourceFilePath);
     fileType = fileType.split(' ')[0];
+
     if (['JPEG','PNG'].includes(fileType)) {
       // obtain the size of an image
       const sourceFileSize = await getImageSize(sourceFilePath);
@@ -120,10 +124,13 @@ class DrmService {
             logoWidth: Math.round(sourceFileSize.width/3)
         }
       };
+
       await addWatermark(optionsImageWatermark);
       let sourceStream = fs.createReadStream(sourceFilePath);
-      await promisePipe(sourceStream, getUploadStream(element.id));      
+      await promisePipe(sourceStream, getUploadStream(element.id));  
+
     }else if (['PDF'].includes(fileType)) {
+
       const outputFilePath = absoluteLocalStoragePath+'\\out_'+element.id;
       const options = {
         keyLength: 256,
@@ -137,6 +144,7 @@ class DrmService {
           extract: 'n'
       }
     };
+
     await qpdf.encrypt(sourceFilePath, options);
     let sourceStream = fs.createReadStream(outputFilePath);
     await promisePipe(sourceStream, getUploadStream(element.id));

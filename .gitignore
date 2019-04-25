@@ -114,3 +114,4 @@ test/s3mock
 
 # Local Overrides
 config/local*
+localStorage

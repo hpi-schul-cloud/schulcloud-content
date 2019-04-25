@@ -6,6 +6,8 @@ const { FileUploadService } = require('./file_upload.service.js');
 const { FileManageService } = require('./file_manage.service.js');
 const { ThumbnailService } = require('./file_thumbnail.service.js');
 const { DrmService } = require('./file_drm.service.js');
+const { VideoDrmService } = require('./file_video_drm.service.js');
+
 
 const hooks = require('./file.hooks');
 
@@ -76,7 +78,7 @@ module.exports = function() {
 
 
    /* ##################################################
-  # DRM-PROTECTION (currently only Pdf)
+  # DRM-PROTECTION (currently only Pdf and Pictures)
   # For internal use only
   # Usage: GET /files/drm/{resourceId}
   # Result: Protect all files in resource with DRM-Protection
@@ -85,4 +87,16 @@ module.exports = function() {
   app.use('/files/drm', new DrmService(app));
   const drmService = app.service('files/drm');
   drmService.hooks(hooks.drm);
+
+
+   /* ##################################################
+  # DRM-PROTECTION FOR VIDEOS
+  # For internal use only
+  # Usage: GET /files/drm/{resourceId}
+  # Result: Protect all files in resource with DRM-Protection
+  ################################################## */
+  // Initialize our service with any options it requires
+  app.use('/files/video_drm', new VideoDrmService(app));
+  const videoDrmService = app.service('/files/video_drm');
+  videoDrmService.hooks(hooks.video_drm);
 };
