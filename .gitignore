@@ -39,7 +39,11 @@ node_modules
 *.sublime-workspace
 
 # IDE - VSCode
-.vscode/settings.json
+.vscode/*
+!.vscode/settings.json	
+!.vscode/tasks.json	
+!.vscode/launch.json	
+!.vscode/extensions.json
 
 ### Linux ###
 *~
@@ -111,6 +115,7 @@ data/
 
 # Test Mock Data
 test/s3mock
+.nyc_output
 
 # Local Overrides
 config/local*

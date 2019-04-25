@@ -25,9 +25,9 @@ app.configure(configuration(path.join(__dirname, '..')));
 app.use(cors());
 app.use(helmet());
 app.use(compress());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '100mb' }));
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ limit: '100mb', parameterLimit: 1000000, extended: true }));
 app.use(favicon(path.join(app.get('public'), 'favicon.ico')));
 
 // Host the public folder
