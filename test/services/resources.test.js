@@ -34,7 +34,7 @@ describe('\'resources\' service', () => {
     const mockData = {
       ...mockSubmitResource(),
       patchResourceUrl: true,
-      url: '/59919169c9df580090bc0815/index.html',
+      url: '/index.html',
       thumbnail: '/escaperoom.png'
     };
     assert.ok(!mockData.url.startsWith('http'));
@@ -49,7 +49,7 @@ describe('\'resources\' service', () => {
     const mockData = {
       ...mockSubmitResource(),
       patchResourceUrl: true,
-      url: '/59919169c9df580090bc0815/index.html',
+      url: '/index.html',
       thumbnail: '/escaperoom.png'
     };
     const existingObject = await app.service('resources').create(mockExisting);
