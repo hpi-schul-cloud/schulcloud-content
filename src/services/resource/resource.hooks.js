@@ -116,7 +116,7 @@ const createNewThumbnail = (hook) => {
 
 // VALIDATION
 const validateResource = (hook) => {
-  if( hook.data.isPublished || hook.result.isPublished){
+  if( hook.data.isPublished || (hook.result || {}).isPublished){
     try {
       validateResourceSchema()(hook);
       return true;

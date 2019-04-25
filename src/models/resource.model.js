@@ -17,7 +17,7 @@ module.exports = function (app) {
 
     tags: { type: [String] },
     licenses: { type: [String]},
-    contentCategory: { type: String, enum: ['atomic', 'learning-object', 'proven-learning-object', 'tool'] },
+    contentCategory: { type: String },
     mimeType: { type: String },
 
     promoUntil: { type: Date },
