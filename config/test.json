@@ -1,0 +1,26 @@
+{
+  "protocol": "http",
+  "host": "localhost",
+  "port": 4040,
+  "public": "../public/",
+  "paginate": {
+    "default": 10,
+    "max": 50
+  },
+  "mongodb": "mongodb://localhost:27017/schulcloud_content",
+  "localAuthentication": [
+    {
+      "userId": "73632d636f6e74656e742d31",
+      "username": "schulcloud-content-1",
+      "password": "content-1"
+    },
+    {
+      "userId": "73632d636f6e74656e742d32",
+      "username": "schulcloud-content-2",
+      "password": "content-2"
+    }
+  ],
+  "pichasso": {
+    "enabled": false
+  }
+}

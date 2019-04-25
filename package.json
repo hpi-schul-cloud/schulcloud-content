@@ -26,7 +26,9 @@
     "eslint:fix": "eslint src/. test/. --config .eslintrc.json --fix",
     "start": "node src/",
     "debug": "nodemon --inspect src/",
-    "mocha": "mocha test/ --recursive --exit"
+    "mocha": "mocha test/ --recursive --exit",
+    "coverage": "cross-env NODE_ENV=test nyc --reporter=text-summary mocha test/ --recursive --exit",
+    "coverage-codecov": "cross-env NODE_ENV=test nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "dependencies": {
     "@feathersjs/configuration": "^1.0.2",
@@ -57,9 +59,11 @@
   },
   "devDependencies": {
     "babel-eslint": "^8.2.6",
+    "cross-env": "^5.2.0",
     "eslint": "^5.2.0",
     "mocha": "^5.2.0",
     "ncp": "^2.0.0",
+    "nyc": "^14.0.0",
     "request": "^2.87.0",
     "request-promise": "^4.2.2",
     "stream-mock": "^1.2.0"

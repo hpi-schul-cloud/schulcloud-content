@@ -3,8 +3,13 @@ node_js:
   - "lts/*"
 services:
   - mongodb
+install:
+  - npm i
+  - npm i -g codecov
 script:
-  - npm run test
+  - npm run eslint
+  - npm run coverage
+  - npm run coverage-codecov
   - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
 notifications:
   email: false
