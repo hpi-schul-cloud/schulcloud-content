@@ -15,13 +15,12 @@ const restrictToPublicIfUnauthorized = (hook) => {
 
     if(typeof hook.params.query.isPublished == 'undefined' || hook.params.query.isPublished == 'false'){
       delete hook.params.query.isPublished;
-      hook.params.query.$or = [{ isPublished: true }, { userId: hook.params.userId }];
-    }else{
-      hook.params.query.isPublished = true;
+      hook.params.query.$or = [{ isPublished: { $ne: false } }, { userId: hook.params.userId }];
+    } else {
+      hook.params.query.isPublished = { $ne: false };
     }
   } catch(error){
-    // TODO FIX this line, it's preventing /content/resources from loading
-    //hook.params.query["isPublished[$ne]"] = false;
+    hook.params.query.isPublished = { $ne: false };
     return hook;
   }
   return hook;
