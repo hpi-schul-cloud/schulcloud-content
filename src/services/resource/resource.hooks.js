@@ -8,34 +8,32 @@ const pichassoConfig = config.get('pichasso');
 const restrictToPublicIfUnauthorized = (hook) => {
   /*
   Anfrage so manipulieren, dass nur isPublished=true angezeigt wird
-  Außer: userId = currentUser._id (hook.data.userId)
+  Außer: userId = currentUser._id (hook.params.userId)
   */
   try{
     hook = authenticate(hook);
-    delete hook.params.query.userId;
 
     if(typeof hook.params.query.isPublished == 'undefined' || hook.params.query.isPublished == 'false'){
       delete hook.params.query.isPublished;
-      hook.params.query.$or = [{ isPublished: true }, { userId: hook.data.userId }];
-    }else{
-      hook.params.query.isPublished = true;
+      hook.params.query.$or = [{ isPublished: { $ne: false } }, { userId: hook.params.userId }];
+    } else {
+      hook.params.query.isPublished = { $ne: false };
     }
   } catch(error){
-    // TODO FIX this line, it's preventing /content/resources from loading
-    //hook.params.query["isPublished[$ne]"] = false;
+    hook.params.query.isPublished = { $ne: false };
     return hook;
   }
   return hook;
 };
 
 const manageFiles = (hook) => {
-  if(!hook.data.files || !hook.data.userId) { return hook; }
+  if(!hook.data.files || !hook.params.userId) { return hook; }
   hook = authenticate(hook);
 
   const files = hook.data.files;
   const fileManagementService = hook.app.service('/files/manage');
   const resourceId = (hook.id || hook.result._id).toString();
-  return fileManagementService.patch(resourceId, { ...files, userId: hook.data.userId }, hook)
+  return fileManagementService.patch(resourceId, { ...files, userId: hook.params.userId }, hook)
     .then(() => hook);
 };
 
@@ -172,10 +170,10 @@ module.exports = {
     all: [],
     find: [restrictToPublicIfUnauthorized],
     get: [],
-    create: [authenticate, validateNewResources, /*createThumbnail, */],
+    create: [authenticate, validateNewResources, /* createThumbnail, */],
     update: [commonHooks.disallow()],
-    patch: [patchResourceIdInDb, manageFiles, extendResourceUrl],
-    remove: [deleteRelatedFiles]
+    patch: [authenticate, patchResourceIdInDb, manageFiles, extendResourceUrl],
+    remove: [authenticate, deleteRelatedFiles]
   },
 
   after: {
