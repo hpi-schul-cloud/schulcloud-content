@@ -170,7 +170,7 @@ module.exports = {
     all: [],
     find: [restrictToPublicIfUnauthorized],
     get: [],
-    create: [authenticate, validateNewResources, /*createThumbnail, */],
+    create: [authenticate, validateNewResources, /* createThumbnail, */],
     update: [commonHooks.disallow()],
     patch: [authenticate, patchResourceIdInDb, manageFiles, extendResourceUrl],
     remove: [authenticate, deleteRelatedFiles]

@@ -21,6 +21,7 @@ module.exports = function () {
   // delivers resource schema for frontend validation
   app.use('/resources/resource-schema',  new ResourceSchemaService(app));
 
+  // same as /resources but for multiple edits at once
   app.use('/resources/bulk',  new ResourceBulkService(app));
   const bulkService = app.service('resources/bulk');
   bulkService.hooks(hooks);
