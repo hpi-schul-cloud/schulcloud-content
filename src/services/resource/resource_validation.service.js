@@ -1,11 +1,5 @@
 const Ajv         = require('ajv');
-const resourceSchema = {
-  "type":"object",
-
-"required": [
-  "title"]
-};
-  //require('../../hooks/validate-resource-schema/resource-schema.json');
+const resourceSchema = require('../../hooks/validate-resource-schema/resource-schema.json');
 
 class ResourceValidationService {
   constructor(app) {
