@@ -5,6 +5,7 @@ const hooks = require('./resource.hooks');
 
 const { ResourceSchemaService } = require('./resource_getResourceSchema.service.js');
 const { ResourceBulkService } = require('./resource_bulk.service.js');
+const { ResourceValidationService } = require('./resource_validation.service.js');
 
 
 module.exports = function () {
@@ -30,4 +31,6 @@ module.exports = function () {
   // Get our initialized service so that we can register hooks and filters
   const service = app.service('resources');
   service.hooks(hooks);
+
+  app.use('/resources/validation', new ResourceValidationService(app));
 };
