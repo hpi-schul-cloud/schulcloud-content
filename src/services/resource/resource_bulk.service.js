@@ -21,7 +21,7 @@ class ResourceBulkService {
         const newData = {};
           Object.entries(data).forEach(([key,value]) => {
             if(query['$replace'][key] !== undefined){
-              const inlineQuery = query['$replace'][key];
+              const inlineQuery = new RegExp(query['$replace'][key]);
               newData[key] = result[key].replace(inlineQuery,value);
             }else{
               newData[key] = value;
