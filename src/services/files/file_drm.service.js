@@ -5,6 +5,7 @@ const gm = require('gm');
 const fs = require('fs');
 const download = require('download-file');
 const config = require('config');
+const drmConfig = config.get('DRM');
 const Magic = require('mmmagic').Magic;
 const mv = require('mv');
 const axios = require('axios');
@@ -12,10 +13,11 @@ const exiftool = require('node-exiftool');
 const exiftoolBin = require('dist-exiftool');
 const emptyDir = require('empty-dir');
 const { promisePipe, getUploadStream } = require('./storageHelper.js');
-
 const ep = new exiftool.ExiftoolProcess(exiftoolBin);
+
+
+// TODO Get logoFilePath, testDataToWrite from Frontend
 const logoFilePath = 'C:\\Users\\admin\\MyStuff\\UNI\\BP\\temp\\c.png';
-const absoluteLocalStoragePath = 'C:\\Users\\admin\\MyStuff\\UNI\\BP\\schulcloud-content\\localStorage';
 
 const testDataToWrite = {
   all: '', // remove existing tags
@@ -113,7 +115,7 @@ class DrmService {
   async get(resourceId /*, obj*/) {
     new Promise(async resolve => {
       const sourceFolderPath =
-        absoluteLocalStoragePath + '\\files\\' + resourceId;
+      drmConfig.absoluteLocalStoragePath + '\\'+drmConfig.downloadDir+'\\' + resourceId;
       const ResourceFileList = await getResourceFileList(this.app, resourceId);
       await Promise.all(
         ResourceFileList.map(data => {
@@ -166,16 +168,16 @@ class DrmService {
           } else if (['PDF'].includes(fileType)) {
             element.upload = true;
             const options = {
-              keyLength: 256,
+              keyLength: drmConfig.pdfConfig.keyLength,
               password: {
                 user: '',
-                owner: 'MySuperSecretPassword'
+                owner: drmConfig.pdfConfig.pdfPassword
               },
               outputFile: element.outputFilePath,
               restrictions: {
-                print: 'none',
-                modify: 'none',
-                extract: 'n'
+                print: drmConfig.pdfConfig.print,
+                modify: drmConfig.pdfConfig.modify,
+                extract: drmConfig.pdfConfig.extract
               }
             };
 
@@ -195,7 +197,7 @@ class DrmService {
                 }
                 await axios
                   .get(
-                    'http://localhost:3000/api/queue/add/' +
+                    drmConfig.nodePlay.protocol+'://'+drmConfig.nodePlay.host+':'+drmConfig.nodePlay.port+'/api/queue/add/' +
                       fileName +
                       '?folderName=' +
                       resourceId +
@@ -205,12 +207,13 @@ class DrmService {
                   )
                   .then(async id => {
                     await axios
-                      .get('http://localhost:3000/api/status/' + id.data)
+                      .get(drmConfig.nodePlay.protocol+'://'+drmConfig.nodePlay.host+':'+drmConfig.nodePlay.port+'/api/status/' + id.data)
                       .then(response => {
                         this.app.service('videoId').create({
                           videoId: response.data.id,
                           flow_id: response.data.queue_id,
-                          fileId: element.id
+                          fileId: element.id,
+                          resourceId: resourceId
                         });
                       });
                   })

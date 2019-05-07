@@ -9,8 +9,9 @@ module.exports = function (app) {
 
     const videoId = new mongooseClient.Schema({
       videoId: {type: String, required: true},
-      flow_id: {type: String},
+      flow_id: {type: String, required: true},
       fileId: {type: String, required: true},
+      resourceId: {type: String, required: true},
 
       createdAt: { type: Date, default: Date.now },
       updatedAt: { type: Date, default: Date.now },

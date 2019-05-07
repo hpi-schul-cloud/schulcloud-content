@@ -22,5 +22,22 @@
   ],
   "pichasso": {
     "enabled": false
+  },
+  "DRM": {
+    "absoluteLocalStoragePath": "C:\\Users\\admin\\MyStuff\\UNI\\BP\\schulcloud-content\\localStorage",
+    "downloadDir": "files",
+    "workingDir": "working\\.node_play\\uploader",
+    "pdfConfig": {
+      "pdfPassword": "MySuperSecretPassword",
+      "keyLength": 256,
+      "print": "none",
+      "modify": "none",
+      "extract": "n"
+    },
+    "nodePlay":{
+      "protocol": "http",
+      "host": "localhost",
+      "port": 3000
+    }
   }
 }
