@@ -23,7 +23,10 @@ const _patchReplace = app => {
       const newData = {};
       Object.entries(data).forEach(([key, value]) => {
         if (query['$replace'][key] !== undefined) {
-          if(Array.isArray(result[key]) || Array.isArray(query['$replace'][key])){
+          if (
+            Array.isArray(result[key]) ||
+            Array.isArray(query['$replace'][key])
+          ) {
             /*
                DB - Search - replace => result
             1. [1,2,3] - []  - [4] => [1,2,3,4]
@@ -34,14 +37,21 @@ const _patchReplace = app => {
             6. ["abc", "b", "d"] - ["b"] - ["e"] => ["abc", "d", "e"]
             */
             // 4. || 3.
-            if(result[key] === undefined || query['$replace'][key] === undefined){
+            if (
+              result[key] === undefined ||
+              query['$replace'][key] === undefined
+            ) {
               newData[key] = value;
-            }else{
+            } else {
               // 1. & 2. & 5. & 6.
-              const search = query['$replace'][key];
-              newData[key] = result[key].filter((item) => !search.includes(item)).push(...value);
+              let search = query['$replace'][key];
+              if (!Array.isArray(search)) {
+                search = search ? [search] : [];
+              }
+              newData[key] = result[key].filter(item => !search.includes(item));
+              newData[key].push(...value);
             }
-          }else{
+          } else {
             const inlineQuery = new RegExp(query['$replace'][key]);
             newData[key] = result[key].replace(inlineQuery, value);
           }
