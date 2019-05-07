@@ -22,9 +22,33 @@ const _patchReplace = app => {
       // generate data to patch
       const newData = {};
       Object.entries(data).forEach(([key, value]) => {
-        if (query['$replace'][key] !== undefined) {
-          const inlineQuery = new RegExp(query['$replace'][key]);
-          newData[key] = result[key].replace(inlineQuery, value);
+        if (query['$replace'][key] !== undefined && result[key] !== undefined) {
+          if (
+            Array.isArray(result[key]) ||
+            Array.isArray(query['$replace'][key])
+          ) {
+            /*
+               DB - Search - replace => result
+            1. [1,2,3] - []  - [4] => [1,2,3,4]
+            2. [1,2,3] - [2] - [4] => [1,3,4]
+            3. [1,2,3] -     - [4] => [4]
+            4.         -     - [4] => [4]
+            5. ["abc", "d"] - ["b"] - ["e"] => ["abc", "d", "e"]
+            6. ["abc", "b", "d"] - ["b"] - ["e"] => ["abc", "d", "e"]
+            */
+            // 4. || 3.
+
+            // 1. & 2. & 5. & 6.
+            let search = query['$replace'][key];
+            if (!Array.isArray(search)) {
+              search = search ? [search] : [];
+            }
+            newData[key] = result[key].filter(item => !search.includes(item));
+            newData[key].push(...value);
+          } else {
+            const inlineQuery = new RegExp(query['$replace'][key]);
+            newData[key] = result[key].replace(inlineQuery, value);
+          }
         } else {
           newData[key] = value;
         }
