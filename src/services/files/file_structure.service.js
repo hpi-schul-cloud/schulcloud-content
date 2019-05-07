@@ -57,15 +57,14 @@ class FileStructureService {
   }
 
   async get(resourceId) {
-
     const query = { resourceId: resourceId, isTemp: false };
     return this.app
       .service('resource_filepaths')
-      .find({ query })
+      .find({ paginate: false, query })
       .then(response => {
         // TODO
         const pathDictionary = {};
-        response.data.forEach(data => {
+        response.forEach(data => {
           pathDictionary[data._id] = data.path;
         });
         // build trees

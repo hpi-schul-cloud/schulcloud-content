@@ -1,37 +1,75 @@
-const default_config = {
-  process_manager : '@mediagoom/node-play/src/processor/procman.js'
-  , destination : 'C:\\Users\\admin\\AppData\\Roaming\\.node_play'
-  , dist_dir : 'C:\\Users\\admin\\MyStuff\\UNI\\BP\\schulcloud-content\\node_modules\\@mediagoom\\node-play\\dist'
-  , status_man_use: '../processor/statmanfs.js'
-  , processor_use: '../flows/processor.js'
-  , def_owner: 'uploader'
-  , root_dir: 'C:\\Users\\admin\\MyStuff\\UNI\\BP\\schulcloud-content\\node_modules\\@mediagoom\\node-play'
+const logger = require('winston');
+const rmdir = require('rmdir');
+const fs = require('fs');
+const path = require('path');
+const {
+  promisePipe,
+  getUploadStream
+} = require('./storageHelper.js');
+
+
+const getFileList = (dir, fileList = [],recursionNr = 1) => {
+  fs.readdirSync(dir).forEach(file => {
+    if(fs.statSync(path.join(dir, file)).isDirectory()){
+      getFileList(path.join(dir, file), fileList,recursionNr+1);
+    }else{
+      const relativeFilePath = path.join(dir, file).split('\\');
+      fileList.push(relativeFilePath.slice(relativeFilePath.length-recursionNr).join('/'));
+    }
+  });
+  return fileList;
 };
-const config = default_config;
-const ProcMan = require(config.process_manager);
-const process_manager = new ProcMan(config);
 
-const proccessor = require('@mediagoom/node-play/src/processor/statmanfs.js');
+const addFilesToDB = (app, filePaths, data) => {
+  const addPromises = filePaths.map(filePath => app.service('resource_filepaths').create({
+    path: data.resourceId + '/' + filePath,
+    createdBy: data.createdBy,
+    isTemp: data.isTemp,
+    resourceId: data.resourceId
+    }
+  ));
+  return Promise.all(addPromises);
+};
 
 
+const absoluteLocalStoragePath = 'C:\\Users\\admin\\MyStuff\\UNI\\BP\\schulcloud-content\\localStorage';
 class VideoDrmService {
   constructor(app) {
     this.app = app;
   }
-  async get(resourceId, obj/*{ query: queryParams }*/) {
-    console.log(resourceId);
-    console.log('Start Test');
-    try {
-      proccessor.queue_job('uploader'
-      , '002546942265_SampleVideo_1280x720_5mb_mp4' 
-      , 'C:\\Users\\admin\\AppData\\Roaming\\.node_play/uploader/SampleVideo_1280x720_5mb.mp4'
-    ).then(()=>{
-      return 'Done';
+  async get(flow_id, /*obj*/) {
+    this.app.service('videoId').find({ query: {
+      flow_id: flow_id
+    }}).then((result)=>{
+      const videoData = result.data[0];
+      const pathWorking = absoluteLocalStoragePath + '\\working\\.node_play\\uploader\\' + videoData.videoId;
+      const filePaths = getFileList(pathWorking);
+      this.app.service('resource_filepaths').get(videoData.fileId).then(async (result) => {
+        const resourceId = result.resourceId;
+        await addFilesToDB(this.app, filePaths, result);
+
+        await this.app.service('resource_filepaths').find({
+          paginate: false,
+          query: {
+            resourceId: resourceId
+          }
+        }).then(async (result)=>{
+          await Promise.all(
+            filePaths.map(async path => {
+              let obj = result.find(o => o.path === resourceId+'/'+path);
+              let sourceStream = fs.createReadStream(pathWorking+'\\'+path);
+              await promisePipe(sourceStream, getUploadStream(obj._id.toString()));
+            })
+          );
+        });
+        logger.debug('RM Files');
+        const pathFiles = absoluteLocalStoragePath + '\\files\\' +result.resourceId + '\\' + videoData.fileId + '_folder';
+        this.app.service('videoId').remove(videoData._id);
+        rmdir(pathFiles);
+        rmdir(pathWorking);
+      });
     });
-    } catch (error) {
-      console.log(error);
-      return error;
-    } 
+    return 'ok';
   }
 }
 

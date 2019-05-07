@@ -93,8 +93,8 @@ const extendResourceUrl = (hook) => {
 
 const deleteRelatedFiles = async (hook) => {
   const resourceId = hook.id;
-  const existingFiles = await hook.app.service('resource_filepaths').find({query: {resourceId: resourceId}});
-  const filesToRemove = existingFiles.data.map((entry) => entry._id);
+  const existingFiles = await hook.app.service('resource_filepaths').find({paginate:false, query: {resourceId: resourceId}});
+  const filesToRemove = existingFiles.map((entry) => entry._id);
   const manageObject = {
     save: [],
     delete: filesToRemove,
@@ -167,6 +167,14 @@ const validateNewResources = (hook) => {
   return hook;
 };
 
+
+const addDrmProtection = (hook) => {
+  const resourceId = hook.id || hook.result._id.toString();
+  if (hook.data.isProtected) {
+    return hook.app.service('files/drm').get(resourceId).then(()=>hook);
+  } 
+};
+
 module.exports = {
   before: {
     all: [],
@@ -182,7 +190,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [patchResourceIdInDb, manageFiles, patchNewResourceUrlInDb, createNewThumbnail],
+    create: [patchResourceIdInDb, manageFiles, patchNewResourceUrlInDb, createNewThumbnail, addDrmProtection],
     update: [],
     patch: [unpublishInvalidResources],
     remove: []
