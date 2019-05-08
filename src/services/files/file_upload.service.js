@@ -8,7 +8,7 @@ const {
 const { addFilesToDB } = require('./fileDBHelper.js');
 
 const uploadFile = ({app, resourceId, userId, uploadPath, sourceStream}) => {
-  return addFilesToDB(app, [uploadPath], resourceId, userId)
+  return addFilesToDB(app, [uploadPath], {resourceId, userId})
     .then((fileIdDictionary) => {
       return promisePipe(sourceStream, getUploadStream(fileIdDictionary[uploadPath]))
         .then(() => fileIdDictionary[uploadPath]);

@@ -6,6 +6,7 @@ const config = require('config');
 const drmConfig = config.get('DRM');
 const emptyDir = require('empty-dir');
 const { promisePipe, getUploadStream } = require('../files/storageHelper.js');
+const {addFilesToDB} = require('../files/fileDBHelper.js');
 
 const getFileList = (dir, fileList = [], recursionNr = 1) => {
   fs.readdirSync(dir).forEach(file => {
@@ -19,18 +20,6 @@ const getFileList = (dir, fileList = [], recursionNr = 1) => {
     }
   });
   return fileList;
-};
-
-const addFilesToDB = (app, filePaths, data, videoId) => {
-  const addPromises = filePaths.map(filePath =>
-    app.service('resource_filepaths').create({
-      path: data.resourceId + '/' + videoId + '/' + filePath,
-      createdBy: data.createdBy,
-      isTemp: data.isTemp,
-      resourceId: data.resourceId
-    })
-  );
-  return Promise.all(addPromises);
 };
 
 class VideoDrmService {
@@ -58,8 +47,13 @@ class VideoDrmService {
           .service('resource_filepaths')
           .get(videoData.fileId)
           .then(async result => {
-            await addFilesToDB(this.app, filePaths, result, videoData.videoId);
-
+            const dbFilePaths = filePaths.map(filePath => result.resourceId + '/' + videoData.videoId + '/' + filePath);
+            const options = {
+              resourceId: result.resourceId,
+              createdBy: result.createdBy,
+              isTemp: result.isTemp
+            };
+            await addFilesToDB(this.app, dbFilePaths, options);
             await this.app
               .service('resource_filepaths')
               .find({
