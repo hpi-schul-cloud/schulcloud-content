@@ -5,7 +5,7 @@ const path = require('path');
 const config = require('config');
 const drmConfig = config.get('DRM');
 const emptyDir = require('empty-dir');
-const { promisePipe, getUploadStream } = require('./storageHelper.js');
+const { promisePipe, getUploadStream } = require('../files/storageHelper.js');
 
 const getFileList = (dir, fileList = [], recursionNr = 1) => {
   fs.readdirSync(dir).forEach(file => {
@@ -101,7 +101,7 @@ class VideoDrmService {
               pathFiles + '\\' + videoData.fileId + '_folder';
 
             rmdir(pathWorking);
-            await rmdir(pathVideoFiles,()=>{
+            rmdir(pathVideoFiles,()=>{
               const isEmpty = emptyDir.sync(pathFiles);
               if (isEmpty) {
                 fs.rmdir(pathFiles, err => {

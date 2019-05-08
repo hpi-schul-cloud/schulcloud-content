@@ -12,7 +12,7 @@ const axios = require('axios');
 const exiftool = require('node-exiftool');
 const exiftoolBin = require('dist-exiftool');
 const emptyDir = require('empty-dir');
-const { promisePipe, getUploadStream } = require('./storageHelper.js');
+const { promisePipe, getUploadStream } = require('../files/storageHelper.js');
 const ep = new exiftool.ExiftoolProcess(exiftoolBin);
 
 

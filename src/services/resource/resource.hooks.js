@@ -213,7 +213,7 @@ const addDrmProtection = hook => {
   const resourceId = hook.id || hook.result._id.toString();
   if (hook.data.isProtected) {
     return hook.app
-      .service('files/drm')
+      .service('drm/manage')
       .get(resourceId)
       .then(() => hook);
   }
