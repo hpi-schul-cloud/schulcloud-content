@@ -84,20 +84,10 @@ const thumbnailHooks = {
   ...defaultHooks,
 };
 
-const drmHooks = {
-  ...defaultHooks,
-};
-
-const videoDrmHooks = {
-  ...defaultHooks,
-};
-
 module.exports = {
   distribution: distributionHooks,
   manage: manageHooks,
   structure: structureHooks,
   upload: uploadHooks,
   thumbnail: thumbnailHooks,
-  drm: drmHooks,
-  video_drm: videoDrmHooks
 };
