@@ -33,36 +33,38 @@ class DrmService {
 
   async get(resourceId /*, obj*/) {
     new Promise(async resolve => {
-      
+
       const sourceFolderPath =
       drmConfig.absoluteLocalStoragePath + '\\'+drmConfig.downloadDir+'\\' + resourceId;
-      const ResourceFileList = await getResourceFileList(this.app, resourceId);
+      const resourceFileList = await getResourceFileList(this.app, resourceId);
       await Promise.all(
-        ResourceFileList.map(data => {
+        resourceFileList.map(data => {
           return downloadFile(data.path, data.id, sourceFolderPath);
         })
       );
       await ep.open();
 
       await Promise.all(
-        ResourceFileList.map(async element => {
+        resourceFileList.map(async element => {
+          
+          if (element.drmProtection === false) {
+            element.sourceFilePath = sourceFolderPath + '\\' + element.id;
+            element.outputFilePath =
+              sourceFolderPath + '\\' + element.id + '_out'; //It is sometimes not possible to override the original file
+            element.remove = true; // While true the downloaded file is removed from disc at the end
+            element.upload = false; // If there are files changed that have to be reuploaded set this to true
 
-          element.sourceFilePath = sourceFolderPath + '\\' + element.id;
-          element.outputFilePath =
-            sourceFolderPath + '\\' + element.id + '_out'; //It is sometimes not possible to override the original file
-          element.remove = true; // While true the downloaded file is removed from disc at the end
-          element.upload = false; // If there are files changed that have to be reuploaded set this to true
-
-          let fileType = await getFileType(element.sourceFilePath);
-          fileType = fileType.split(' ')[0];
-          if (['JPEG', 'PNG'].includes(fileType)) {
-            await createWatermark(element, logoFilePath);
-            await writeExifData(ep, testDataToWrite, element.outputFilePath);
-          } else if (['PDF'].includes(fileType)) {
-            await createPdfDrm(element);
-            await writeExifData(ep, testDataToWrite, element.outputFilePath);
-          } else if (['Matroska'].includes(fileType)) {
-            createVideoDrm(this.app, element, resourceId);
+            let fileType = await getFileType(element.sourceFilePath);
+            fileType = fileType.split(' ')[0];
+            if (['JPEG', 'PNG'].includes(fileType)) {
+              await createWatermark(element, logoFilePath);
+              await writeExifData(ep, testDataToWrite, element.outputFilePath);
+            } else if (['PDF'].includes(fileType)) {
+              await createPdfDrm(element);
+              await writeExifData(ep, testDataToWrite, element.outputFilePath);
+            } else if (['Matroska'].includes(fileType)) {
+              createVideoDrm(this.app, element, resourceId);
+            }
           }
 
         })
@@ -74,7 +76,7 @@ class DrmService {
       await ep.close();
 
       //upload and delete Files
-      uploadAndDelete(ResourceFileList, sourceFolderPath);
+      uploadAndDelete(this.app, resourceFileList, sourceFolderPath);
       return resolve();
     });
     return 'Done';

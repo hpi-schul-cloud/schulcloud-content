@@ -242,7 +242,7 @@ module.exports = {
       addDrmProtection
     ],
     update: [],
-    patch: [unpublishInvalidResources],
+    patch: [addDrmProtection, unpublishInvalidResources],
     remove: []
   },
 

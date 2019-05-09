@@ -13,7 +13,7 @@ module.exports = function (app) {
       resourceId: {type: String},
       createdBy: {type: String, required: false},
       isTemp: {type: Boolean, required: true},
-      //drmProtection: {type: Boolean, required: true},
+      drmProtection: {type: Boolean, required: true},
 
       createdAt: { type: Date, default: Date.now },
       updatedAt: { type: Date, default: Date.now },

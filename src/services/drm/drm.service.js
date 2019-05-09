@@ -2,7 +2,7 @@
 
 const { DrmService } = require('./drm_manage.service.js');
 const { VideoDrmService } = require('./drm_video.service.js');
-
+const { VideoRedirectService } = require('./drm_videoRedirect.service.js');
 
 const hooks = require('./drm.hooks');
 
@@ -31,4 +31,13 @@ module.exports = function() {
   app.use('/drm/video', new VideoDrmService(app));
   const videoDrmService = app.service('/drm/video');
   videoDrmService.hooks(hooks.video_drm);
+
+
+  /* ##################################################
+
+  ################################################## */
+  // Initialize our service with any options it requires
+  app.use('/drm/videoRedirect', new VideoRedirectService(app));
+  const videoRedirectService = app.service('/drm/videoRedirect');
+  videoRedirectService.hooks(hooks.videoRedirect);
 };

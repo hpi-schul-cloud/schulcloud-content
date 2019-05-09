@@ -16,20 +16,21 @@ const getResourceFileList = (app, resourceId) => {
       })
       .then(async fileObjects => {
         const currentFiles = fileObjects.data;
-        const filePaths = currentFiles.map(currentFile => {
+        return currentFiles.map(currentFile => {
           return {
             id: currentFile._id,
-            path: currentFile.path
+            path: currentFile.path,
+            drmProtection: currentFile.drmProtection
           };
         });
-        return filePaths;
       });
     return getFilePathPromise;
   };
 
-const uploadAndDelete = async (ResourceFileList, sourceFolderPath) => {
+const uploadAndDelete = async (app, resourceFileList, sourceFolderPath) => {
   await Promise.all(
-    ResourceFileList.map(async element => {
+    resourceFileList.map(async element => {
+      app.service('resource_filepaths').patch(element.id.toString(),{drmProtection: true });
       if (element.upload) {
         let sourceStream = fs.createReadStream(element.outputFilePath);
         await promisePipe(sourceStream, getUploadStream(element.id));

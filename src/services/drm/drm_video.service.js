@@ -51,7 +51,8 @@ class VideoDrmService {
             const options = {
               resourceId: result.resourceId,
               createdBy: result.createdBy,
-              isTemp: result.isTemp
+              isTemp: result.isTemp,
+              drmProtection: true
             };
             await addFilesToDB(this.app, dbFilePaths, options);
             await this.app
@@ -94,7 +95,7 @@ class VideoDrmService {
             const pathVideoFiles =
               pathFiles + '\\' + videoData.fileId + '_folder';
 
-            rmdir(pathWorking);
+            //rmdir(pathWorking);
             rmdir(pathVideoFiles,()=>{
               const isEmpty = emptyDir.sync(pathFiles);
               if (isEmpty) {

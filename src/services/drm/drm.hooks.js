@@ -8,7 +8,12 @@ const videoDrmHooks = {
   ...defaultHooks,
 };
 
+const videoRedirectHooks = {
+  ...defaultHooks,
+};
+
 module.exports = {
   drm: drmHooks,
-  video_drm: videoDrmHooks
+  video_drm: videoDrmHooks,
+  videoRedirect: videoRedirectHooks
 };
