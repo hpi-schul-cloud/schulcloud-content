@@ -6,10 +6,10 @@ then
     mongoimport --host=$MONGO_URI --port=$MONGO_PORT --db schulcloud_content --collection resources --file /usr/src/connector/backup/schulcloud_content/resources.json
 
     cd /
-    mongo-connector -m mongodb:27017 -t elasticsearch:9200 -d elastic2_doc_manager -v
+    mongo-connector --auto-commit-interval=0 -m mongodb:27017 -t elasticsearch:9200 -d elastic2_doc_manager -v
 fi
 if [ $1 == "start" ]
 then
     cd /
-    mongo-connector -m mongodb:27017 -t elasticsearch:9200 -d elastic2_doc_manager -v
+    mongo-connector --auto-commit-interval=0 -m mongodb:27017 -t elasticsearch:9200 -d elastic2_doc_manager -v
 fi
