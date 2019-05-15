@@ -16,7 +16,7 @@ class FileDistributionService {
     let [resourceId, ...filePath] = req.params['0']
       .replace(/^\//, '')
       .split('/');
-    filePath = filePath.join('/');
+    filePath = '/' + filePath.join('/');
 
     // get fileId
     return this.app
