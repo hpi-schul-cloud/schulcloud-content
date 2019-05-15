@@ -5,7 +5,7 @@ const { populateResourceUrls } = require('../../hooks/populateResourceUrls');
 // const createThumbnail = require('../../hooks/createThumbnail');
 const config = require('config');
 const pichassoConfig = config.get('pichasso');
-const {videoCleanupOnDelete} = require('../drm/drmHelpers/handelFiles.js');
+const { videoCleanupOnDelete } = require('../drm/drmHelpers/handelFiles.js');
 
 const restrictToPublicIfUnauthorized = hook => {
   /*
@@ -66,8 +66,8 @@ const deleteRelatedFiles = async hook => {
   const resourceId = hook.id;
   const existingFiles = await hook.app
     .service('resource_filepaths')
-    .find({ query: { resourceId: resourceId } });
-  const filesToRemove = existingFiles.data.map(entry => entry._id);
+    .find({ query: { resourceId: resourceId }, paginate: false });
+  const filesToRemove = existingFiles.map(entry => entry._id);
   const manageObject = {
     save: [],
     delete: filesToRemove
@@ -216,10 +216,11 @@ module.exports = {
       patchResourceIdInFilepathDb,
       manageFiles,
       createNewThumbnail,
+      populateResourceUrls,
       addDrmProtection
     ],
     update: [],
-    patch: [addDrmProtection, unpublishInvalidResources],
+    patch: [populateResourceUrls, addDrmProtection, unpublishInvalidResources],
     remove: []
   },
 

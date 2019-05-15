@@ -6,7 +6,7 @@ const extendUrls = resource => {
   )}/files/get/${resource._id}/`;
   ['url', 'thumbnail'].forEach(key => {
     const firstCapsKey = key.charAt(0).toUpperCase() + key.slice(1);
-    if (!resource[key].startsWith('http')) {
+    if (resource[key] && !resource[key].startsWith('http')) {
       resource[`full${firstCapsKey}`] =
         host + resource[key].replace(/^\/+/, '');
     }
@@ -15,14 +15,12 @@ const extendUrls = resource => {
 };
 
 const populateResourceUrls = hook => {
-  if (hook.method === 'get') {
+  if (!Array.isArray(hook.result) && typeof hook.result === 'object') {
     hook.result = extendUrls(hook.result);
-  } else if (hook.method === 'find') {
-    if (Array.isArray(hook.result)) {
-      hook.result = hook.result.map(extendUrls);
-    } else {
-      hook.result.data = hook.result.data.map(extendUrls);
-    }
+  } else if (Array.isArray(hook.result)) {
+    hook.result = hook.result.map(extendUrls);
+  } else if (Array.isArray(hook.result.data)) {
+    hook.result.data = hook.result.data.map(extendUrls);
   }
   return hook;
 };
