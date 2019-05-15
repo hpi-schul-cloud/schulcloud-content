@@ -23,8 +23,6 @@ module.exports = function() {
   const fileUploadService = app.service('files/upload');
   fileUploadService.hooks(hooks.upload);
 
-
-
   /* ##################################################
   # PERSIST
   # Usage: For internal use only, see "resource"-hooks
@@ -35,19 +33,15 @@ module.exports = function() {
   const fileManageService = app.service('files/manage');
   fileManageService.hooks(hooks.manage);
 
-
-
   /* ##################################################
   # DOWNLOAD
-  # Usage: GET /files/get/{filepath at storage location}
+  # Usage: GET /files/get/{resourceId}/{filepath at storage location}
   # Result: stored file
   ################################################## */
 
   app.use('/files/get*', new FileDistributionService(app));
   const fileDistributionService = app.service('files/get*');
   fileDistributionService.hooks(hooks.distribution);
-
-
 
   /* ##################################################
   # FILETREE
@@ -60,9 +54,7 @@ module.exports = function() {
   const fileStructureService = app.service('files/structure');
   fileStructureService.hooks(hooks.structure);
 
-
-
-   /* ##################################################
+  /* ##################################################
   # THUMBNAIL
   # For internal use only, see "resource"-hooks
   # Usage: GET /files/thumbnail/{resourceId}

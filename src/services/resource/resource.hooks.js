@@ -9,11 +9,10 @@ const {videoCleanupOnDelete} = require('../drm/drmHelpers/handelFiles.js');
 const restrictToPublicIfUnauthorized = hook => {
   /*
   Anfrage so manipulieren, dass nur isPublished=true angezeigt wird
-  Außer: userId = currentUser._id (hook.data.userId)
+  Außer: userId = currentUser._id (hook.params.userId)
   */
   try {
     hook = authenticate(hook);
-    delete hook.params.query.userId;
 
     if (
       typeof hook.params.query.isPublished == 'undefined' ||
@@ -21,22 +20,21 @@ const restrictToPublicIfUnauthorized = hook => {
     ) {
       delete hook.params.query.isPublished;
       hook.params.query.$or = [
-        { isPublished: true },
-        { userId: hook.data.userId }
+        { isPublished: { $ne: false } },
+        { userId: hook.params.userId }
       ];
     } else {
-      hook.params.query.isPublished = true;
+      hook.params.query.isPublished = { $ne: false };
     }
   } catch (error) {
-    // TODO FIX this line, it's preventing /content/resources from loading
-    //hook.params.query["isPublished[$ne]"] = false;
+    hook.params.query.isPublished = { $ne: false };
     return hook;
   }
   return hook;
 };
 
 const manageFiles = hook => {
-  if (!hook.data.files || !hook.data.userId) {
+  if (!hook.data.files || !hook.params.userId) {
     return hook;
   }
   hook = authenticate(hook);
@@ -45,7 +43,7 @@ const manageFiles = hook => {
   const fileManagementService = hook.app.service('/files/manage');
   const resourceId = (hook.id || hook.result._id).toString();
   return fileManagementService
-    .patch(resourceId, { ...files, userId: hook.data.userId }, hook)
+    .patch(resourceId, { ...files, userId: hook.params.userId }, hook)
     .then(() => hook);
 };
 
@@ -57,23 +55,10 @@ const patchResourceIdInDb = hook => {
     return hook;
   }
   const resourceId = (hook.id || hook.result._id).toString();
-  const replacePromise = hook.app
+  return hook.app
     .service('resource_filepaths')
-    .find({ query: { _id: { $in: ids } } })
-    .then(response => {
-      const patchList = response.data.map(entry => {
-        if (entry.path.indexOf(resourceId) !== 0) {
-          let newPath = resourceId + '/' + entry.path;
-          return hook.app
-            .service('resource_filepaths')
-            .patch(entry._id, { resourceId: resourceId, path: newPath });
-        } else {
-          return Promise.resolve(entry);
-        }
-      });
-      return Promise.all(patchList);
-    });
-  return replacePromise.then(() => hook);
+    .patch(null, { resourceId }, { query: { _id: { $in: ids } } })
+    .then(() => hook);
 };
 
 const patchNewResourceUrlInDb = hook => {
@@ -118,8 +103,8 @@ const deleteRelatedFiles = async hook => {
   const resourceId = hook.id;
   const existingFiles = await hook.app
     .service('resource_filepaths')
-    .find({ paginate: false, query: { resourceId: resourceId } });
-  const filesToRemove = existingFiles.map(entry => entry._id);
+    .find({ query: { resourceId: resourceId } });
+  const filesToRemove = existingFiles.data.map(entry => entry._id);
   const manageObject = {
     save: [],
     delete: filesToRemove
@@ -142,7 +127,7 @@ const createNewThumbnail = hook => {
 
 // VALIDATION
 const validateResource = hook => {
-  if (hook.data.isPublished || hook.result.isPublished) {
+  if (hook.data.isPublished || (hook.result || {}).isPublished) {
     try {
       validateResourceSchema()(hook);
       return true;
@@ -213,6 +198,12 @@ const addDrmProtection = hook => {
       .get(options)
       .then(() => hook);
   }
+
+const addUserIdToData = hook => {
+  if (hook.params.userId) {
+    hook.data.userId = hook.params.userId;
+  }
+  return hook;
 };
 
 module.exports = {
@@ -220,10 +211,20 @@ module.exports = {
     all: [],
     find: [restrictToPublicIfUnauthorized],
     get: [],
-    create: [authenticate, validateNewResources /*, createThumbnail */],
+    create: [
+      authenticate,
+      addUserIdToData,
+      validateNewResources /* createThumbnail, */
+    ],
     update: [commonHooks.disallow()],
-    patch: [patchResourceIdInDb, manageFiles, extendResourceUrl],
-    remove: [deleteRelatedFiles]
+    patch: [
+      authenticate,
+      addUserIdToData,
+      patchResourceIdInDb,
+      manageFiles,
+      extendResourceUrl
+    ],
+    remove: [authenticate, deleteRelatedFiles]
   },
 
   after: {

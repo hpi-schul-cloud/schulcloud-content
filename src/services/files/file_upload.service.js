@@ -20,7 +20,7 @@ class FileUploadService {
     this.app = app;
   }
 
-  create(data, { req }) {
+  create(data, { req, userId }) {
     // TODO permission check, content-id must be owned by current user, ...
     if(!req.query.path){
       throw new Error('param \'path\' is missing');
@@ -30,7 +30,7 @@ class FileUploadService {
       throw new Error('param \'resourceId\' is missing');
     }
     */
-    if(!data.userId){
+    if(!userId){
       throw new Error('Unauthorized request');
     }
     return new Promise((resolve, reject) => {
@@ -48,7 +48,7 @@ class FileUploadService {
           // managedUpload object allows you to abort ongoing upload or track file upload progress.
           return uploadFile({
             app: this.app,
-            userId: data.userId,
+            userId,
             resourceId: req.query.resourceId,
             uploadPath,
             sourceStream: part
@@ -62,7 +62,6 @@ class FileUploadService {
             }
             return reject({status: 500, message: error});
           });
-            
         } else {
           if(!uploadPath){
             logger.error('uploadPath (req.query.path) is missing.');
