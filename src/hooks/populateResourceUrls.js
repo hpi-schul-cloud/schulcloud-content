@@ -6,7 +6,7 @@ const extendUrls = resource => {
   )}/files/get/${resource._id}/`;
   ['url', 'thumbnail'].forEach(key => {
     const firstCapsKey = key.charAt(0).toUpperCase() + key.slice(1);
-    if (!resource[key].startsWith('http')) {
+    if (resource[key] && !resource[key].startsWith('http')) {
       resource[`full${firstCapsKey}`] =
         host + resource[key].replace(/^\/+/, '');
     }

@@ -65,8 +65,8 @@ const deleteRelatedFiles = async hook => {
   const resourceId = hook.id;
   const existingFiles = await hook.app
     .service('resource_filepaths')
-    .find({ query: { resourceId: resourceId } });
-  const filesToRemove = existingFiles.data.map(entry => entry._id);
+    .find({ query: { resourceId: resourceId }, paginate: false });
+  const filesToRemove = existingFiles.map(entry => entry._id);
   const manageObject = {
     save: [],
     delete: filesToRemove
