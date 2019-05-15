@@ -73,7 +73,7 @@ const downloadFile = ({path, name, storageLocation, resourceId}) => {
     let preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get(
       'port'
     )}/files/get/`;
-    var url = preUrl + resourceId + '/' + path;
+    var url = preUrl + resourceId + path;
   
     var options = {
       directory: storageLocation,
