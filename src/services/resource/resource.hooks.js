@@ -197,9 +197,14 @@ module.exports = {
     all: [],
     find: [populateResourceUrls],
     get: [populateResourceUrls],
-    create: [patchResourceIdInFilepathDb, manageFiles, createNewThumbnail],
+    create: [
+      patchResourceIdInFilepathDb,
+      manageFiles,
+      createNewThumbnail,
+      populateResourceUrls
+    ],
     update: [],
-    patch: [unpublishInvalidResources],
+    patch: [unpublishInvalidResources, populateResourceUrls],
     remove: []
   },
 

@@ -15,14 +15,12 @@ const extendUrls = resource => {
 };
 
 const populateResourceUrls = hook => {
-  if (hook.method === 'get') {
+  if (!Array.isArray(hook.result) && typeof hook.result === 'object') {
     hook.result = extendUrls(hook.result);
-  } else if (hook.method === 'find') {
-    if (Array.isArray(hook.result)) {
-      hook.result = hook.result.map(extendUrls);
-    } else {
-      hook.result.data = hook.result.data.map(extendUrls);
-    }
+  } else if (Array.isArray(hook.result)) {
+    hook.result = hook.result.map(extendUrls);
+  } else if (Array.isArray(hook.result.data)) {
+    hook.result.data = hook.result.data.map(extendUrls);
   }
   return hook;
 };

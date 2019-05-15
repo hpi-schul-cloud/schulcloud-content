@@ -37,7 +37,7 @@ describe('\'resources\' service', () => {
     });
   });
 
-  it('short url gets saved and extended on CREATE', async () => {
+  it('url gets extended', async () => {
     const mockData = {
       ...mockSubmitResource(),
       url: '/index.html',
@@ -45,33 +45,12 @@ describe('\'resources\' service', () => {
     };
     assert.ok(!mockData.url.startsWith('http'));
     assert.ok(!mockData.thumbnail.startsWith('http'));
-    const dbObject = await app.service('resources').create(mockData);
-    assert.ok(dbObject.url.startsWith('http'));
-    assert.ok(dbObject.thumbnail.startsWith('http'));
-  });
+    const createdObject = await app.service('resources').create(mockData);
 
-  it('short url gets saved and extended on PATCH', async () => {
-    const mockExisting = mockSubmitResource();
-    const mockData = {
-      ...mockSubmitResource(),
-      url: '/index.html',
-      thumbnail: '/escaperoom.png'
-    };
-    const existingObject = await app.service('resources').create(mockExisting);
-    assert.equal(mockExisting.url, existingObject.url);
-    assert.equal(mockExisting.thumbnail, existingObject.thumbnail);
-
-    const dbResultObject = await app
-      .service('resources')
-      .patch(existingObject._id, { ...mockData });
-
-    const dbObject = await app.service('resources').get(existingObject._id);
-
-    [dbResultObject, dbObject].forEach(obj => {
-      assert.ok(obj.url.endsWith(mockData.url));
-      assert.ok(obj.url.startsWith('http'));
-      assert.ok(obj.thumbnail.endsWith(mockData.thumbnail));
-      assert.ok(obj.thumbnail.startsWith('http'));
-    });
+    const dbObject = await app.service('resources').get(createdObject._id);
+    assert.ok(!dbObject.url.startsWith('http'));
+    assert.ok(dbObject.fullUrl.startsWith('http'));
+    assert.ok(!dbObject.thumbnail.startsWith('http'));
+    assert.ok(dbObject.fullThumbnail.startsWith('http'));
   });
 });
