@@ -1,6 +1,7 @@
 const commonHooks = require('feathers-hooks-common');
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 const authenticate = require('../../hooks/authenticate');
+const { populateResourceUrls } = require('../../hooks/populateResourceUrls');
 // const createThumbnail = require('../../hooks/createThumbnail');
 const config = require('config');
 const pichassoConfig = config.get('pichasso');
@@ -47,7 +48,7 @@ const manageFiles = hook => {
     .then(() => hook);
 };
 
-const patchResourceIdInDb = hook => {
+const patchResourceIdInFilepathDb = hook => {
   let ids;
   try {
     ids = hook.data.files.save;
@@ -59,44 +60,6 @@ const patchResourceIdInDb = hook => {
     .service('resource_filepaths')
     .patch(null, { resourceId }, { query: { _id: { $in: ids } } })
     .then(() => hook);
-};
-
-const patchNewResourceUrlInDb = hook => {
-  if (!hook.data.patchResourceUrl) {
-    return hook;
-  }
-  hook.data.patchResourceUrl = false;
-  const preUrl = `${config.get('protocol')}://${config.get(
-    'host'
-  )}:${config.get('port')}/files/get/`;
-  const resourceId = hook.id || hook.result._id.toString();
-  return hook.app
-    .service('resources')
-    .get(resourceId)
-    .then(response => {
-      let newUrl = preUrl + resourceId + response.url;
-      let newThumbnail = preUrl + resourceId + response.thumbnail;
-      return hook.app
-        .service('resources')
-        .patch(response._id, { url: newUrl, thumbnail: newThumbnail });
-    })
-    .then(newObj => {
-      hook.result = newObj;
-      return hook;
-    });
-};
-
-const extendResourceUrl = hook => {
-  if (hook.data.patchResourceUrl && !hook.data.url.startsWith('http')) {
-    hook.data.patchResourceUrl = false;
-    const preUrl = `${config.get('protocol')}://${config.get(
-      'host'
-    )}:${config.get('port')}/files/get/`;
-    const resourceId = hook.id || hook.result._id.toString();
-    hook.data.url = preUrl + resourceId + hook.data.url;
-    hook.data.thumbnail = preUrl + resourceId + hook.data.thumbnail;
-  }
-  return hook;
 };
 
 const deleteRelatedFiles = async hook => {
@@ -206,6 +169,23 @@ const addUserIdToData = hook => {
   return hook;
 };
 
+const removeLeadingSlashes = resource => {
+  ['url', 'thumbnail'].forEach(key => {
+    if (resource[key]) {
+      resource[key] = resource[key].replace(/^\/+/, '/');
+    }
+  });
+  return resource;
+};
+
+const removeLeadingSlashesHook = hook => {
+  if (Array.isArray(hook.data)) {
+    hook.data = hook.data.map(removeLeadingSlashes);
+  } else {
+    hook.data = removeLeadingSlashes(hook.data);
+  }
+};
+
 module.exports = {
   before: {
     all: [],
@@ -214,27 +194,28 @@ module.exports = {
     create: [
       authenticate,
       addUserIdToData,
+      removeLeadingSlashesHook,
       validateNewResources /* createThumbnail, */
     ],
     update: [commonHooks.disallow()],
     patch: [
       authenticate,
       addUserIdToData,
-      patchResourceIdInDb,
-      manageFiles,
-      extendResourceUrl
+      removeLeadingSlashesHook,
+      patchResourceIdInFilepathDb,
+      manageFiles
+      // extendResourceUrl
     ],
     remove: [authenticate, deleteRelatedFiles]
   },
 
   after: {
     all: [],
-    find: [],
-    get: [],
+    find: [populateResourceUrls],
+    get: [populateResourceUrls],
     create: [
-      patchResourceIdInDb,
+      patchResourceIdInFilepathDb,
       manageFiles,
-      patchNewResourceUrlInDb,
       createNewThumbnail,
       addDrmProtection
     ],

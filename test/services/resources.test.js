@@ -16,12 +16,11 @@ const mockSubmitResource = () => ({
   userId: '0000d224816abba584714c9c',
   files: {
     save: [],
-    delete: [],
+    delete: []
   }
 });
 
 describe('\'resources\' service', () => {
-
   it('registered the service', () => {
     const service = app.service('resources');
     assert.ok(service, 'Registered the service');
@@ -31,7 +30,9 @@ describe('\'resources\' service', () => {
     const mockData = mockSubmitResource();
     const dbObject = await app.service('resources').create(mockData);
     Object.entries(mockData).forEach(([key, value]) => {
-      if(['files'].includes(key)){ return; } // Skip
+      if (['files'].includes(key)) {
+        return;
+      } // Skip
       assert.equal(JSON.stringify(dbObject[key]), JSON.stringify(value));
     });
   });
@@ -39,7 +40,6 @@ describe('\'resources\' service', () => {
   it('short url gets saved and extended on CREATE', async () => {
     const mockData = {
       ...mockSubmitResource(),
-      patchResourceUrl: true,
       url: '/index.html',
       thumbnail: '/escaperoom.png'
     };
@@ -54,7 +54,6 @@ describe('\'resources\' service', () => {
     const mockExisting = mockSubmitResource();
     const mockData = {
       ...mockSubmitResource(),
-      patchResourceUrl: true,
       url: '/index.html',
       thumbnail: '/escaperoom.png'
     };
@@ -64,13 +63,11 @@ describe('\'resources\' service', () => {
 
     const dbResultObject = await app
       .service('resources')
-      .patch(existingObject._id, {...mockData});
+      .patch(existingObject._id, { ...mockData });
 
-    const dbObject = await app
-      .service('resources')
-      .get(existingObject._id);
+    const dbObject = await app.service('resources').get(existingObject._id);
 
-    [dbResultObject, dbObject].forEach((obj) => {
+    [dbResultObject, dbObject].forEach(obj => {
       assert.ok(obj.url.endsWith(mockData.url));
       assert.ok(obj.url.startsWith('http'));
       assert.ok(obj.thumbnail.endsWith(mockData.thumbnail));

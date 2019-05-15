@@ -42,7 +42,10 @@ const hasViewPermission = hook => {
       }
     })
     .then(resources => {
-      const resourceId = resources.data[0].resourceId;
+      const resourceId = (resources.data[0] || {}).resourceId;
+      if (!resourceId) {
+        throw new errors.NotFound('No Resource for File Found');
+      }
       return app.service('resources').get(resourceId);
     })
     .then(resource => {
