@@ -15,7 +15,6 @@ const extendUrls = resource => {
 };
 
 const populateResourceUrls = hook => {
-  return hook;
   if (hook.method === 'get') {
     hook.result = extendUrls(hook.result);
   } else if (hook.method === 'find') {

@@ -154,16 +154,16 @@ const addUserIdToData = hook => {
   return hook;
 };
 
-const removeLeadingSlashesHook = hook => {
-  const removeLeadingSlashes = resource => {
-    ['url', 'thumbnail'].forEach(key => {
-      if (resource[key]) {
-        resource[key] = resource[key].replace(/^\/+/, '/');
-      }
-    });
-    return hook;
-  };
+const removeLeadingSlashes = resource => {
+  ['url', 'thumbnail'].forEach(key => {
+    if (resource[key]) {
+      resource[key] = resource[key].replace(/^\/+/, '/');
+    }
+  });
+  return resource;
+};
 
+const removeLeadingSlashesHook = hook => {
   if (Array.isArray(hook.data)) {
     hook.data = hook.data.map(removeLeadingSlashes);
   } else {
