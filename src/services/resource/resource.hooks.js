@@ -204,7 +204,6 @@ module.exports = {
       removeLeadingSlashesHook,
       patchResourceIdInFilepathDb,
       manageFiles
-      // extendResourceUrl
     ],
     remove: [authenticate, deleteRelatedFiles]
   },
