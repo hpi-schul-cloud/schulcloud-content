@@ -26,6 +26,12 @@ const hasViewPermission = hook => {
       2.2 else check if access token exists
         2.2.1 if access_token exists => allow access
   */
+
+  // skip for internal calls
+  if (typeof hook.params.provider === 'undefined') {
+    return hook;
+  }
+
   const app = hook.app;
   let [resourceId, ...filePath] = hook.params.route[0]
     .replace(/^\//, '')

@@ -7,12 +7,15 @@ const {
 } = require('./storageHelper.js');
 const { addFilesToDB } = require('./fileDBHelper.js');
 
-const uploadFile = ({app, resourceId, userId, uploadPath, sourceStream}) => {
-  return addFilesToDB(app, [uploadPath], resourceId, userId)
-    .then((fileIdDictionary) => {
-      return promisePipe(sourceStream, getUploadStream(fileIdDictionary[uploadPath]))
-        .then(() => fileIdDictionary[uploadPath]);
-    });
+const uploadFile = ({ app, resourceId, userId, uploadPath, sourceStream }) => {
+  return addFilesToDB(app, [uploadPath], resourceId, userId).then(
+    fileIdDictionary => {
+      return promisePipe(
+        sourceStream,
+        getUploadStream(fileIdDictionary[uploadPath])
+      ).then(() => fileIdDictionary[uploadPath]);
+    }
+  );
 };
 
 class FileUploadService {
@@ -22,7 +25,7 @@ class FileUploadService {
 
   create(data, { req, userId }) {
     // TODO permission check, content-id must be owned by current user, ...
-    if(!req.query.path){
+    if (!req.query.path) {
       throw new Error('param \'path\' is missing');
     }
     /* // TODO is optional now
@@ -30,18 +33,18 @@ class FileUploadService {
       throw new Error('param \'resourceId\' is missing');
     }
     */
-    if(!userId){
+    if (!userId) {
       throw new Error('Unauthorized request');
     }
     return new Promise((resolve, reject) => {
-      const uploadPath = removeTrailingSlashes(req.query.path);
+      const uploadPath = '/' + removeTrailingSlashes(req.query.path);
       const form = new multiparty.Form();
-      form.on('error', (error) => {
-        reject({status: 400, message: error});
+      form.on('error', error => {
+        reject({ status: 400, message: error });
       });
       form.on('part', part => {
-        part.on('error', (error) => {
-          return reject({status: 400, message: error});
+        part.on('error', error => {
+          return reject({ status: 400, message: error });
         });
         if (part.filename && uploadPath) {
           //writableStream.managedUpload === https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3/ManagedUpload.html
@@ -52,23 +55,24 @@ class FileUploadService {
             resourceId: req.query.resourceId,
             uploadPath,
             sourceStream: part
-          }).then((uploadedId) => {
-            return resolve({status: 200, message: uploadedId});
           })
-          .catch(error => {
-            logger.error(error);
-            if(error.statusCode){
-              return reject({status: error.statusCode, message: error});
-            }
-            return reject({status: 500, message: error});
-          });
+            .then(uploadedId => {
+              return resolve({ status: 200, message: uploadedId });
+            })
+            .catch(error => {
+              logger.error(error);
+              if (error.statusCode) {
+                return reject({ status: error.statusCode, message: error });
+              }
+              return reject({ status: 500, message: error });
+            });
         } else {
-          if(!uploadPath){
+          if (!uploadPath) {
             logger.error('uploadPath (req.query.path) is missing.');
-          }else{
+          } else {
             logger.error('part is no file.');
           }
-          return reject({status: 400});
+          return reject({ status: 400 });
         }
       });
       form.parse(req);
