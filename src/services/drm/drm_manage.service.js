@@ -31,7 +31,7 @@ class DrmService {
     this.app = app;
   }
 
-  async get(resourceId /*, obj*/) {
+  async get({resourceId, drmOptions} /*, obj*/) {
     new Promise(async resolve => {
 
       const sourceFolderPath =
@@ -56,13 +56,13 @@ class DrmService {
 
             let fileType = await getFileType(element.sourceFilePath);
             fileType = fileType.split(' ')[0];
-            if (['JPEG', 'PNG'].includes(fileType)) {
+            if (['JPEG', 'PNG'].includes(fileType)&&drmOptions.watermark) {
               await createWatermark(element, logoFilePath);
-              await writeExifData(ep, testDataToWrite, element.outputFilePath);
-            } else if (['PDF'].includes(fileType)) {
+              await writeExifData(ep, drmOptions.exif, element.outputFilePath);
+            } else if (['PDF'].includes(fileType)&&drmOptions.pdfIsProtected) {
               await createPdfDrm(element);
-              await writeExifData(ep, testDataToWrite, element.outputFilePath);
-            } else if (['Matroska'].includes(fileType)) {
+              await writeExifData(ep, drmOptions.exif, element.outputFilePath);
+            } else if (['Matroska'].includes(fileType)&&drmOptions.videoIsProtected) {
               createVideoDrm(this.app, element, resourceId);
             }
           }

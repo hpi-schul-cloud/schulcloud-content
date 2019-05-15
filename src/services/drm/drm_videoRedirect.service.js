@@ -1,5 +1,6 @@
 const { downloadFile } = require('./drmHelpers/handelFiles.js');
-
+const config = require('config');
+const drmConfig = config.get('DRM');
 
 class VideoRedirectService {
   constructor(app) {
@@ -21,7 +22,7 @@ class VideoRedirectService {
             let obj = results.find(
               o =>o.path === fileToOpen
             );
-            if (obj.drmProtection && ['mkv', 'mp4', 'gif'].includes(fileType)) {
+            if (obj.drmProtection && drmConfig.videoFileTypes.includes(fileType)) {
               return await this.app.service('videoId').find({
                 paginate: false,
                 query:{
@@ -29,15 +30,15 @@ class VideoRedirectService {
                 }
               }).then(async (result)=>{
                 const videoId = result[0].videoId;
+                const sourceFolderPath = drmConfig.absoluteLocalStoragePath + '\\' + drmConfig.workingDir;
                 await results.map((result) => {
                   return result.path.split('/');
                 })
                 .filter(splitResult => splitResult[1] == videoId)
-                .map(async filterdSplitResult => {
-                  const fileName = filterdSplitResult[filterdSplitResult.length-1];
-                  const sourceFolderPath = 'C:\\Users\\admin\\MyStuff\\UNI\\BP\\schulcloud-content\\localStorage\\working\\.node_play\\uploader';
-                  const subfolder = filterdSplitResult.slice(2, filterdSplitResult.length-1);
-                  return await downloadFile(filterdSplitResult.join ('/'), fileName, sourceFolderPath+'\\'+videoId+'\\'+subfolder);
+                .map(async filteredSplitResult => {
+                  const fileName = filteredSplitResult[filteredSplitResult.length-1];          
+                  const subFolder = filteredSplitResult.slice(2, filteredSplitResult.length-1);
+                  return await downloadFile(filteredSplitResult.join ('/'), fileName, sourceFolderPath+'\\'+videoId+'\\'+subFolder);
                 });
                 return {
                   redirect: true,

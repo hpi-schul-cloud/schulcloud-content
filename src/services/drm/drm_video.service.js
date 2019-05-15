@@ -95,7 +95,7 @@ class VideoDrmService {
             const pathVideoFiles =
               pathFiles + '\\' + videoData.fileId + '_folder';
 
-            //rmdir(pathWorking);
+            rmdir(pathWorking);
             rmdir(pathVideoFiles,()=>{
               const isEmpty = emptyDir.sync(pathFiles);
               if (isEmpty) {

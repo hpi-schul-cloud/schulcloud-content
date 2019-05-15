@@ -4,6 +4,7 @@ const authenticate = require('../../hooks/authenticate');
 // const createThumbnail = require('../../hooks/createThumbnail');
 const config = require('config');
 const pichassoConfig = config.get('pichasso');
+const {videoCleanupOnDelete} = require('../drm/drmHelpers/handelFiles.js');
 
 const restrictToPublicIfUnauthorized = hook => {
   /*
@@ -124,16 +125,7 @@ const deleteRelatedFiles = async hook => {
     delete: filesToRemove
   };
   await hook.app.service('/files/manage').patch(resourceId, manageObject, hook);
-  hook.app
-    .service('videoId')
-    .find({ query: { resourceId: resourceId } })
-    .then(searchResults => {
-      const currentFiles = searchResults.data;
-      currentFiles.map(currentFile =>
-        hook.app.service('videoId').remove(currentFile._id)
-      );
-    });
-
+  videoCleanupOnDelete(hook.app, resourceId);
   return hook;
 };
 
@@ -211,10 +203,14 @@ const validateNewResources = hook => {
 
 const addDrmProtection = hook => {
   const resourceId = hook.id || hook.result._id.toString();
+  const options = {
+    resourceId: resourceId,
+    drmOptions: hook.data.drmOptions
+  };
   if (hook.data.isProtected) {
     return hook.app
       .service('drm/manage')
-      .get(resourceId)
+      .get(options)
       .then(() => hook);
   }
 };

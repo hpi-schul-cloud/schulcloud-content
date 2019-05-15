@@ -5,6 +5,8 @@ const { promisePipe, getUploadStream } = require('../../files/storageHelper.js')
 const Magic = require('mmmagic').Magic;
 const download = require('download-file');
 const config = require('config');
+const drmConfig = config.get('DRM');
+const rmdir = require('rmdir');
 
 const getResourceFileList = (app, resourceId) => {
     const getFilePathPromise = app
@@ -26,7 +28,24 @@ const getResourceFileList = (app, resourceId) => {
       });
     return getFilePathPromise;
   };
-
+const videoCleanupOnDelete = (app, resourceId) =>{
+  app
+  .service('videoId')
+  .find({ query: { resourceId: resourceId } })
+  .then(searchResults => {
+    const currentFiles = searchResults.data;
+    const pathWorking =
+          drmConfig.absoluteLocalStoragePath +
+          '\\' +
+          drmConfig.workingDir +
+          '\\' +
+          currentFiles[0].videoId;
+    rmdir(pathWorking);
+    currentFiles.map(currentFile =>
+      app.service('videoId').remove(currentFile._id)
+    );
+  });
+};
 const uploadAndDelete = async (app, resourceFileList, sourceFolderPath) => {
   await Promise.all(
     resourceFileList.map(async element => {
@@ -82,5 +101,6 @@ module.exports = {
   uploadAndDelete,
   getResourceFileList,
   downloadFile,
-  getFileType
+  getFileType,
+  videoCleanupOnDelete
 };
