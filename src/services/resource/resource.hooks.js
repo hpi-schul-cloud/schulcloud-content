@@ -189,7 +189,6 @@ module.exports = {
       removeLeadingSlashesHook,
       patchResourceIdInFilepathDb,
       manageFiles
-      // extendResourceUrl
     ],
     remove: [authenticate, deleteRelatedFiles]
   },
@@ -198,12 +197,7 @@ module.exports = {
     all: [],
     find: [populateResourceUrls],
     get: [populateResourceUrls],
-    create: [
-      patchResourceIdInFilepathDb,
-      manageFiles,
-      // patchNewResourceUrlInDb,
-      createNewThumbnail
-    ],
+    create: [patchResourceIdInFilepathDb, manageFiles, createNewThumbnail],
     update: [],
     patch: [unpublishInvalidResources],
     remove: []
