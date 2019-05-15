@@ -47,7 +47,7 @@ class VideoDrmService {
           .service('resource_filepaths')
           .get(videoData.fileId)
           .then(async result => {
-            const dbFilePaths = filePaths.map(filePath => result.resourceId + '/' + videoData.videoId + '/' + filePath);
+            const dbFilePaths = filePaths.map(filePath => '/' + videoData.videoId + '/' + filePath);
             const options = {
               resourceId: result.resourceId,
               createdBy: result.createdBy,
@@ -69,7 +69,6 @@ class VideoDrmService {
                     let obj = result.find(
                       o =>
                         o.path ===
-                        videoData.resourceId +
                           '/' +
                           videoData.videoId +
                           '/' +

@@ -16,7 +16,8 @@ class VideoRedirectService {
               resourceId: resourceId
             }
           }).then(async (results)=>{
-            const fileToOpen = resource.url.split('get/')[1];
+            let fileToOpen = resource.url.split('/');
+            fileToOpen = fileToOpen[fileToOpen.length-1];
             let fileType = fileToOpen.split('.');
             fileType = fileType[fileType.length-1];
             let obj = results.find(
@@ -38,7 +39,8 @@ class VideoRedirectService {
                 .map(async filteredSplitResult => {
                   const fileName = filteredSplitResult[filteredSplitResult.length-1];          
                   const subFolder = filteredSplitResult.slice(2, filteredSplitResult.length-1);
-                  return await downloadFile(filteredSplitResult.join ('/'), fileName, sourceFolderPath+'\\'+videoId+'\\'+subFolder);
+                  const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get`;
+                  return await downloadFile(preUrl+filteredSplitResult.join ('/'), fileName, sourceFolderPath+'\\'+videoId+'\\'+subFolder);
                 });
                 return {
                   redirect: true,

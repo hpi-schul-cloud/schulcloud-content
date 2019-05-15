@@ -198,7 +198,7 @@ const addDrmProtection = hook => {
       .get(options)
       .then(() => hook);
   }
-
+};
 const addUserIdToData = hook => {
   if (hook.params.userId) {
     hook.data.userId = hook.params.userId;

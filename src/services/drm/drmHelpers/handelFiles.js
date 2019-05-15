@@ -69,11 +69,11 @@ const uploadAndDelete = async (app, resourceFileList, sourceFolderPath) => {
   }
 };
 
-const downloadFile = (path, name, storageLocation) => {
+const downloadFile = ({path, name, storageLocation, resourceId}) => {
     let preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get(
       'port'
-    )}/files/get`;
-    var url = preUrl + path;
+    )}/files/get/`;
+    var url = preUrl + resourceId + '/' + path;
   
     var options = {
       directory: storageLocation,

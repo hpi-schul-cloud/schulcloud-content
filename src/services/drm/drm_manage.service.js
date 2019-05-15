@@ -39,7 +39,13 @@ class DrmService {
       const resourceFileList = await getResourceFileList(this.app, resourceId);
       await Promise.all(
         resourceFileList.map(data => {
-          return downloadFile(data.path, data.id, sourceFolderPath);
+          const options = {
+            path: data.path,
+            resourceId: resourceId,
+            name: data.id,
+            storageLocation: sourceFolderPath
+          };
+          return downloadFile(options);
         })
       );
       await ep.open();
@@ -56,13 +62,13 @@ class DrmService {
 
             let fileType = await getFileType(element.sourceFilePath);
             fileType = fileType.split(' ')[0];
-            if (['JPEG', 'PNG'].includes(fileType)&&drmOptions.watermark) {
+            if (['JPEG', 'PNG'].includes(fileType)) {
               await createWatermark(element, logoFilePath);
-              await writeExifData(ep, drmOptions.exif, element.outputFilePath);
-            } else if (['PDF'].includes(fileType)&&drmOptions.pdfIsProtected) {
+              await writeExifData(ep, testDataToWrite, element.outputFilePath);
+            } else if (['PDF'].includes(fileType)) {
               await createPdfDrm(element);
-              await writeExifData(ep, drmOptions.exif, element.outputFilePath);
-            } else if (['Matroska'].includes(fileType)&&drmOptions.videoIsProtected) {
+              await writeExifData(ep, testDataToWrite, element.outputFilePath);
+            } else if (['Matroska'].includes(fileType)) {
               createVideoDrm(this.app, element, resourceId);
             }
           }
