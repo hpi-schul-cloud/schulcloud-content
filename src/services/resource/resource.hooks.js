@@ -2,6 +2,7 @@ const commonHooks = require('feathers-hooks-common');
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 const authenticate = require('../../hooks/authenticate');
 const { populateResourceUrls } = require('../../hooks/populateResourceUrls');
+const { unifySlashes } = require('../../hooks/unifySlashes');
 // const createThumbnail = require('../../hooks/createThumbnail');
 const config = require('config');
 const pichassoConfig = config.get('pichasso');
@@ -154,20 +155,20 @@ const addUserIdToData = hook => {
   return hook;
 };
 
-const removeLeadingSlashes = resource => {
+const unifySlashesFromResourceUrls = resource => {
   ['url', 'thumbnail'].forEach(key => {
-    if (resource[key]) {
-      resource[key] = resource[key].replace(/^\/+/, '/');
+    if (resource[key] && !resource[key].startsWith('http')) {
+      resource = unifySlashes(key)(resource);
     }
   });
   return resource;
 };
 
-const removeLeadingSlashesHook = hook => {
+const unifyLeadingSlashesHook = hook => {
   if (Array.isArray(hook.data)) {
-    hook.data = hook.data.map(removeLeadingSlashes);
+    hook.data = hook.data.map(unifySlashesFromResourceUrls);
   } else {
-    hook.data = removeLeadingSlashes(hook.data);
+    hook.data = unifySlashesFromResourceUrls(hook.data);
   }
 };
 
@@ -179,14 +180,14 @@ module.exports = {
     create: [
       authenticate,
       addUserIdToData,
-      removeLeadingSlashesHook,
+      unifyLeadingSlashesHook,
       validateNewResources /* createThumbnail, */
     ],
     update: [commonHooks.disallow()],
     patch: [
       authenticate,
       addUserIdToData,
-      removeLeadingSlashesHook,
+      unifyLeadingSlashesHook,
       patchResourceIdInFilepathDb,
       manageFiles
     ],

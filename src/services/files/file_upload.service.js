@@ -2,7 +2,7 @@ const logger = require('winston');
 const multiparty = require('multiparty');
 const {
   promisePipe,
-  removeTrailingSlashes,
+  removeLeadingSlashes,
   getUploadStream
 } = require('./storageHelper.js');
 const { addFilesToDB } = require('./fileDBHelper.js');
@@ -37,7 +37,7 @@ class FileUploadService {
       throw new Error('Unauthorized request');
     }
     return new Promise((resolve, reject) => {
-      const uploadPath = '/' + removeTrailingSlashes(req.query.path);
+      const uploadPath = '/' + removeLeadingSlashes(req.query.path);
       const form = new multiparty.Form();
       form.on('error', error => {
         reject({ status: 400, message: error });

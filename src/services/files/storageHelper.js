@@ -13,7 +13,7 @@ function promisePipe(source, target) {
   });
 }
 
-function removeTrailingSlashes(fileId) {
+function removeLeadingSlashes(fileId) {
   // remove trailing slashes and dots
   return fileId.replace(/^[/.]*/, '');
 }
@@ -76,7 +76,7 @@ function removeFile(fileId) {
 
 module.exports = {
   promisePipe,
-  removeTrailingSlashes,
+  removeLeadingSlashes,
   getUploadStream,
   getDownloadStream,
   fileExists,

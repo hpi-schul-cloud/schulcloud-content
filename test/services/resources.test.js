@@ -31,8 +31,8 @@ describe('\'resources\' service', () => {
     const dbObject = await app.service('resources').create(mockData);
     Object.entries(mockData).forEach(([key, value]) => {
       if (['files'].includes(key)) {
-        return;
-      } // Skip
+        return; // Skip
+      }
       assert.equal(JSON.stringify(dbObject[key]), JSON.stringify(value));
     });
   });
