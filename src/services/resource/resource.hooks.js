@@ -158,7 +158,7 @@ const addUserIdToData = hook => {
 const unifySlashesFromResourceUrls = resource => {
   ['url', 'thumbnail'].forEach(key => {
     if (resource[key] && !resource[key].startsWith('http')) {
-      resource = unifySlashes(key)(resource);
+      resource[key] = unifySlashes(resource[key]);
     }
   });
   return resource;

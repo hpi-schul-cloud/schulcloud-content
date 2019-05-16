@@ -15,11 +15,8 @@ class FileDistributionService {
 
   find({ req }) {
     const res = req.res;
-    const [cleanedPath] = unifySlashes(0)([req.params['0']]);
-    let [resourceId, ...filePath] = cleanedPath
-      .replace(/\\+/g, '/')
-      .replace(/^\/+/g, '')
-      .replace(/\/{2,}/g, '/')
+    let [resourceId, ...filePath] = unifySlashes(req.params['0'])
+      .replace(/^\/+/g, '') // remove leading slashes
       .split('/');
     filePath = '/' + filePath.join('/');
 

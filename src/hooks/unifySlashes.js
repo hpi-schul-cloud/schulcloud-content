@@ -1,17 +1,14 @@
-const unifySlashes = key => obj => {
-  if (!obj[key]) {
-    return obj;
-  }
+const unifySlashes = url => {
   // convert backslashes to slashes
   // enforce exactly one leading slash
   // no multiple slashes next to each other '///' => '/'
-  obj[key] =
+  return (
     '/' +
-    obj[key]
+    url
       .replace(/\\/g, '/')
       .replace(/^\/+/g, '')
-      .replace(/\/{2,}/g, '/');
-  return obj;
+      .replace(/\/{2,}/g, '/')
+  );
 };
 
 module.exports = {
