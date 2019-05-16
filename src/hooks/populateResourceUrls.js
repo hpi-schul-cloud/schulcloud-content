@@ -9,6 +9,8 @@ const extendUrls = resource => {
     if (resource[key] && !resource[key].startsWith('http')) {
       resource[`full${firstCapsKey}`] =
         host + resource[key].replace(/^\/+/, '');
+    } else {
+      resource[`full${firstCapsKey}`] = resource[key];
     }
   });
   return resource;

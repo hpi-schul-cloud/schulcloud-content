@@ -4,20 +4,6 @@ class RedirectService {
   }
 
   get(id) {
-    /*
-    return this.app
-      .service('resources')
-      .get(id)
-      .then(resource => {
-        return this.app
-          .service('resources')
-          .patch(id, { clickCount: resource.clickCount + 1 });
-      })
-      .then(resource => {
-        return resource.fullUrl;
-      });
-    */
-
     // Increase Click Counter
     return this.app
       .service('resources')
