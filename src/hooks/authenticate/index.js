@@ -64,6 +64,7 @@ function parseJwtToken(token) {
  *
  */
 function authenticateHook(hook) {
+  return hook;
 
   // skip for internal calls
   if(typeof (hook.params.provider) === 'undefined'){
