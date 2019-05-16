@@ -20,7 +20,15 @@ const mockSubmitResource = () => ({
   }
 });
 
+const createdMocks = [];
+
 describe('\'resources\' service', () => {
+  after(() => {
+    return app.service('resources').remove(null, {
+      query: { _id: { $in: createdMocks.map(mock => mock._id) } }
+    });
+  });
+
   it('registered the service', () => {
     const service = app.service('resources');
     assert.ok(service, 'Registered the service');
@@ -35,9 +43,10 @@ describe('\'resources\' service', () => {
       }
       assert.equal(JSON.stringify(dbObject[key]), JSON.stringify(value));
     });
+    createdMocks.push(dbObject);
   });
 
-  it('url gets extended', async () => {
+  it('full urls are created', async () => {
     const mockData = {
       ...mockSubmitResource(),
       url: '/index.html',
@@ -46,6 +55,8 @@ describe('\'resources\' service', () => {
     assert.ok(!mockData.url.startsWith('http'));
     assert.ok(!mockData.thumbnail.startsWith('http'));
     const createdObject = await app.service('resources').create(mockData);
+
+    createdMocks.push(createdObject);
 
     const dbObject = await app.service('resources').get(createdObject._id);
     assert.ok(!dbObject.url.startsWith('http'));

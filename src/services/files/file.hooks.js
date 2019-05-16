@@ -34,7 +34,7 @@ const hasViewPermission = hook => {
 
   const app = hook.app;
   let [resourceId, ...filePath] = hook.params.route[0]
-    .replace(/^\//, '')
+    .replace(/^\/+/g, '')
     .split('/');
   filePath = '/' + filePath.join('/');
 
