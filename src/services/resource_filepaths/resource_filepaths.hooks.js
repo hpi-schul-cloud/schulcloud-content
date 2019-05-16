@@ -1,5 +1,3 @@
-//const authenticate = require('../../hooks/authenticate');
-
 const { unifySlashes } = require('../../hooks/unifySlashes');
 
 const unifySlashesHook = hook => {
