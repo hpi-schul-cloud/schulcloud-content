@@ -1,6 +1,8 @@
 const commonHooks = require('feathers-hooks-common');
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
-const authenticate = require('../../hooks/authenticate');
+//const authenticate = require('../../hooks/authenticate');
+const { authenticate } = require('@feathersjs/authentication').hooks;
+
 // const createThumbnail = require('../../hooks/createThumbnail');
 const config = require('config');
 const pichassoConfig = config.get('pichasso');
@@ -164,10 +166,11 @@ const validateNewResources = (hook) => {
   }
   return hook;
 };
-
+// TODO: allow internal access, block external
+// TODO: remove old authenticate hook
 module.exports = {
   before: {
-    all: [],
+    all: [authenticate('jwt')],
     find: [restrictToPublicIfUnauthorized],
     get: [],
     create: [authenticate, validateNewResources, /* createThumbnail, */],
