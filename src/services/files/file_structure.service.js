@@ -2,12 +2,14 @@ const logger = require('winston');
 
 function getPathRecursive(filepathArray, fullPath, id) {
   if (filepathArray.length == 1) {
-    return { // file
+    return {
+      // file
       id: id,
       type: 'file',
       name: filepathArray[0]
     };
-  } else { // folder
+  } else {
+    // folder
     const name = filepathArray.shift();
     const object = getPathRecursive(filepathArray, fullPath, id);
     filepathArray.forEach(() => {
@@ -31,21 +33,23 @@ function mergeTreesRecursive(tree, objectsArray) {
   if (index === -1) {
     objectsArray.push(tree);
     objectsArray.sort((a, b) =>
-        a.type === b.type
-          ? a.name.localeCompare(b.name)
-          : a.type === 'file'
-          ? -1
-          : 1
-      );
+      a.type === b.type
+        ? a.name.localeCompare(b.name)
+        : a.type === 'file'
+        ? -1
+        : 1
+    );
     return objectsArray;
   } else {
-    if(tree.type === 'folder'){
+    if (tree.type === 'folder') {
       objectsArray[index].objects = mergeTreesRecursive(
         tree.objects[0],
         objectsArray[index].objects
       );
-    }else{
-      logger.warn('found duplicate item: ' + JSON.stringify(tree, undefined, 2));
+    } else {
+      logger.warn(
+        'found duplicate item: ' + JSON.stringify(tree, undefined, 2)
+      );
     }
     return objectsArray;
   }
@@ -57,34 +61,51 @@ class FileStructureService {
   }
 
   async get(resourceId) {
-
-    const query = { resourceId: resourceId, isTemp: false };
     return this.app
       .service('resource_filepaths')
-      .find({ query })
-      .then(response => {
-        // TODO
-        const pathDictionary = {};
-        response.data.forEach(data => {
-          pathDictionary[data._id] = data.path;
-        });
-        // build trees
-        let trees = [];
-        Object.keys(pathDictionary).forEach(key => {
-          let result = getPathRecursive(pathDictionary[key].split('/'), pathDictionary[key].split('/'), key);
-          trees.push(result);
+      .find({
+        query: { resourceId: resourceId, isTemp: false },
+        paginate: false
+      })
+      .then(publishedFiles => {
+        const fileIdToPathDictionary = {};
+        publishedFiles.forEach(file => {
+          fileIdToPathDictionary[file._id] = file.path;
         });
 
-        // merge trees
+        // get nested filetree per file
+        const fileTrees = Object.keys(fileIdToPathDictionary).map(fileId => {
+          return getPathRecursive(
+            fileIdToPathDictionary[fileId].split('/'),
+            fileIdToPathDictionary[fileId].split('/'),
+            fileId
+          );
+        });
+
+        // merge single filetrees into one
         let GlobalTree = [];
-        trees.forEach(tree => {
+        fileTrees.forEach(tree => {
           GlobalTree = mergeTreesRecursive(tree, GlobalTree);
         });
-        return GlobalTree.length ? GlobalTree[0]: { id: resourceId, type: 'folder', objects: []};
+
+        if (GlobalTree.length === 0) {
+          throw new Error('No uploaded files found for resource ' + resourceId);
+        }
+        return {
+          id: resourceId,
+          type: 'folder',
+          name: resourceId,
+          objects: GlobalTree[0].objects
+        };
       })
       .catch(error => {
         logger.error(error);
-        return { id: resourceId, type: 'folder', objects: []};
+        return {
+          id: resourceId,
+          type: 'folder',
+          name: resourceId,
+          objects: []
+        };
       });
   }
 }
