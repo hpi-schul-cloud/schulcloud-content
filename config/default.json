@@ -13,5 +13,29 @@
     "enabled": true,
     "url": "PICHASSO_URL",
     "token": "PICHASSO_TOKEN"
+  },
+  "authentication": {
+    "secret": "54d8c7d30919e92d1374a176ab39f9bd2906629eb6a06220f5723e7305b347955ecf0cad4c4c7d4f40722c5cb10ec63927b91a107868b2f456a47b8f0c5bfd9f0a9ea7dda51674baa348f15034e42f6d4e91280ad88d9c2b417f4f7a981cfed1b34bdc8307844b81e30b94f6e8b462f56c2905c24a0516dab080ceb9ee7a74f302f476ff9c9bef35c2305271cb2317b7c63cd66324a8bf03bc4eda72c6d56ad76bd72119d78620ffca0686b9cf41fc0d4b3b37d350f08a3f2edc7e53a91249553f1122ae77a3fa4ca683961f6fcaac5f59469d95a5aadfc4111ccf54016eadcbfed133ba6f2ffea54cb87a33cdf292abe640dd6e17657964b689cf4cbe13d479",
+    "strategies": [
+      "jwt",
+      "local"
+    ],
+    "path": "/authentication",
+    "service": "users",
+    "jwt": {
+      "header": {
+        "typ": "access"
+      },
+      "audience": "https://yourdomain.com",
+      "subject": "anonymous",
+      "issuer": "feathers",
+      "algorithm": "HS256",
+      "expiresIn": "1d"
+    },
+    "local": {
+      "entity": "user",
+      "usernameField": "email",
+      "passwordField": "password"
+    }
   }
 }

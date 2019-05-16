@@ -3,6 +3,7 @@ const files = require('./files/files.service.js');
 const resource = require('./resource/resource.service.js');
 const search = require('./search/search.service.js');
 const resource_filepaths = require('./resource_filepaths/resource_filepaths.service.js');
+const users = require('./users/users.service.js');
 
 module.exports = function () {
   const app = this;
@@ -11,4 +12,5 @@ module.exports = function () {
   app.configure(resource);
   app.configure(search);
   app.configure(resource_filepaths);
+  app.configure(users);
 };
