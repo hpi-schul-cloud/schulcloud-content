@@ -17,7 +17,7 @@ const startS3MockServer = () => {
           name: container(),
         }
       ]
-    }).run((err, {address, port}) => {
+    }).run((err, {address, port} = {}) => {
       if(err) {
         return reject(err);
       }

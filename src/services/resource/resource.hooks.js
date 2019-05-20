@@ -7,17 +7,17 @@ const { authenticate } = require('@feathersjs/authentication').hooks;
 const config = require('config');
 const pichassoConfig = config.get('pichasso');
 
-const restrictToPublicIfUnauthorized = (hook) => {
+const restrictToPublicIfUnauthorized = async (hook) => {
   /*
   Anfrage so manipulieren, dass nur isPublished=true angezeigt wird
-  Außer: userId = currentUser._id (hook.params.userId)
+  Außer: userId = currentUser._id (hook.params.user._id)
   */
   try{
-    hook = authenticate(hook);
+    hook = await authenticate('jwt')(hook);
 
     if(typeof hook.params.query.isPublished == 'undefined' || hook.params.query.isPublished == 'false'){
       delete hook.params.query.isPublished;
-      hook.params.query.$or = [{ isPublished: { $ne: false } }, { userId: hook.params.userId }];
+      hook.params.query.$or = [{ isPublished: { $ne: false } }, { userId: hook.params.user._id }];
     } else {
       hook.params.query.isPublished = { $ne: false };
     }
@@ -28,14 +28,14 @@ const restrictToPublicIfUnauthorized = (hook) => {
   return hook;
 };
 
-const manageFiles = (hook) => {
-  if(!hook.data.files || !hook.params.userId) { return hook; }
-  hook = authenticate(hook);
+const manageFiles = async (hook) => {
+  if(!hook.data.files || !hook.params.user._id) { return hook; }
+  hook = await authenticate('jwt')(hook);
 
   const files = hook.data.files;
   const fileManagementService = hook.app.service('/files/manage');
   const resourceId = (hook.id || hook.result._id).toString();
-  return fileManagementService.patch(resourceId, { ...files, userId: hook.params.userId }, hook)
+  return fileManagementService.patch(resourceId, { ...files, userId: hook.params.user._id }, hook)
     .then(() => hook);
 };
 
@@ -170,13 +170,13 @@ const validateNewResources = (hook) => {
 // TODO: remove old authenticate hook
 module.exports = {
   before: {
-    all: [authenticate('jwt')],
+    all: [],
     find: [restrictToPublicIfUnauthorized],
     get: [],
-    create: [authenticate, validateNewResources, /* createThumbnail, */],
+    create: [authenticate('jwt'), validateNewResources, /* createThumbnail, */],
     update: [commonHooks.disallow()],
-    patch: [authenticate, patchResourceIdInDb, manageFiles, extendResourceUrl],
-    remove: [authenticate, deleteRelatedFiles]
+    patch: [authenticate('jwt'), patchResourceIdInDb, manageFiles, extendResourceUrl],
+    remove: [authenticate('jwt'), deleteRelatedFiles]
   },
 
   after: {
