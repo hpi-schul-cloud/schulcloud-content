@@ -15,7 +15,8 @@ module.exports = function () {
   const options = {
     name: 'resources',
     Model,
-    paginate
+    paginate,
+    multi: true,
   };
 
   // delivers resource schema for frontend validation

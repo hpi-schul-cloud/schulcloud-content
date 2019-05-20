@@ -1,8 +1,5 @@
-//const authenticate = require('../../hooks/authenticate');
 const commonHooks = require('feathers-hooks-common');
 const defaultHooks = require('./file_default.hook.js');
-//const authenticate = require('../../hooks/authenticate');
-// TODO: remove or adjust old authenticate route
 const { authenticate } = require('@feathersjs/authentication').hooks;
 
 const errors = require('@feathersjs/errors');
@@ -87,21 +84,21 @@ const distributionHooks = {
 const manageHooks = {
   ...defaultHooks,
   before: {
-    all: [authenticate('jwt'), commonHooks.disallow('external')]
+    all: [commonHooks.disallow('external')]
   }
 };
 
 const structureHooks = {
   ...defaultHooks,
   before: {
-    get: [forceHookResolve(authenticate)]
+    get: [forceHookResolve(authenticate('jwt'))]
   }
 };
 
 const uploadHooks = {
   ...defaultHooks,
   before: {
-    create: [authenticate]
+    create: [authenticate('jwt')]
   }
 };
 

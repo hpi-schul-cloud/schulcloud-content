@@ -6,7 +6,8 @@ const request = require('request');
 const fs = require('fs');
 
 const PORT = 3031;
-const resource_mock_id = 'resource_mock_id';
+
+const {mockResourceId} = require("./mockData");
 
 const { startS3MockServer, stopS3MockServer } = require('./s3mock');
 
@@ -14,13 +15,13 @@ const uploadMockFile = ({filepath, filename, resourceId }) => {
   return new Promise((resolve, reject) => {
     const req = request({
       headers: {
-        'Authorization': 'Basic c2NodWxjbG91ZC1jb250ZW50LTE6Y29udGVudC0x',
+        'Authorization': ' eyJhbGciOiJIUzI1NiIsInR5cCI6ImFjY2VzcyJ9.eyJ1c2VySWQiOiI1Y2RkNjg5OTRhYTc3ODIxYWMxMzE3NzgiLCJpYXQiOjE1NTgzNDE0MzYsImV4cCI6MTU1ODQyNzgzNiwiYXVkIjoiaHR0cHM6Ly95b3VyZG9tYWluLmNvbSIsImlzcyI6ImZlYXRoZXJzIiwic3ViIjoiYW5vbnltb3VzIiwianRpIjoiOTA1NDIwNWMtZGZmMi00Yjk4LThlMjgtZDE3ZmEyNDg1NWYwIn0.NsXAYuSjGqr4vtU6CTCyb2aZRyRh0y1SE4ewclkZfYU',
       },
       uri: `http://localhost:${PORT}/files/upload?path=///${filename}&resourceId=${resourceId}`,
       method: 'POST'
     }, (err, resp) => {
       if (err || resp.statusCode < 200 || resp.statusCode >= 300) {
-        return reject(err);
+        return reject(err || resp.toJSON());
       } else {
         return resolve(resp);
       }
@@ -53,7 +54,7 @@ describe('\'files/upload\' service', () => {
         this.server.close(resolve);
       });
       const cleanupFilepaths = contentFilepaths
-        .find({ query: { resourceId: resource_mock_id } })
+        .find({ query: { resourceId: mockResourceId } })
         .then(res => {
           return Promise.all(
             res.data.map(mockData => contentFilepaths.remove(mockData._id))
@@ -68,7 +69,7 @@ describe('\'files/upload\' service', () => {
     return uploadMockFile({
         filename: 'test.txt',
         filepath: __filename,
-        resourceId: resource_mock_id,
+        resourceId: mockResourceId,
       })
       .then(({ body }) => {
         body = JSON.parse(body);
