@@ -3,22 +3,24 @@
 // See http://mongoosejs.com/docs/models.html
 // for more of what you can do here.
 
+module.exports = function(app) {
+  const mongooseClient = app.get('mongooseClient');
 
-module.exports = function (app) {
-    const mongooseClient = app.get('mongooseClient');
-
-    const resource_filepaths = new mongooseClient.Schema({
+  const resource_filepaths = new mongooseClient.Schema(
+    {
       // _id = fileId as used in StorageServer
-      path: {type: String, required: true}, // "/resourceId/folderA/fileB.txt",
-      resourceId: {type: String},
-      createdBy: {type: String, required: true},
-      isTemp: {type: Boolean, required: true},
+      path: { type: String, required: true }, // "/resourceId/folderA/fileB.txt",
+      resourceId: { type: String },
+      createdBy: { type: String, required: true },
+      isTemp: { type: Boolean, default: false },
 
       createdAt: { type: Date, default: Date.now },
-      updatedAt: { type: Date, default: Date.now },
-    },{
+      updatedAt: { type: Date, default: Date.now }
+    },
+    {
       timestamps: true
-    });
+    }
+  );
 
-    return mongooseClient.model('resource_filepaths', resource_filepaths);
-  };
+  return mongooseClient.model('resource_filepaths', resource_filepaths);
+};

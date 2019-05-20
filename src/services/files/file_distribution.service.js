@@ -1,6 +1,12 @@
 const mime = require('mime-types');
 const path = require('path');
-const { promisePipe, getDownloadStream, fileExists } = require('./storageHelper.js');
+const { unifySlashes } = require('../../hooks/unifySlashes');
+
+const {
+  promisePipe,
+  getDownloadStream,
+  fileExists
+} = require('./storageHelper.js');
 
 class FileDistributionService {
   constructor(app) {
@@ -9,17 +15,27 @@ class FileDistributionService {
 
   find({ req }) {
     const res = req.res;
-    const filePath = req.params['0'].replace(/^\//, '');
+    let [resourceId, ...filePath] = unifySlashes(req.params['0'])
+      .replace(/^\/+/g, '') // remove leading slashes
+      .split('/');
+    filePath = '/' + filePath.join('/');
 
     // get fileId
-    return this.app.service('resource_filepaths').find({ query: {
-        path: filePath,
-        isTemp: false
-      } })
+    return this.app
+      .service('resource_filepaths')
+      .find({
+        query: {
+          resourceId: resourceId,
+          path: filePath,
+          isTemp: false
+        }
+      })
       .then(async fileObjects => {
-        // TODO what happens if we got more than 1 result?
-        if(fileObjects.data.length === 0){
+        if (fileObjects.data.length === 0) {
           throw new Error('Can\'t find requested file');
+        }
+        if (fileObjects.data.length > 1) {
+          throw new Error('Found more than one matching file');
         }
         const fileId = fileObjects.data[0]._id.toString();
 
@@ -28,13 +44,17 @@ class FileDistributionService {
           const fileInfo = await fileExists(fileId);
 
           const contentType = mime.contentType(path.extname(filePath)); // 'application/json; charset=utf-8'
-          if(res.header){
-            if(contentType){   res.header('Content-Type', contentType); }
-            if(fileInfo.etag){ res.header('ETag', fileInfo.etag); }
+          if (res.header) {
+            if (contentType) {
+              res.header('Content-Type', contentType);
+            }
+            if (fileInfo.etag) {
+              res.header('ETag', fileInfo.etag);
+            }
           }
 
           return promisePipe(getDownloadStream(fileId), res);
-        } catch(error) {
+        } catch (error) {
           throw error;
         }
       });

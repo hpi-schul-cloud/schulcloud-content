@@ -16,11 +16,18 @@ const mockSubmitResource = () => ({
   userId: '0000d224816abba584714c9c',
   files: {
     save: [],
-    delete: [],
+    delete: []
   }
 });
 
+const createdMocks = [];
+
 describe('\'resources\' service', () => {
+  after(() => {
+    return app.service('resources').remove(null, {
+      query: { _id: { $in: createdMocks.map(mock => mock._id) } }
+    });
+  });
 
   it('registered the service', () => {
     const service = app.service('resources');
@@ -31,50 +38,30 @@ describe('\'resources\' service', () => {
     const mockData = mockSubmitResource();
     const dbObject = await app.service('resources').create(mockData);
     Object.entries(mockData).forEach(([key, value]) => {
-      if(['files'].includes(key)){ return; } // Skip
+      if (['files'].includes(key)) {
+        return; // Skip
+      }
       assert.equal(JSON.stringify(dbObject[key]), JSON.stringify(value));
     });
+    createdMocks.push(dbObject);
   });
 
-  it('short url gets saved and extended on CREATE', async () => {
+  it('full urls are created', async () => {
     const mockData = {
       ...mockSubmitResource(),
-      patchResourceUrl: true,
       url: '/index.html',
       thumbnail: '/escaperoom.png'
     };
     assert.ok(!mockData.url.startsWith('http'));
     assert.ok(!mockData.thumbnail.startsWith('http'));
-    const dbObject = await app.service('resources').create(mockData);
-    assert.ok(dbObject.url.startsWith('http'));
-    assert.ok(dbObject.thumbnail.startsWith('http'));
-  });
+    const createdObject = await app.service('resources').create(mockData);
 
-  it('short url gets saved and extended on PATCH', async () => {
-    const mockExisting = mockSubmitResource();
-    const mockData = {
-      ...mockSubmitResource(),
-      patchResourceUrl: true,
-      url: '/index.html',
-      thumbnail: '/escaperoom.png'
-    };
-    const existingObject = await app.service('resources').create(mockExisting);
-    assert.equal(mockExisting.url, existingObject.url);
-    assert.equal(mockExisting.thumbnail, existingObject.thumbnail);
+    createdMocks.push(createdObject);
 
-    const dbResultObject = await app
-      .service('resources')
-      .patch(existingObject._id, {...mockData});
-
-    const dbObject = await app
-      .service('resources')
-      .get(existingObject._id);
-
-    [dbResultObject, dbObject].forEach((obj) => {
-      assert.ok(obj.url.endsWith(mockData.url));
-      assert.ok(obj.url.startsWith('http'));
-      assert.ok(obj.thumbnail.endsWith(mockData.thumbnail));
-      assert.ok(obj.thumbnail.startsWith('http'));
-    });
+    const dbObject = await app.service('resources').get(createdObject._id);
+    assert.ok(!dbObject.url.startsWith('http'));
+    assert.ok(dbObject.fullUrl.startsWith('http'));
+    assert.ok(!dbObject.thumbnail.startsWith('http'));
+    assert.ok(dbObject.fullThumbnail.startsWith('http'));
   });
 });

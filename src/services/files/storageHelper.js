@@ -13,17 +13,18 @@ function promisePipe(source, target) {
   });
 }
 
-function removeTrailingSlashes(fileId) {
+function removeLeadingSlashes(fileId) {
   // remove trailing slashes and dots
   return fileId.replace(/^[/.]*/, '');
 }
 
-function fallbackUndefined(variable, fallback){
-  return (variable !== undefined) ? variable : fallback;
+function fallbackUndefined(variable, fallback) {
+  return variable !== undefined ? variable : fallback;
 }
 
-const container = () => (process.env['STORAGE_CONTAINER'] || 'resource-hosting');
-const filenamePrefix = () => fallbackUndefined(process.env['STORAGE_FILENAME_PREFIX'], 'files/');
+const container = () => process.env['STORAGE_CONTAINER'] || 'resource-hosting';
+const filenamePrefix = () =>
+  fallbackUndefined(process.env['STORAGE_FILENAME_PREFIX'], 'files/');
 
 function getUploadStream(fileId) {
   return client().upload({
@@ -49,7 +50,9 @@ function fileExists(fileId) {
       container(),
       filenamePrefix() + fileId.toString(),
       (error, file) => {
-        if (error !== null) { return reject(error); }
+        if (error !== null) {
+          return reject(error);
+        }
         return resolve(file);
       }
     );
@@ -61,33 +64,22 @@ function removeFile(fileId) {
     return client().removeFile(
       container(),
       filenamePrefix() + fileId.toString(),
-      (error) => {
-        if (error !== null) { return reject(error); }
+      error => {
+        if (error !== null) {
+          return reject(error);
+        }
         return resolve();
       }
     );
   });
 }
 
-// Script to set isPublished for all existing content
-/*
-function addIsPublishFlag(app){
-  return app.service('resources').find({query: {$limit: false}}).then(response => {
-    const patchList = response.data.map((entry) => {
-      return app.service('resources').patch(entry._id, {isPublished: true});
-    });
-    return Promise.all(patchList);
-  });
-}
-*/
-
 module.exports = {
   promisePipe,
-  removeTrailingSlashes,
+  removeLeadingSlashes,
   getUploadStream,
   getDownloadStream,
   fileExists,
   removeFile,
-  container,
-  //addIsPublishFlag
+  container
 };

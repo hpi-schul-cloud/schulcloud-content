@@ -32,9 +32,11 @@ const startS3MockServer = () => {
 
 const stopS3MockServer = () => {
   return new Promise((resolve) => {
-    instance.close(() => {
-      resolve();
-    });
+    if(instance){
+      instance.close(() => {
+        resolve();
+      });
+    }
   });
 };
 

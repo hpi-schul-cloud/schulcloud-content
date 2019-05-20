@@ -15,23 +15,22 @@ const { startS3MockServer, stopS3MockServer } = require('./s3mock');
 
 const insertMock = () => {
   const mockResourceData = {
-    'originId' : Date.now().toString(),
-    'providerName' : 'Test',
-    'url' : 'https://de.khanacademy.org/video/number-grid',
-    'title' : 'Testinhalt',
-    'description' : 'Testinhalt',
-    'contentCategory' : 'atomic',
-    'mimeType' : 'application',
-    'userId' : mockUserId,
-    'licenses' : [ 'CC BY-SA' ],
-    'tags' : [ 'Test' ],
+    originId: Date.now().toString(),
+    providerName: 'Test',
+    url: 'https://de.khanacademy.org/video/number-grid',
+    title: 'Testinhalt',
+    description: 'Testinhalt',
+    contentCategory: 'atomic',
+    mimeType: 'application',
+    userId: mockUserId,
+    licenses: ['CC BY-SA'],
+    tags: ['Test'],
     isPublished: true
   };
 
-  return resources.create(mockResourceData)
-    .then(resourceObj => {
-      mockResourceId = resourceObj._id.toString();
-    });
+  return resources.create(mockResourceData).then(resourceObj => {
+    mockResourceId = resourceObj._id.toString();
+  });
 };
 
 const removeMock = () => {
@@ -39,7 +38,6 @@ const removeMock = () => {
 };
 
 describe('\'files/get*\' service', () => {
-
   before(() => {
     return insertMock()
       .then(() => {
@@ -47,20 +45,22 @@ describe('\'files/get*\' service', () => {
       })
       .then(() => {
         this.server = app.listen(PORT);
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
           this.server.once('listening', resolve);
         });
       })
-      .then(() => uploadMockFile({
+      .then(() =>
+        uploadMockFile({
           filename: 'test.txt',
           filepath: __filename,
-          resourceId: mockResourceId,
-        }))
+          resourceId: mockResourceId
+        })
+      )
       .then(({ body }) => {
-        const {message: fileId} = JSON.parse(body);
+        const { message: fileId } = JSON.parse(body);
         return resourceFilepaths.patch(fileId, { isTemp: false });
       })
-      .then((fileObj) => {
+      .then(fileObj => {
         mockFilePath = fileObj.path;
       })
       .catch(err => {
@@ -69,14 +69,16 @@ describe('\'files/get*\' service', () => {
       });
   });
 
-   after(() => {
+  after(() => {
     return removeMock()
       .then(() => {
         return stopS3MockServer();
       })
-      .then(() => new Promise((resolve) => {
-          this.server.close(resolve);
-        })
+      .then(
+        () =>
+          new Promise(resolve => {
+            this.server.close(resolve);
+          })
       )
       .catch(err => {
         // eslint-disable-next-line no-console
@@ -94,29 +96,34 @@ describe('\'files/get*\' service', () => {
     const service = app.service('files/get*');
     const expectedResult = fs.readFileSync(__filename, 'utf8');
 
-    const resStream = new WritableMock({objectMode: true});
+    const resStream = new WritableMock({ objectMode: true });
 
     return new Promise((resolve, reject) => {
-      resStream.on('finish', ()=>{
-        assert.equal(JSON.stringify(resStream.data.join('')), JSON.stringify(expectedResult));
+      resStream.on('finish', () => {
+        assert.equal(
+          JSON.stringify(resStream.data.join('')),
+          JSON.stringify(expectedResult)
+        );
         resolve();
       });
       resStream.on('error', reject);
-      service.find({
-        req: {
-          params: {
-            '0':mockFilePath
+      service
+        .find({
+          req: {
+            params: {
+              '0': mockResourceId + '/' + mockFilePath
+            },
+            res: resStream,
+            headers: {
+              Authorization: 'Basic c2NodWxjbG91ZC1jb250ZW50LTE6Y29udGVudC0x'
+            }
           },
-          res: resStream,
-          headers: {
-            'Authorization': 'Basic c2NodWxjbG91ZC1jb250ZW50LTE6Y29udGVudC0x',
-          }
-        },
-        query: {
-          userId: mockUserId
-        },
-        route: [mockFilePath]
-      }).catch(reject);
+          query: {
+            userId: mockUserId
+          },
+          route: [mockFilePath]
+        })
+        .catch(reject);
     });
   });
 });
