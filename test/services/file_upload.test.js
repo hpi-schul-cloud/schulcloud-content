@@ -15,7 +15,8 @@ const uploadMockFile = ({filepath, filename, resourceId }) => {
   return new Promise((resolve, reject) => {
     const req = request({
       headers: {
-        'Authorization': ' eyJhbGciOiJIUzI1NiIsInR5cCI6ImFjY2VzcyJ9.eyJ1c2VySWQiOiI1Y2RkNjg5OTRhYTc3ODIxYWMxMzE3NzgiLCJpYXQiOjE1NTgzNDE0MzYsImV4cCI6MTU1ODQyNzgzNiwiYXVkIjoiaHR0cHM6Ly95b3VyZG9tYWluLmNvbSIsImlzcyI6ImZlYXRoZXJzIiwic3ViIjoiYW5vbnltb3VzIiwianRpIjoiOTA1NDIwNWMtZGZmMi00Yjk4LThlMjgtZDE3ZmEyNDg1NWYwIn0.NsXAYuSjGqr4vtU6CTCyb2aZRyRh0y1SE4ewclkZfYU',
+        'Authorization': 'Basic c2NodWxjbG91ZC1jb250ZW50LTE6Y29udGVudC0x',
+        //TODO: enable Basic authentication via local development config
       },
       uri: `http://localhost:${PORT}/files/upload?path=///${filename}&resourceId=${resourceId}`,
       method: 'POST'
