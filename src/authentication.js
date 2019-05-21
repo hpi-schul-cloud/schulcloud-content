@@ -1,6 +1,7 @@
 const authentication = require('@feathersjs/authentication');
 const jwt = require('@feathersjs/authentication-jwt');
 const local = require('@feathersjs/authentication-local');
+const basicAuth = require('./custom_strategies/basic_auth');
 
 
 module.exports = function (app) {
@@ -10,6 +11,7 @@ module.exports = function (app) {
   app.configure(authentication(config));
   app.configure(jwt());
   app.configure(local());
+  app.configure(basicAuth());
 
   // The `authentication` service is used to create a JWT.
   // The before `create` hook registers strategies that can be used
@@ -17,7 +19,7 @@ module.exports = function (app) {
   app.service('authentication').hooks({
     before: {
       create: [
-        authentication.hooks.authenticate('jwt')
+        authentication.hooks.authenticate(['local', 'jwt'])
       ],
       remove: [
         authentication.hooks.authenticate('jwt')

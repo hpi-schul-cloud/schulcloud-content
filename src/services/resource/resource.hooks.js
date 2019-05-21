@@ -175,7 +175,7 @@ module.exports = {
     find: [restrictToPublicIfUnauthorized],
     get: [],
     create: [
-      authenticateHook,
+      authenticateHook(),
       addUserIdToData,
       unifyLeadingSlashesHook,
       validateNewResources /* createThumbnail, */
