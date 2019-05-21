@@ -2,6 +2,7 @@ const commonHooks = require('feathers-hooks-common');
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 //const authenticate = require('../../hooks/authenticate');
 const { authenticate } = require('@feathersjs/authentication').hooks;
+const authenticateHook = require('../../hooks/authenticate/index2.js');
 const { populateResourceUrls } = require('../../hooks/populateResourceUrls');
 const { unifySlashes } = require('../../hooks/unifySlashes');
 
@@ -174,7 +175,7 @@ module.exports = {
     find: [restrictToPublicIfUnauthorized],
     get: [],
     create: [
-      authenticate('jwt'),
+      authenticateHook,
       addUserIdToData,
       unifyLeadingSlashesHook,
       validateNewResources /* createThumbnail, */
