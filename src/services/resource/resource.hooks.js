@@ -1,7 +1,6 @@
 const commonHooks = require('feathers-hooks-common');
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 //const authenticate = require('../../hooks/authenticate');
-const { authenticate } = require('@feathersjs/authentication').hooks;
 const authenticateHook = require('../../hooks/authenticate/index2.js');
 const { populateResourceUrls } = require('../../hooks/populateResourceUrls');
 const { unifySlashes } = require('../../hooks/unifySlashes');
@@ -16,7 +15,7 @@ const restrictToPublicIfUnauthorized = async (hook) => {
   Außer: userId = currentUser._id ((hook.params.user || {})._id)
   */
   try{
-    hook = await authenticate('jwt')(hook);
+    hook = await authenticateHook()(hook);
 
     if (
       typeof hook.params.query.isPublished == 'undefined' ||
@@ -36,7 +35,7 @@ const restrictToPublicIfUnauthorized = async (hook) => {
 
 const manageFiles = async (hook) => {
   if(!hook.data.files || !(hook.params.user || {})._id) { return hook; }
-  hook = await authenticate('jwt')(hook);
+  hook = await authenticateHook()(hook);
 
   const files = hook.data.files;
   const fileManagementService = hook.app.service('/files/manage');
@@ -182,13 +181,13 @@ module.exports = {
     ],
     update: [commonHooks.disallow()],
     patch: [
-      authenticate('jwt'),
+      authenticateHook(),
       addUserIdToData,
       unifyLeadingSlashesHook,
       patchResourceIdInFilepathDb,
       manageFiles
     ],
-    remove: [authenticate('jwt'), deleteRelatedFiles]
+    remove: [authenticateHook(), deleteRelatedFiles]
   },
 
   after: {

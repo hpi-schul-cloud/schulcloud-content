@@ -1,6 +1,7 @@
 const commonHooks = require('feathers-hooks-common');
 const defaultHooks = require('./file_default.hook.js');
-const { authenticate } = require('@feathersjs/authentication').hooks;
+const authenticateHook = require('../../hooks/authenticate/index2.js');
+
 
 const errors = require('@feathersjs/errors');
 
@@ -91,14 +92,14 @@ const manageHooks = {
 const structureHooks = {
   ...defaultHooks,
   before: {
-    get: [forceHookResolve(authenticate('jwt'))]
+    get: [forceHookResolve(authenticateHook())]
   }
 };
 
 const uploadHooks = {
   ...defaultHooks,
   before: {
-    create: [authenticate('jwt')]
+    create: [authenticateHook()]
   }
 };
 
