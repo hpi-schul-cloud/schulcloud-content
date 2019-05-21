@@ -22,7 +22,7 @@ module.exports = () => {
             const match = checkLocalAuthentication(credentials.name, credentials.pass);
 
             // user will be false, if no user was matched and authorization will fail
-            const user = match ? match.userId : match;
+            const user = match ? {_id: match.userId} : false;
             return done(null, user);
         };
         // register the strategy in the app.passport instance
