@@ -1,7 +1,7 @@
 const commonHooks = require('feathers-hooks-common');
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 //const authenticate = require('../../hooks/authenticate');
-const authenticateHook = require('../../hooks/authenticate/index2.js');
+const authenticateHook = require('../../hooks/authenticate/index.js');
 const { populateResourceUrls } = require('../../hooks/populateResourceUrls');
 const { unifySlashes } = require('../../hooks/unifySlashes');
 

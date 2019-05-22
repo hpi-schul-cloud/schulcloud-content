@@ -10,7 +10,6 @@ function checkLocalAuthentication(username, password) {
 module.exports = () => {
     return function() {
         const verifier = (req, done) => {
-            console.log(req.params.provider);
             const authHeader = req.params.headers['authorization'];
 
             let credentials = basicAuth.parse(authHeader);
