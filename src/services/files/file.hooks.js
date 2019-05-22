@@ -1,6 +1,6 @@
 const commonHooks = require('feathers-hooks-common');
 const defaultHooks = require('./file_default.hook.js');
-const authenticateHook = require('../../hooks/authenticate/index.js');
+const authenticateHook = require('../../authentication/authenticationHook');
 
 
 const errors = require('@feathersjs/errors');

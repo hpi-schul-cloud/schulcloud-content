@@ -16,7 +16,7 @@ const appHooks = require('./app.hooks');
 
 const mongodb = require('./mongodb');
 
-const authentication = require('./authentication');
+const authentication = require('./authentication/authentication');
 
 const app = express(feathers());
 
