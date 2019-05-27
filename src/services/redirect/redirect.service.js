@@ -3,7 +3,7 @@ class RedirectService {
     this.app = app;
   }
 
-  get(id) {
+  async get(id) {
     /*
     return this.app
       .service('resources')
@@ -19,6 +19,17 @@ class RedirectService {
     */
 
     // Increase Click Counter
+     const videoUrl = await this.app.service('/drm/videoRedirect').get(id).then((response) => {
+			if (response.redirect) {
+				return 'http://localhost:8080/video?videoId='+response.videoId;
+			}
+			return undefined;
+    });
+    if (videoUrl != undefined) {
+      return videoUrl;
+    }
+
+
     return this.app
       .service('resources')
       .patch(id, {

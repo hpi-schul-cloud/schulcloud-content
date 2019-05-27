@@ -1,6 +1,7 @@
 const { downloadFile } = require('./drmHelpers/handelFiles.js');
 const config = require('config');
 const drmConfig = config.get('DRM');
+const fs = require('fs');
 
 class VideoRedirectService {
   constructor(app) {
@@ -21,7 +22,7 @@ class VideoRedirectService {
             let fileType = fileToOpen.split('.');
             fileType = fileType[fileType.length-1];
             let obj = results.find(
-              o =>o.path === fileToOpen
+              o =>o.path === '/' + fileToOpen
             );
             if (obj.drmProtection && drmConfig.videoFileTypes.includes(fileType)) {
               return await this.app.service('videoId').find({
@@ -32,16 +33,24 @@ class VideoRedirectService {
               }).then(async (result)=>{
                 const videoId = result[0].videoId;
                 const sourceFolderPath = drmConfig.absoluteLocalStoragePath + '\\' + drmConfig.workingDir;
-                await results.map((result) => {
-                  return result.path.split('/');
-                })
-                .filter(splitResult => splitResult[1] == videoId)
-                .map(async filteredSplitResult => {
-                  const fileName = filteredSplitResult[filteredSplitResult.length-1];          
-                  const subFolder = filteredSplitResult.slice(2, filteredSplitResult.length-1);
-                  const preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get`;
-                  return await downloadFile(preUrl+filteredSplitResult.join ('/'), fileName, sourceFolderPath+'\\'+videoId+'\\'+subFolder);
-                });
+                if (!fs.existsSync(sourceFolderPath +'/' + videoId)) {
+                  await Promise.all(results.map((result) => {
+                    return result.path.split('/');
+                  })
+                  .filter(splitResult => splitResult[1] == videoId)
+                  .map(async filteredSplitResult => {
+                    const fileName = filteredSplitResult[filteredSplitResult.length-1];          
+                    const subFolder = filteredSplitResult.slice(2, filteredSplitResult.length-1);
+                    const options = {
+                      path: filteredSplitResult.join('/'),
+                      name: fileName,
+                      storageLocation: sourceFolderPath+'\\'+videoId+'\\'+subFolder,
+                      resourceId: resourceId
+                    };
+                    return await downloadFile(options);
+                  })
+                  );
+                }
                 return {
                   redirect: true,
                   videoId: videoId
