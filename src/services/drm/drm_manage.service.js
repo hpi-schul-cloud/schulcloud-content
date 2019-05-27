@@ -15,9 +15,13 @@ const writeDrmMetaDataToDB = (app, resourceId, drmOptions) => {
 const writeDrmFileDataToDB = (app, element) => {
   app.service('resource_filepaths').patch(element.id.toString(),{drmProtection: true });
 };
-
-// TODO Get logoFilePath, testDataToWrite from Frontend
-const logoFilePath = 'C:\\Users\\admin\\MyStuff\\UNI\\BP\\temp\\c.png';
+const getLogoFilePath = async (app, drmOptions, resourceId, sourceFolderPath) => {
+  return app.service('resource_filepaths').find({
+    query: { resourceId: resourceId, path: drmOptions.watermarkImage }
+  }).then(result => {
+    return sourceFolderPath + '\\' + result.data[0]._id.toString();
+  });
+};
 
 class DrmService {
   constructor(app) {
@@ -42,6 +46,10 @@ class DrmService {
         })
       );
       await ep.open();
+      let logoFilePath;
+      if (drmOptions.watermark) {
+        logoFilePath = await getLogoFilePath(this.app, drmOptions, resourceId, sourceFolderPath);
+      }
 
       await Promise.all(
         resourceFileList.map(async element => {
