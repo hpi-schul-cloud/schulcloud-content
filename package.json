@@ -21,6 +21,7 @@
     "npm": ">= 3.0.0"
   },
   "scripts": {
+    "seed": "cross-env sh ./seed.sh",
     "test": "npm run eslint && npm run mocha",
     "eslint": "eslint src/. test/. --config .eslintrc.json",
     "eslint:fix": "eslint src/. test/. --config .eslintrc.json --fix",
