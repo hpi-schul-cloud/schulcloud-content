@@ -63,7 +63,7 @@ class DrmService {
 
             let fileType = await getFileType(element.sourceFilePath);
             fileType = fileType.split(' ')[0];
-            if (['JPEG', 'PNG'].includes(fileType)&&drmOptions.watermark) {
+            if (['JPEG', 'PNG'].includes(fileType) && drmOptions.watermark && logoFilePath != element.sourceFilePath) {
               await createWatermark(element, logoFilePath);
               await writeExifData(ep, drmOptions.exif, element.outputFilePath);
               writeDrmFileDataToDB(this.app, element);
