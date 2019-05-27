@@ -9,10 +9,12 @@ const { writeExifData } = require('./drmHelpers/drm_exifInfo.js');
 const { uploadAndDelete, getResourceFileList, downloadFile, getFileType } = require('./drmHelpers/handelFiles.js');
 const ep = new exiftool.ExiftoolProcess(exiftoolBin);
 
-const writeDrmDataToDB = (app, resourceId, drmOptions) => {
+const writeDrmMetaDataToDB = (app, resourceId, drmOptions) => {
   app.service('resources').patch(resourceId, {drmOptions: drmOptions});
 };
-
+const writeDrmFileDataToDB = (app, element) => {
+  app.service('resource_filepaths').patch(element.id.toString(),{drmProtection: true });
+};
 
 // TODO Get logoFilePath, testDataToWrite from Frontend
 const logoFilePath = 'C:\\Users\\admin\\MyStuff\\UNI\\BP\\temp\\c.png';
@@ -56,11 +58,14 @@ class DrmService {
             if (['JPEG', 'PNG'].includes(fileType)&&drmOptions.watermark) {
               await createWatermark(element, logoFilePath);
               await writeExifData(ep, drmOptions.exif, element.outputFilePath);
+              writeDrmFileDataToDB(this.app, element);
             } else if (['PDF'].includes(fileType)&&drmOptions.pdfIsProtected) {
               await createPdfDrm(element);
               await writeExifData(ep, drmOptions.exif, element.outputFilePath);
+              writeDrmFileDataToDB(this.app, element);
             } else if (['Matroska'].includes(fileType)&&drmOptions.videoIsProtected) {
               createVideoDrm(this.app, element, resourceId);
+              writeDrmFileDataToDB(this.app, element);
             }
           }
 
@@ -71,7 +76,7 @@ class DrmService {
       # Do things that have to be applied to every downloaded File here
       ###################################################################### */
       await ep.close();
-      writeDrmDataToDB(this.app, resourceId, drmOptions);
+      writeDrmMetaDataToDB(this.app, resourceId, drmOptions);
 
       //upload and delete Files
       uploadAndDelete(this.app, resourceFileList, sourceFolderPath);

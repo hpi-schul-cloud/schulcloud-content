@@ -49,7 +49,6 @@ const videoCleanupOnDelete = (app, resourceId) =>{
 const uploadAndDelete = async (app, resourceFileList, sourceFolderPath) => {
   await Promise.all(
     resourceFileList.map(async element => {
-      app.service('resource_filepaths').patch(element.id.toString(),{drmProtection: true });
       if (element.upload) {
         let sourceStream = fs.createReadStream(element.outputFilePath);
         await promisePipe(sourceStream, getUploadStream(element.id));
