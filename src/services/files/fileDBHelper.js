@@ -27,7 +27,8 @@ function replaceFilesInDB(app, fileIds) {
     const deleteExistingPromise = app.service('resource_filepaths').get(fileId)
       .then(fileObject => {
         const filePath = fileObject.path;
-        return app.service('resource_filepaths').find({ query: { _id: { $ne: fileId }, path: filePath, isTemp: false } });
+        const resourceId = fileObject.resourceId;
+        return app.service('resource_filepaths').find({ query: { _id: { $ne: fileId }, path: filePath, resourceId: resourceId, isTemp: false } });
       })
       .then(searchResults => {
         const currentFiles = searchResults.data;
