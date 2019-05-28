@@ -1,15 +1,11 @@
 const Strategy = require('passport-custom');
 const basicAuth = require('basic-auth');
+var bcrypt = require('bcryptjs');
 
-function checkLocalAuthentication(username, password) {
-    const config = require('config');
-    const localUsers = config.get('localAuthentication');
-    return localUsers.find(user => { return user.username === username && user.password === password; });
-}
-
-module.exports = () => {
-    return function() {
+module.exports = function(){
+    return function(app) {
         const verifier = (req, done) => {
+            const userModel = app.get('mongooseClient').model('users');
             const authHeader = req.params.headers['authorization'];
 
             let credentials = basicAuth.parse(authHeader);
@@ -17,12 +13,16 @@ module.exports = () => {
                 return done(null, false);
             }
 
-            // Check Local config auth
-            const match = checkLocalAuthentication(credentials.name, credentials.pass);
-
-            // user will be false, if no user was matched and authorization will fail
-            const user = match ? {_id: match.userId} : false;
-            return done(null, user);
+            userModel.findOne({ email: credentials.name}, function (err, user) {
+                if (err) { return done(err); }
+                if (!user) {
+                    return done(null, false, { message: 'Incorrect username' });
+                }
+                let hashedPassword = user.password;
+                if (bcrypt.compareSync(credentials.pass, hashedPassword)){
+                    return done(null, {_id: user._id});
+                } else return done(null, false, { message: 'Incorrect password' });
+            });
         };
         // register the strategy in the app.passport instance
         this.passport.use('basicAuth', new Strategy(verifier));

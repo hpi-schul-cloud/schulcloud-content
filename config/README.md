@@ -32,3 +32,7 @@ The following variables are defined here:
         curl -X POST http://schulcloud-content-1:content-1@localhost:4040/resources
 
 [package]: https://www.npmjs.com/package/config
+
+UPDATE: `localAuthentication` is outdated!! to authenticate with a test-user do the following:
+- `npm run seed` to seed the db with test-user (only possible in dev-mode --> set NODE_ENV=development)
+- set Authorization header to basic auth with the test users credentials (see /backup/schulcloud-content/users.json) when accessing a protected route via postman

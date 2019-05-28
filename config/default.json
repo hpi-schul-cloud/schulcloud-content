@@ -8,7 +8,6 @@
     "max": 500
   },
   "mongodb": "MONGO_URI",
-  "localAuthentication": [],
   "pichasso": {
     "enabled": true,
     "url": "PICHASSO_URL",
