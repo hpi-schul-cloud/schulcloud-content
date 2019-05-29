@@ -115,7 +115,7 @@ describe('\'files/get*\' service', () => {
             },
             res: resStream,
             headers: {
-              Authorization: 'Basic c2NodWxjbG91ZC1jb250ZW50LTE6Y29udGVudC0x'
+              Authorization: 'Basic dG9pQGV4YW1wbGUuY29tOnN0b3J5'
             }
           },
           query: {
