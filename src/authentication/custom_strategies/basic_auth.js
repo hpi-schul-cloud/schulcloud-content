@@ -13,7 +13,7 @@ module.exports = function(){
                 return done(null, false);
             }
 
-            userModel.findOne({ email: credentials.name}, function (err, user) {
+            userModel.findOne({ username: credentials.name}, function (err, user) {
                 if (err) { return done(err); }
                 if (!user) {
                     return done(null, false, { message: 'Incorrect username' });
