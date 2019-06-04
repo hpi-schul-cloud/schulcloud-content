@@ -7,6 +7,9 @@
     "password": "$2a$13$T0diLE.VC0fZfe4TSclbSOZ/YNbOLgd/PHbk3o/ECNDc3G0fyz0OG",
     "forename": "Toi",
     "familyname": "Story",
+    "providerId" : {
+        "$oid" : "5cf66274a493734cc4557332"
+    },
     "updatedAt": {
         "$date": "2019-05-27T12:02:49.107+0000"
     },
@@ -24,6 +27,9 @@
     "password": "$2a$13$fmEp0WlHfEsLqrUDqlRwAux8S.V1xxr4q7dlAlxyVmuPSS55OwoDO",
     "forename": "Olive",
     "familyname": "Tree",
+    "providerId" : {
+        "$oid" : "5cf66274a493734cc4557332"
+    },
     "updatedAt": {
         "$date": "2019-05-27T12:02:49.107+0000"
     },
