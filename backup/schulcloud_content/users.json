@@ -10,6 +10,7 @@
     "providerId" : {
         "$oid" : "5cf66274a493734cc4557332"
     },
+    "role" : "admin",
     "updatedAt": {
         "$date": "2019-05-27T12:02:49.107+0000"
     },
@@ -30,6 +31,7 @@
     "providerId" : {
         "$oid" : "5cf66274a493734cc4557332"
     },
+    "role" : "admin",
     "updatedAt": {
         "$date": "2019-05-27T12:02:49.107+0000"
     },

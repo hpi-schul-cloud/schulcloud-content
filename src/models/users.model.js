@@ -12,6 +12,7 @@ module.exports = function (app) {
     forename: { type: String },
     familyname: { type: String },
     providerId: { type: mongooseClient.Types.ObjectId },
+    role: { type: String, enum : ['user', 'admin', 'superhero'], default: 'user' },
 
   }, {
     timestamps: true
