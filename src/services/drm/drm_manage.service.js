@@ -45,8 +45,11 @@ class DrmService {
           return downloadFile(options);
         })
       );
-      await ep.open();  
-          
+      try {
+        await ep.open();
+      } catch (error) {
+        console.log(error);
+      }
       let logoFilePath;
       if (drmOptions.watermark) {
         logoFilePath = await getLogoFilePath(this.app, drmOptions, resourceId, sourceFolderPath);

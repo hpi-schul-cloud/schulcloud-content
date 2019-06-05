@@ -20,8 +20,8 @@ class RedirectService {
 
     // Increase Click Counter
      const videoUrl = await this.app.service('/drm/videoRedirect').get(id).then((response) => {
-			if (response.redirect) {
-				return 'http://localhost:8080/video?videoId='+response.videoId;
+			if (response) {
+				return 'http://localhost:8080/video?recouceId='+id+'&videoId='+response;
 			}
 			return undefined;
     });

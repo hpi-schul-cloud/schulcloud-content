@@ -50,10 +50,16 @@ const uploadAndDelete = async (app, resourceFileList, sourceFolderPath) => {
   await Promise.all(
     resourceFileList.map(async element => {
       if (element.upload) {
-        let sourceStream = fs.createReadStream(element.outputFilePath);
-        await promisePipe(sourceStream, getUploadStream(element.id));
+        await app.service('resource_filepaths').get(element.id.toString()).then(async (resource)=>{
+          delete resource._id;
+          await app.service('resource_filepaths').create(resource).then(async(newRecource)=>{
+            let sourceStream = fs.createReadStream(element.outputFilePath);
+            await promisePipe(sourceStream, getUploadStream(newRecource._id));
+            app.service('resource_filepaths').patch(element.id.toString(),{path: '/'+drmConfig.originalFilesFolderName+element.path }).then(async()=>{
+            });
+          });
+        });
       }
-
       if (element.remove) {
         fs.unlinkSync(element.sourceFilePath);
         fs.unlinkSync(element.outputFilePath);
