@@ -45,7 +45,8 @@ class DrmService {
           return downloadFile(options);
         })
       );
-      await ep.open();
+      await ep.open();  
+          
       let logoFilePath;
       if (drmOptions.watermark) {
         logoFilePath = await getLogoFilePath(this.app, drmOptions, resourceId, sourceFolderPath);
@@ -64,7 +65,7 @@ class DrmService {
             let fileType = await getFileType(element.sourceFilePath);
             fileType = fileType.split(' ')[0];
             if (['JPEG', 'PNG'].includes(fileType) && drmOptions.watermark && logoFilePath != element.sourceFilePath) {
-              await createWatermark(element, logoFilePath);
+              await createWatermark(element, logoFilePath, drmOptions);
               await writeExifData(ep, drmOptions.exif, element.outputFilePath);
               writeDrmFileDataToDB(this.app, element);
             } else if (['PDF'].includes(fileType)&&drmOptions.pdfIsProtected) {

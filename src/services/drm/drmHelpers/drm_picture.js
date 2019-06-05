@@ -25,32 +25,33 @@ const addWatermark = optionsImageWatermark => {
   });
 };
 
-const createWatermark = async (element, logoFilePath) => {
+const createWatermark = async (element, logoFilePath, drmOptions) => {
+  const watermarkBoxSize = drmOptions.watermarkBoxSize;
+  const xWatermarkPosition = drmOptions.xWatermarkPosition;
+  const yWatermarkPosition = drmOptions.yWatermarkPosition;
   element.upload = true;
   // obtain the size of an image
   const sourceFileSize = await getImageSize(element.sourceFilePath);
   const logoFileSize = await getImageSize(logoFilePath);
-
+  
+  let logoWidth = sourceFileSize.width * watermarkBoxSize / 100;
+  let logoHeight = logoFileSize.height * (logoWidth/logoFileSize.width);
+  if (logoHeight > sourceFileSize.height && drmOptions.watermarkExceedFrame){
+    logoHeight = sourceFileSize.height * watermarkBoxSize / 100;
+    logoWidth = logoFileSize.width * (logoHeight/logoFileSize.height);
+  }
+  const logoX = (sourceFileSize.width - logoWidth) * xWatermarkPosition / 100;
+  const logoY = (sourceFileSize.height - logoHeight) * yWatermarkPosition / 100;
   let optionsImageWatermark = {
     type: 'image',
     source: element.sourceFilePath,
     logo: logoFilePath,
     destination: element.outputFilePath,
     position: {
-      //Place Logo in center with 1/3 of original size of source Picture
-      logoX: Math.round(
-        sourceFileSize.width / 2 - sourceFileSize.width / 3 / 2
-      ),
-      logoY: Math.round(
-        sourceFileSize.height / 2 -
-          (logoFileSize.height *
-            (sourceFileSize.width / 3 / logoFileSize.width)) /
-            2
-      ),
-      logoHeight: Math.round(
-        logoFileSize.height * (sourceFileSize.width / 3 / logoFileSize.width)
-      ),
-      logoWidth: Math.round(sourceFileSize.width / 3)
+      logoX: Math.round(logoX),
+      logoY: Math.round(logoY),
+      logoHeight: Math.round(logoHeight),
+      logoWidth: Math.round(logoWidth)
     }
   };
 
