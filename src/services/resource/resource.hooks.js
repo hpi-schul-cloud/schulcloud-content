@@ -153,9 +153,10 @@ const addDrmProtection = hook => {
   const resourceId = hook.id || hook.result._id.toString();
   const options = {
     resourceId: resourceId,
-    drmOptions: hook.data.drmOptions
+    drmOptions: hook.data.drmOptions,
+    isProtected: hook.data.isProtected
   };
-  if (hook.data.isProtected) {
+  if (hook.data.isProtected !== undefined) {
     return hook.app
       .service('drm/manage')
       .get(options)

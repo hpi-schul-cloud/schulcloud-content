@@ -85,17 +85,17 @@ const downloadFile = ({path, name, storageLocation, resourceId}) => {
         resolve();
       });
     });
-  };
+};
 
-  const getFileType = sourceFilePath => {
-    return new Promise((resolve, reject) => {
-      const magic = new Magic();
-      magic.detectFile(sourceFilePath, function(err, result) {
-        if (err) reject(err);
-        resolve(result);
-      });
+const getFileType = sourceFilePath => {
+  return new Promise((resolve, reject) => {
+    const magic = new Magic();
+    magic.detectFile(sourceFilePath, function(err, result) {
+      if (err) reject(err);
+      resolve(result);
     });
-  };
+  });
+};
 
 module.exports = {
   uploadAndDelete,

@@ -1,8 +1,3 @@
-const { downloadFile } = require('./drmHelpers/handelFiles.js');
-const config = require('config');
-const drmConfig = config.get('DRM');
-const fs = require('fs');
-
 class VideoRedirectService {
   constructor(app) {
     this.app = app;

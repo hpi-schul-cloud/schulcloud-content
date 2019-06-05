@@ -56,7 +56,7 @@ class VideoDrmService {
             };
             await addFilesToDB(this.app, dbFilePaths, options);
             this.app.service('resource_filepaths').patch(videoData.fileId,{path: '/'+drmConfig.originalFilesFolderName + result.path});
-            this.app.service('resources').patch(videoData.resourceId,{url: '/'+drmConfig.originalFilesFolderName + result.path});
+            //this.app.service('resources').patch(videoData.resourceId,{url: '/'+drmConfig.originalFilesFolderName + result.path});
             await this.app
               .service('resource_filepaths')
               .find({
