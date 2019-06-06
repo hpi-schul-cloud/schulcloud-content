@@ -106,11 +106,10 @@ class DrmService {
               this.app.service('resource_filepaths').patch(entry._id, {path: newPath, drmProtection: false});
             }
           });
-          //this.app.service('resources').update(resourceId, { $unset: { drmOptions: '' } });
           this.app.service('videoId').find({query: {resourceId: resourceId}}).then((result)=>{
             this.app.service('videoId').remove(result.data[0]._id);
           });
-          this.app.service('resources').patch(resourceId, {drmOptions: {}});
+          this.app.service('resources').patch(resourceId, { $unset: { drmOptions: '' } });
         });
       }
      
