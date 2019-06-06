@@ -29,6 +29,13 @@ class DrmService {
   async get({resourceId, drmOptions, isProtected} /*, obj*/) {
     new Promise(async resolve => {
       if (isProtected === true) {
+        if (!drmOptions.watermark) {
+          restoreOriginalFiles(this.app,resourceId, drmConfig.imageFileTypes);
+        } if (!drmOptions.pdfIsProtected) {
+          restoreOriginalFiles(this.app,resourceId, ['pdf']);          
+        } if (!drmOptions.videoIsProtected) {
+          restoreOriginalFiles(this.app,resourceId, drmConfig.videoFileTypes);
+        }
         const sourceFolderPath =
         drmConfig.absoluteLocalStoragePath + '\\'+drmConfig.downloadDir+'\\' + resourceId;
         const resourceFileList = await getResourceFileList(this.app, resourceId);
