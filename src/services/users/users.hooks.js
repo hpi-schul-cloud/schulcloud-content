@@ -24,9 +24,14 @@ const checkUserHasRole = (permittedRoles) => async hook => {
   });
 };
 
-const restrictAccessToCurrentProvider = hook => {
-  if(hook.params.user.role !== 'superhero') {
+const restrictAccessToCurrentProvider = async hook => {
+  // Admin can only access users of his own company
+  if(hook.params.user.role === 'admin') {
     hook.params.query = { providerId: hook.params.user.providerId };
+  } else
+  // User can only access himself
+  if (hook.params.user.role === 'user' && hook.id != hook.params.user._id) {
+    throw new errors.Forbidden('Permissions missing. You can only request your own userId');
   }
   return hook;
 };
@@ -39,13 +44,13 @@ const restrictCreationToCurrentProvider = hook => {
   return hook;
 };
 
-const ckeckUserHasPermission = hook => {
-  return checkUserHasRole(['admin', 'superhero'])(hook)
+const ckeckUserHasPermission = (roles) => hook => {
+  return checkUserHasRole(roles)(hook)
   .then(()=>{
     if(hook.method == 'create') {
-      restrictCreationToCurrentProvider(hook);
+      return restrictCreationToCurrentProvider(hook);
     } else {
-      restrictAccessToCurrentProvider(hook);
+      return restrictAccessToCurrentProvider(hook);
     }
   });
 };
@@ -59,12 +64,12 @@ const skipInternal = (method) => (hook) => {
 
 module.exports = {
   before: {
-    all: [ authenticateHook(), skipInternal(ckeckUserHasPermission) ],
-    find: [  ],
-    get: [  ],
-    create: [ hashPassword() ],
-    patch: [  hashPassword() ],
-    remove: [  ]
+    all: [ authenticateHook() ],
+    find: [ skipInternal(ckeckUserHasPermission(['superhero', 'admin'])) ],
+    get: [ skipInternal(ckeckUserHasPermission(['superhero', 'admin', 'user'])) ],
+    create: [ skipInternal(ckeckUserHasPermission(['superhero', 'admin'])), hashPassword() ],
+    patch: [  skipInternal(ckeckUserHasPermission(['superhero', 'admin', 'user'])), hashPassword() ],
+    remove: [ skipInternal(ckeckUserHasPermission(['superhero', 'admin'])) ]
   },
 
   after: {
