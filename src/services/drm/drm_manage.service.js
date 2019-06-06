@@ -11,6 +11,16 @@ const { writeDrmMetaDataToDB, writeDrmFileDataToDB } = require('./drmHelpers/drm
 const { uploadAndDelete, getResourceFileList, downloadFile, getFileType } = require('./drmHelpers/handelFiles.js');
 const ep = new exiftool.ExiftoolProcess(exiftoolBin);
 
+const createAccessToken = (app, resourceId) => {
+  return app.service('access_token').create({resourceId: resourceId}).then((result)=>{
+    return result._id.toString();
+  });
+};
+const removeAccessToken = (app, access_token) => {
+  return app.service('access_token').remove(access_token);
+};
+
+
 class DrmService {
   constructor(app) {
     this.app = app;
@@ -22,13 +32,15 @@ class DrmService {
         const sourceFolderPath =
         drmConfig.absoluteLocalStoragePath + '\\'+drmConfig.downloadDir+'\\' + resourceId;
         const resourceFileList = await getResourceFileList(this.app, resourceId);
+        const accessToken = await createAccessToken(this.app, resourceId);
         await Promise.all(
           resourceFileList.map(data => {
             const options = {
               path: data.path,
               resourceId: resourceId,
               name: data.id,
-              storageLocation: sourceFolderPath
+              storageLocation: sourceFolderPath,
+              accessToken: accessToken
             };
             return downloadFile(options);
           })
@@ -77,9 +89,10 @@ class DrmService {
         ###################################################################### */
         await ep.close();
         writeDrmMetaDataToDB(this.app, resourceId, drmOptions);
-  
+        
         //upload and delete Files
         uploadAndDelete(this.app, resourceFileList, sourceFolderPath);
+        removeAccessToken(this.app,accessToken);
         return resolve();
       } else if(isProtected === false){
         restoreOriginalFiles(this.app,resourceId);

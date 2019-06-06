@@ -56,7 +56,7 @@ const hasViewPermission = hook => {
     })
     .then(resource => {
       if (resource.isPublished) {
-        return hook;
+        return true;
       }
       //return hook.app.service('access_token').get(hook.params.query.access_token) // read token from cookie / set cookie from query
       return app.service('access_token').find({
@@ -66,10 +66,10 @@ const hasViewPermission = hook => {
       });
     })
     .then(response => {
-      if (response.total === 0) {
-        throw new errors.Forbidden('Permissions missing');
+      if (response === true || (response.total !== 0 && response.data[0]._id == hook.params.query.access_token.toString())) {
+        return hook;
       }
-      return hook;
+      throw new errors.Forbidden('Permissions missing');
     });
 };
 

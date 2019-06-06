@@ -26,9 +26,9 @@ const addWatermark = optionsImageWatermark => {
 };
 
 const createWatermark = async (element, logoFilePath, drmOptions) => {
-  const watermarkBoxSize = drmOptions.watermarkBoxSize;
-  const xWatermarkPosition = drmOptions.xWatermarkPosition;
-  const yWatermarkPosition = drmOptions.yWatermarkPosition;
+  const watermarkBoxSize = drmOptions.watermarkBoxSize || 50; //TODO do this in Frontend instead
+  const xWatermarkPosition = drmOptions.xWatermarkPosition || 50;
+  const yWatermarkPosition = drmOptions.yWatermarkPosition || 50;
   element.upload = true;
   // obtain the size of an image
   const sourceFileSize = await getImageSize(element.sourceFilePath);
