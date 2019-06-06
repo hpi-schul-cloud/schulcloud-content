@@ -2,27 +2,14 @@ const config = require('config');
 const drmConfig = config.get('DRM');
 const exiftool = require('node-exiftool');
 const exiftoolBin = require('dist-exiftool');
-const { removeFile } = require('../files/storageHelper.js');
-const { createWatermark } = require('./drmHelpers/drm_picture.js');
+const { restoreOriginalFiles } = require('./drmHelpers/drm_restoreFile.js');
+const { createWatermark, getLogoFilePath } = require('./drmHelpers/drm_picture.js');
 const { createPdfDrm } = require('./drmHelpers/drm_pdf.js');
 const { createVideoDrm } = require('./drmHelpers/drm_video.js');
 const { writeExifData } = require('./drmHelpers/drm_exifInfo.js');
+const { writeDrmMetaDataToDB, writeDrmFileDataToDB } = require('./drmHelpers/drm_dbHelpers.js');
 const { uploadAndDelete, getResourceFileList, downloadFile, getFileType } = require('./drmHelpers/handelFiles.js');
 const ep = new exiftool.ExiftoolProcess(exiftoolBin);
-
-const writeDrmMetaDataToDB = (app, resourceId, drmOptions) => {
-  app.service('resources').patch(resourceId, {drmOptions: drmOptions});
-};
-const writeDrmFileDataToDB = (app, element) => {
-  app.service('resource_filepaths').patch(element.id.toString(),{drmProtection: true });
-};
-const getLogoFilePath = async (app, drmOptions, resourceId, sourceFolderPath) => {
-  return app.service('resource_filepaths').find({
-    query: { resourceId: resourceId, path: drmOptions.watermarkImage }
-  }).then(result => {
-    return sourceFolderPath + '\\' + result.data[0]._id.toString();
-  });
-};
 
 class DrmService {
   constructor(app) {
@@ -95,22 +82,8 @@ class DrmService {
         uploadAndDelete(this.app, resourceFileList, sourceFolderPath);
         return resolve();
       } else if(isProtected === false){
-        this.app.service('resource_filepaths').find({query:{resourceId},paginate: false}).then((result)=>{
-          result.forEach((entry)=>{
-            if (entry.drmProtection && entry.path.split('/').slice(1, 2) != drmConfig.originalFilesFolderName) {
-              removeFile(entry._id);
-              this.app.service('resource_filepaths').remove(entry._id);
-            }else if (entry.drmProtection && entry.path.split('/').slice(1, 2) == drmConfig.originalFilesFolderName) {
-              let newPath = entry.path.split('/');
-              newPath = '/' + newPath.slice(2, newPath.length).join('/');
-              this.app.service('resource_filepaths').patch(entry._id, {path: newPath, drmProtection: false});
-            }
-          });
-          this.app.service('videoId').find({query: {resourceId: resourceId}}).then((result)=>{
-            this.app.service('videoId').remove(result.data[0]._id);
-          });
-          this.app.service('resources').patch(resourceId, { $unset: { drmOptions: '' } });
-        });
+        restoreOriginalFiles(this.app,resourceId);
+        return resolve();
       }
      
     });

@@ -58,6 +58,15 @@ const createWatermark = async (element, logoFilePath, drmOptions) => {
   await addWatermark(optionsImageWatermark);
 };
 
+const getLogoFilePath = async (app, drmOptions, resourceId, sourceFolderPath) => {
+  return app.service('resource_filepaths').find({
+    query: { resourceId: resourceId, path: drmOptions.watermarkImage }
+  }).then(result => {
+    return sourceFolderPath + '\\' + result.data[0]._id.toString();
+  });
+};
+
 module.exports = {
-  createWatermark
+  createWatermark,
+  getLogoFilePath
 };
