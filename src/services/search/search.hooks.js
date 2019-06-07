@@ -44,13 +44,13 @@ const restrictToPublicResources = hook => {
 
 // Lern-Store can only access public resources, authenticated users can access public resources and resources of their company
 const checkPermissionsAfterAuthentication = hook => {
-  try {
-    return authenticateHook()(hook).then(result => {
-      return restrictToProviderOrToPublicResources(result);
-    });
-  } catch (error) {
+  return authenticateHook()(hook)
+  .then(result => {
+    return restrictToProviderOrToPublicResources(result);
+  })
+  .catch(()=>{
     return restrictToPublicResources(hook);
-  }
+  });
 };
 
 module.exports = {
