@@ -2,6 +2,7 @@
 const createService = require('feathers-mongoose');
 const createModel = require('../../models/resource.model');
 const hooks = require('./resource.hooks');
+const authenticateHook = require('../../authentication/authenticationHook');
 
 const { ResourceSchemaService } = require('./resource_getResourceSchema.service.js');
 const { ResourceBulkService } = require('./resource_bulk.service.js');
@@ -21,6 +22,12 @@ module.exports = function () {
 
   // delivers resource schema for frontend validation
   app.use('/resources/resource-schema',  new ResourceSchemaService(app));
+  const SchemaService = app.service('resources/resource-schema');
+  SchemaService.hooks({
+    before: {
+      find: [authenticateHook()]
+    }
+  });
 
   // same as /resources but for multiple edits at once
   app.use('/resources/bulk',  new ResourceBulkService(app));

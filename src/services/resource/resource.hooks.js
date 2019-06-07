@@ -1,7 +1,8 @@
 const commonHooks = require('feathers-hooks-common');
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
-//const authenticate = require('../../hooks/authenticate');
 const authenticateHook = require('../../authentication/authenticationHook');
+const errors = require('@feathersjs/errors');
+
 const { populateResourceUrls } = require('../../hooks/populateResourceUrls');
 const { unifySlashes } = require('../../hooks/unifySlashes');
 
@@ -9,29 +10,6 @@ const { unifySlashes } = require('../../hooks/unifySlashes');
 const config = require('config');
 const pichassoConfig = config.get('pichasso');
 
-const restrictToPublicIfUnauthorized = async (hook) => {
-  /*
-  Anfrage so manipulieren, dass nur isPublished=true angezeigt wird
-  Außer: userId = currentUser._id ((hook.params.user || {})._id)
-  */
-  try{
-    hook = await authenticateHook()(hook);
-
-    if (
-      typeof hook.params.query.isPublished == 'undefined' ||
-      hook.params.query.isPublished == 'false'
-    ) {
-      delete hook.params.query.isPublished;
-      hook.params.query.$or = [{ isPublished: { $ne: false } }, { userId: (hook.params.user || {})._id }];
-    } else {
-      hook.params.query.isPublished = { $ne: false };
-    }
-  } catch (error) {
-    hook.params.query.isPublished = { $ne: false };
-    return hook;
-  }
-  return hook;
-};
 
 const manageFiles = async (hook) => {
   if(!hook.data.files || !(hook.params.user || {})._id) { return hook; }
@@ -144,13 +122,6 @@ const validateNewResources = hook => {
   return hook;
 };
 
-const addUserIdToData = hook => {
-  if (hook.params.userId) {
-    hook.data.userId = hook.params.userId;
-  }
-  return hook;
-};
-
 const unifySlashesFromResourceUrls = resource => {
   ['url', 'thumbnail'].forEach(key => {
     if (resource[key] && !resource[key].startsWith('http')) {
@@ -168,26 +139,122 @@ const unifyLeadingSlashesHook = hook => {
   }
 };
 
+/************ PERMISSION CHECK ************/
+
+const checkUserHasRole = (permittedRoles) => async hook => {
+  if (!permittedRoles.includes(hook.params.user.role)){
+    throw new errors.Forbidden('Permissions missing');
+  }
+  return hook;
+};
+
+const getCurrentUserData = hook => {
+  const userModel = hook.app.get('mongooseClient').model('users');
+    return new Promise((resolve, reject) => {
+      userModel.findById(hook.params.user._id, function (err, user) {
+        if(err) { reject(new errors.GeneralError(err)); }
+        if(!user) {
+          reject(new errors.NotFound('User not found'));
+        }
+        hook.params.user.role = user.role;
+        hook.params.user.providerId = user.providerId;
+        return resolve(hook);
+      });
+    });
+};
+
+const restrictReadAccessToCurrentProvider = async hook => {
+  if(hook.params.user.role !== 'superhero') {
+    hook.params.query = { providerId: hook.params.user.providerId };
+  }
+  return hook;
+};
+
+const restrictWriteAccessToCurrentProvider = hook => {
+  if(hook.params.user.role !== 'superhero') {
+    if(Array.isArray(hook.data)) {
+      hook.data.forEach((resource)=>{
+        resource.providerId = hook.params.user.providerId;
+        resource.userId = hook.params.user._id;
+      });
+    } else {
+      hook.data.providerId = hook.params.user.providerId;
+      hook.data.userId = hook.params.user._id;
+    }
+  }
+  return hook;
+};
+
+const ckeckUserHasPermission = (roles) => hook => {
+  return checkUserHasRole(roles)(hook)
+  .then(()=>{
+    if(hook.method == 'create') {
+      return restrictWriteAccessToCurrentProvider(hook);
+    } else if (hook.method == 'patch') {
+      return restrictReadAccessToCurrentProvider(hook) && restrictWriteAccessToCurrentProvider(hook);
+    } else {
+      return restrictReadAccessToCurrentProvider(hook);
+    }
+  });
+};
+
+const restrictToProviderOrToPublicResources = hook => {
+  if(hook.params.user.role !== 'superhero') {
+    hook.params.query = {$or: [
+      { providerId: hook.params.user.providerId.toString() },
+      { isPublished: true }
+    ]};
+  }
+  return hook;
+};
+
+const restrictToPublicResources = hook => {
+  hook.params.query = { isPublished: true };
+  return hook;
+};
+
+// Lern-Store can only access public resources, authenticated users can access public resources and resources of their company
+const checkPermissionsAfterAuthentication = hook => {
+  return authenticateHook()(hook)
+  .then(result => {
+    return getCurrentUserData(result) && restrictToProviderOrToPublicResources(result); //TODO: authorized finde will never go into then() - why?
+  })
+  .catch(()=>{
+    return restrictToPublicResources(hook);
+  });
+};
+
 module.exports = {
   before: {
     all: [],
-    find: [restrictToPublicIfUnauthorized],
-    get: [],
+    find: [checkPermissionsAfterAuthentication],
+    get: [
+      authenticateHook(),
+      getCurrentUserData,
+      ckeckUserHasPermission(['superhero', 'admin', 'user'])
+    ], //TODO: allow unauthorized access for Lern-Store ?
     create: [
       authenticateHook(),
-      addUserIdToData,
+      getCurrentUserData,
+      ckeckUserHasPermission(['superhero', 'admin', 'user']),
       unifyLeadingSlashesHook,
       validateNewResources /* createThumbnail, */
     ],
     update: [commonHooks.disallow()],
     patch: [
       authenticateHook(),
-      addUserIdToData,
+      getCurrentUserData,
+      ckeckUserHasPermission(['superhero', 'admin', 'user']),
       unifyLeadingSlashesHook,
       patchResourceIdInFilepathDb,
       manageFiles
     ],
-    remove: [authenticateHook(), deleteRelatedFiles]
+    remove: [ //TODO: wie geht delete bei /resources/bulk?
+      authenticateHook(),
+      getCurrentUserData,
+      ckeckUserHasPermission(['superhero', 'admin', 'user']),
+      deleteRelatedFiles
+    ]
   },
 
   after: {
