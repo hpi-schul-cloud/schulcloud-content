@@ -74,6 +74,7 @@ const hasViewPermission = hook => {
     });
 };
 
+
 const distributionHooks = {
   ...defaultHooks,
   before: {
@@ -99,12 +100,17 @@ const structureHooks = {
 const uploadHooks = {
   ...defaultHooks,
   before: {
-    create: [authenticateHook()]
+    create: [
+      authenticateHook()
+    ]
   }
 };
 
 const thumbnailHooks = {
-  ...defaultHooks
+  ...defaultHooks,
+  before: {
+    all: [commonHooks.disallow('external')]
+  }
 };
 
 module.exports = {
