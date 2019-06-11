@@ -28,7 +28,6 @@ class DrmService {
   }
 
   async get({resourceId, drmOptions, oldDrmOptions, isProtected} /*, obj*/) {
-    console.log(oldDrmOptions);
     new Promise(async resolve => {
       if (isProtected === true) {
 
@@ -40,7 +39,7 @@ class DrmService {
           restoreOriginalFiles(this.app,resourceId, drmConfig.videoFileTypes);
         }
 
-        if (drmOptions.watermark && watermarkHasChanged(drmOptions, oldDrmOptions)) {
+        if (oldDrmOptions !== undefined && drmOptions.watermark && watermarkHasChanged(drmOptions, oldDrmOptions)) {
           await restoreOriginalFiles(this.app ,resourceId, drmConfig.imageFileTypes);
         }
 
