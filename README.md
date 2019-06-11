@@ -57,8 +57,10 @@ For validating incoming resources, we're using the [JSON Schema](http://json-sch
 
 node-env          | default                                      | info
 ------------------|----------------------------------------------|------------------------------------------------
+NODE_ENV          |                                              | must be set to `production` in production
 MONGO_URI         | `mongodb://mongodb:27017/schulcloud_content` | URL to MongoDB
 ELASTICSEARCH_URI | `http://localhost:9200`                      | URL to ElasticSearch
+HOSTING_URL       | generated from config file                   | used as redirect target for SC-Hosted resources
 STORAGE_KEY_ID    | `sc-devteam`                                 | S3 Credentials KEY_ID, provided by Alex / Falco
 STORAGE_KEY       | `undefined`                                  | S3 Credentials KEY, provided by Alex / Falco
 STORAGE_CONTAINER | `resource-hosting`                           | S3 Containername for content hosting
