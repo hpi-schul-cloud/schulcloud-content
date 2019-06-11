@@ -141,13 +141,6 @@ const unifyLeadingSlashesHook = hook => {
 
 /************ PERMISSION CHECK ************/
 
-const checkUserHasRole = (permittedRoles) => async hook => {
-  if (!permittedRoles.includes(hook.params.user.role)){
-    throw new errors.Forbidden('Permissions missing');
-  }
-  return hook;
-};
-
 const getCurrentUserData = hook => {
   const userModel = hook.app.get('mongooseClient').model('users');
     return new Promise((resolve, reject) => {
@@ -165,7 +158,7 @@ const getCurrentUserData = hook => {
 
 const restrictReadAccessToCurrentProvider = async hook => {
   if(hook.params.user.role !== 'superhero') {
-    hook.params.query = { providerId: hook.params.user.providerId };
+    hook.params.query.providerId = hook.params.user.providerId.toString();
   }
   return hook;
 };
@@ -185,74 +178,44 @@ const restrictWriteAccessToCurrentProvider = hook => {
   return hook;
 };
 
-const ckeckUserHasPermission = (roles) => hook => {
-  return checkUserHasRole(roles)(hook)
-  .then(()=>{
-    if(hook.method == 'create') {
-      return restrictWriteAccessToCurrentProvider(hook);
-    } else if (hook.method == 'patch') {
-      return restrictReadAccessToCurrentProvider(hook) && restrictWriteAccessToCurrentProvider(hook);
-    } else {
-      return restrictReadAccessToCurrentProvider(hook);
-    }
-  });
-};
-
-const restrictToProviderOrToPublicResources = hook => {
-  if(hook.params.user.role !== 'superhero') {
-    hook.params.query = {$or: [
-      { providerId: hook.params.user.providerId.toString() },
-      { isPublished: true }
-    ]};
+const ckeckUserHasPermission = hook => {
+  if(hook.method == 'create') {
+    return restrictWriteAccessToCurrentProvider(hook);
+  } else if (hook.method == 'patch') {
+    return restrictReadAccessToCurrentProvider(hook) && restrictWriteAccessToCurrentProvider(hook);
+  } else {
+    return restrictReadAccessToCurrentProvider(hook);
   }
-  return hook;
 };
 
-const restrictToPublicResources = hook => {
-  hook.params.query = { isPublished: true };
-  return hook;
+const skipInternal = (method) => (hook) => {
+  if (typeof hook.params.provider === 'undefined') {
+    return hook;
+  }
+  return method(hook);
 };
 
-// Lern-Store can only access public resources, authenticated users can access public resources and resources of their company
-const checkPermissionsAfterAuthentication = hook => {
-  return authenticateHook()(hook)
-  .then(result => {
-    return getCurrentUserData(result) && restrictToProviderOrToPublicResources(result); //TODO: authorized finde will never go into then() - why?
-  })
-  .catch(()=>{
-    return restrictToPublicResources(hook);
-  });
-};
 
 module.exports = {
   before: {
-    all: [],
-    find: [checkPermissionsAfterAuthentication],
-    get: [
-      authenticateHook(),
-      getCurrentUserData,
-      ckeckUserHasPermission(['superhero', 'admin', 'user'])
-    ], //TODO: allow unauthorized access for Lern-Store ?
+    all: [
+      skipInternal(authenticateHook()),
+      skipInternal(getCurrentUserData),
+      skipInternal(ckeckUserHasPermission)
+    ],
+    find: [],
+    get: [],
     create: [
-      authenticateHook(),
-      getCurrentUserData,
-      ckeckUserHasPermission(['superhero', 'admin', 'user']),
       unifyLeadingSlashesHook,
       validateNewResources /* createThumbnail, */
     ],
     update: [commonHooks.disallow()],
     patch: [
-      authenticateHook(),
-      getCurrentUserData,
-      ckeckUserHasPermission(['superhero', 'admin', 'user']),
       unifyLeadingSlashesHook,
       patchResourceIdInFilepathDb,
       manageFiles
     ],
-    remove: [ //TODO: wie geht delete bei /resources/bulk?
-      authenticateHook(),
-      getCurrentUserData,
-      ckeckUserHasPermission(['superhero', 'admin', 'user']),
+    remove: [
       deleteRelatedFiles
     ]
   },

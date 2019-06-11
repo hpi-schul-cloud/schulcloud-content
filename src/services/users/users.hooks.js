@@ -27,7 +27,7 @@ const checkUserHasRole = (permittedRoles) => async hook => {
 const restrictAccessToCurrentProvider = async hook => {
   // Admin can only access users of his own company
   if(hook.params.user.role === 'admin') {
-    hook.params.query = { providerId: hook.params.user.providerId };
+    hook.params.query.providerId = hook.params.user.providerId;
   } else
   // User can only access himself
   if (hook.params.user.role === 'user' && hook.id != hook.params.user._id) {
