@@ -74,12 +74,35 @@ const hasViewPermission = hook => {
     });
 };
 
+const getCurrentUserData = hook => {
+  const userModel = hook.app.get('mongooseClient').model('users');
+    return new Promise((resolve, reject) => {
+      userModel.findById(hook.params.user._id, function (err, user) {
+        if(err) { reject(new errors.GeneralError(err)); }
+        if(!user) {
+          reject(new errors.NotFound('User not found'));
+        }
+        hook.params.user.role = user.role;
+        hook.params.user.providerId = user.providerId;
+        return resolve(hook);
+      });
+    });
+};
+
+const restrictResourceToCurrentProvider = async hook => {
+  if(hook.params.user.role !== 'superhero') {
+    const resource = await hook.app.service('resources').get(hook.id);
+    if(!(resource.providerId == hook.params.user.providerId.toString())) {
+      throw new errors.Forbidden('Permissions missing');
+    }
+  }
+  return hook;
+};
 
 const distributionHooks = {
   ...defaultHooks,
   before: {
-    get: [hasViewPermission],
-    find: [hasViewPermission]
+    find: []
   }
 };
 
@@ -93,7 +116,11 @@ const manageHooks = {
 const structureHooks = {
   ...defaultHooks,
   before: {
-    get: [forceHookResolve(authenticateHook())]
+    get: [
+      authenticateHook(),
+      getCurrentUserData,
+      restrictResourceToCurrentProvider
+    ]
   }
 };
 

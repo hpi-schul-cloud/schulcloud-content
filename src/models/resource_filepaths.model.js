@@ -12,6 +12,7 @@ module.exports = function(app) {
       path: { type: String, required: true }, // "/resourceId/folderA/fileB.txt",
       createdBy: { type: String, required: true },
       isTemp: { type: Boolean, default: false },
+      resourceId: { type: mongooseClient.Types.ObjectId, ref: 'resource' },
 
       createdAt: { type: Date, default: Date.now },
       updatedAt: { type: Date, default: Date.now }

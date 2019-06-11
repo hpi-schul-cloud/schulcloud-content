@@ -11,7 +11,7 @@ module.exports = function (app) {
     email: { type: String, unique: true, lowercase: true },
     forename: { type: String },
     familyname: { type: String },
-    providerId: { type: mongooseClient.Types.ObjectId },
+    providerId: { type: mongooseClient.Types.ObjectId, ref: 'provider' },
     role: { type: String, enum : ['user', 'admin', 'superhero'], default: 'user' },
 
   }, {
