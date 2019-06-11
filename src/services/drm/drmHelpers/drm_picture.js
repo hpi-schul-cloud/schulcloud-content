@@ -1,5 +1,6 @@
 const gm = require('gm');
 const watermark = require('dynamic-watermark');
+const { restoreOriginalFiles } = require('./drm_restoreFile.js');
 
 function getImageSize(localFilePath) {
   return new Promise((resolve, reject) => {
@@ -36,7 +37,10 @@ const createWatermark = async (element, logoFilePath, drmOptions) => {
   
   let logoWidth = sourceFileSize.width * watermarkBoxSize / 100;
   let logoHeight = logoFileSize.height * (logoWidth/logoFileSize.width);
-  if (logoHeight > sourceFileSize.height && drmOptions.watermarkExceedFrame){
+  if (logoHeight > sourceFileSize.height && !drmOptions.watermarkExceedFrame){
+    logoHeight = sourceFileSize.height * watermarkBoxSize / 100;
+    logoWidth = logoFileSize.width * (logoHeight/logoFileSize.height);
+  } else if (logoHeight < sourceFileSize.height && drmOptions.watermarkExceedFrame){
     logoHeight = sourceFileSize.height * watermarkBoxSize / 100;
     logoWidth = logoFileSize.width * (logoHeight/logoFileSize.height);
   }
@@ -66,7 +70,21 @@ const getLogoFilePath = async (app, drmOptions, resourceId, sourceFolderPath) =>
   });
 };
 
+const watermarkHasChanged = (drmOptions, oldDrmOptions) => {
+  if (
+    drmOptions.watermarkBoxSize !== oldDrmOptions.watermarkBoxSize ||
+    drmOptions.watermarkImage !== oldDrmOptions.watermarkImage ||
+    drmOptions.yWatermarkPosition !== oldDrmOptions.yWatermarkPosition ||
+    drmOptions.xWatermarkPosition !== oldDrmOptions.xWatermarkPosition
+    ) {
+      return true;
+  }
+  return false;
+};
+
+
 module.exports = {
   createWatermark,
-  getLogoFilePath
+  getLogoFilePath,
+  watermarkHasChanged,
 };

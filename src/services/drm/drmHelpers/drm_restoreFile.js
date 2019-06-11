@@ -2,7 +2,7 @@ const equal = require('fast-deep-equal');
 const config = require('config');
 const drmConfig = config.get('DRM');
 const { removeFile } = require('../../files/storageHelper.js');
-
+const {getFileExtension} = require('./drm_dbHelpers');
 
 const restoreOriginalFiles = async (app, resourceId, extensions) => {
     return app.service('resource_filepaths').find({query:{resourceId},paginate: false}).then((files)=>{
@@ -26,8 +26,7 @@ const restoreOriginalFiles = async (app, resourceId, extensions) => {
 
         files.forEach((entry)=>{
             const splitPath = entry.path.split('/');
-            let extension = splitPath.slice(splitPath.length-1, splitPath.length)[0].split('.');
-            extension = extension.slice(extension.length-1, extension.length)[0];
+            const extension = getFileExtension(entry.path);
             if (entry.drmProtection && splitPath.slice(1, 2) != drmConfig.originalFilesFolderName && ( extensions === undefined || extensions.includes(extension) ) ) {
                 
                 removeFile(entry._id);

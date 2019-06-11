@@ -1,5 +1,6 @@
 const config = require('config');
 const drmConfig = config.get('DRM');
+const {getFileExtension} = require('./drmHelpers/drm_dbHelpers.js');
 
 class VideoRedirectService {
   constructor(app) {
@@ -9,9 +10,7 @@ class VideoRedirectService {
     return await this.app.service('videoId').find({query:{resourceId: resourceId}}).then(async (response)=>{
       if (response.total != 0) {
         return await this.app.service('resources').get(response.data[0].resourceId).then((resource)=>{
-          let file = resource.url.split('/');
-          let extension = file.slice(file.length-1,file.length)[0].split('.');
-          extension = extension.slice(extension.length-1,extension.length)[0];
+          const extension = getFileExtension(resource.url);
           if (drmConfig.videoFileTypes.includes(extension)) {
             return response.data[0].videoId;
           }

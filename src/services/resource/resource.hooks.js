@@ -154,7 +154,8 @@ const addDrmProtection = hook => {
   const options = {
     resourceId: resourceId,
     drmOptions: hook.data.drmOptions,
-    isProtected: hook.data.isProtected
+    isProtected: hook.data.isProtected,
+    oldDrmOptions: hook.data.oldDrmOptions,
   };
   if (hook.data.isProtected !== undefined) {
     return hook.app
@@ -187,6 +188,14 @@ const removeLeadingSlashesHook = hook => {
   }
 };
 
+const beforeDrmProtection = async hook => {
+  const resourceId = hook.id || hook.result._id.toString();
+  await hook.app.service('resources').get(resourceId).then((resource)=>{
+    hook.data.oldDrmOptions = resource.drmOptions;
+  });
+  return hook;
+};
+
 module.exports = {
   before: {
     all: [],
@@ -196,7 +205,7 @@ module.exports = {
       authenticate,
       addUserIdToData,
       removeLeadingSlashesHook,
-      validateNewResources /* createThumbnail, */
+      validateNewResources, /* createThumbnail, */
     ],
     update: [commonHooks.disallow()],
     patch: [
@@ -204,7 +213,8 @@ module.exports = {
       addUserIdToData,
       removeLeadingSlashesHook,
       patchResourceIdInFilepathDb,
-      manageFiles
+      manageFiles,
+      beforeDrmProtection
     ],
     remove: [authenticate, deleteRelatedFiles]
   },

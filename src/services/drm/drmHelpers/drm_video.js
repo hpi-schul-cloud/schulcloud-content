@@ -2,10 +2,10 @@ const mv = require('mv');
 const axios = require('axios');
 const config = require('config');
 const drmConfig = config.get('DRM');
+const {getFileName} = require('./drm_dbHelpers.js');
 
 const createVideoDrm = (app, element, resourceId) => {
-  let fileName = element.path.split('/');
-  fileName = fileName[fileName.length - 1];
+  const fileName = getFileName(element.path);
   element.remove = false;
   mv(
     element.sourceFilePath,

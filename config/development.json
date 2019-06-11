@@ -41,6 +41,7 @@
     },
     "videoFileTypes": ["mp4","mkv","MP4","MKV"],
     "imageFileTypes": ["jpeg","gif","jpg","png"],
+    "documentFileTypes": ["pdf"],
     "originalFilesFolderName": "originalFiles"
   }
 }

@@ -2,8 +2,9 @@ const config = require('config');
 const drmConfig = config.get('DRM');
 const exiftool = require('node-exiftool');
 const exiftoolBin = require('dist-exiftool');
+const logger = require('winston');
 const { restoreOriginalFiles } = require('./drmHelpers/drm_restoreFile.js');
-const { createWatermark, getLogoFilePath } = require('./drmHelpers/drm_picture.js');
+const { createWatermark, getLogoFilePath, watermarkHasChanged, updateWatermark} = require('./drmHelpers/drm_picture.js');
 const { createPdfDrm } = require('./drmHelpers/drm_pdf.js');
 const { createVideoDrm } = require('./drmHelpers/drm_video.js');
 const { writeExifData } = require('./drmHelpers/drm_exifInfo.js');
@@ -26,16 +27,23 @@ class DrmService {
     this.app = app;
   }
 
-  async get({resourceId, drmOptions, isProtected} /*, obj*/) {
+  async get({resourceId, drmOptions, oldDrmOptions, isProtected} /*, obj*/) {
+    console.log(oldDrmOptions);
     new Promise(async resolve => {
       if (isProtected === true) {
+
         if (!drmOptions.watermark) {
           restoreOriginalFiles(this.app,resourceId, drmConfig.imageFileTypes);
         } if (!drmOptions.pdfIsProtected) {
-          restoreOriginalFiles(this.app,resourceId, ['pdf']);          
+          restoreOriginalFiles(this.app,resourceId, drmConfig.documentFileTypes);          
         } if (!drmOptions.videoIsProtected) {
           restoreOriginalFiles(this.app,resourceId, drmConfig.videoFileTypes);
         }
+
+        if (drmOptions.watermark && watermarkHasChanged(drmOptions, oldDrmOptions)) {
+          await restoreOriginalFiles(this.app ,resourceId, drmConfig.imageFileTypes);
+        }
+
         const sourceFolderPath =
         drmConfig.absoluteLocalStoragePath + '\\'+drmConfig.downloadDir+'\\' + resourceId;
         const resourceFileList = await getResourceFileList(this.app, resourceId);
@@ -55,7 +63,7 @@ class DrmService {
         try {
           await ep.open();
         } catch (error) {
-          console.log(error);
+          logger.error(error);
         }
         let logoFilePath;
         if (drmOptions.watermark) {
