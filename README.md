@@ -28,8 +28,8 @@ curl -X GET \
 
 test users:
 username            | password | role
---------------------|----------|--------
-`olive@example.com` | `tree`   | `admin`
+--------------------|----------|------------
+`olive@example.com` | `tree`   | `superhero`
 `toi@example.com`   | `story`  | `admin`
 
 
