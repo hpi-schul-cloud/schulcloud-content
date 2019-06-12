@@ -9,14 +9,29 @@ including a database to store the resources.
 
 To get started developing the content service, you first need to install docker
 and docker-compose. Then use docker-compose after cloning.
-                    
+
 1. `docker-compose build`
 2. `docker-compose up`
-                    
+
 The web service runs on port `4040`. Debugging is available on port `5858` by default.
 
 ## Authentication
-TBD
+
+**ONLY IN DEVELOPMENT MODE**<br/>
+set Authorization header to basic auth with the test users credentials when accessing a protected route via postman
+
+```bash
+curl -X GET \
+  http://localhost:4040/resources \
+  -H 'authorization: Basic b2xpdmVAZXhhbXBsZS5jb206dHJlZQ==' \
+```
+
+test users:
+username            | password | role
+--------------------|----------|--------
+`olive@example.com` | `tree`   | `admin`
+`toi@example.com`   | `story`  | `admin`
+
 
 ## API
 TBD
@@ -55,13 +70,24 @@ For validating incoming resources, we're using the [JSON Schema](http://json-sch
 
 ## NODE_ENV variables
 
-node-env          | default                                      | info
-------------------|----------------------------------------------|------------------------------------------------
-NODE_ENV          |                                              | must be set to `production` in production
-MONGO_URI         | `mongodb://mongodb:27017/schulcloud_content` | URL to MongoDB
-ELASTICSEARCH_URI | `http://localhost:9200`                      | URL to ElasticSearch
-HOSTING_URL       | generated from config file                   | used as redirect target for SC-Hosted resources
-STORAGE_KEY_ID    | `sc-devteam`                                 | S3 Credentials KEY_ID, provided by Alex / Falco
-STORAGE_KEY       | `undefined`                                  | S3 Credentials KEY, provided by Alex / Falco
-STORAGE_CONTAINER | `resource-hosting`                           | S3 Containername for content hosting
-STORAGE_ENDPOINT  | `https://dev-storage.schul-cloud.org:9001`   | S3 Storage Endpoint URL
+node-env          | default                                    | info
+------------------|--------------------------------------------|-------------------------------------------------------
+NODE_ENV          |                                            | must be set to `production` in production
+MONGO_HOST        | `localhost`                                | HOST of MongoDB (`mongodb` for docker)
+MONGO_PORT        | `27017`                                    | PORT of MongoDB
+MONGO_DATABASE    | `schulcloud_content`                       | MongoDB Database
+ELASTIC_HOST      | `localhost`                                | HOSTNAME of ElasticSearch (`elasticsearch` for docker)
+ELASTIC_PORT      | `9200`                                     | PORT of ElasticSearch
+HOSTING_URL       | generated from config file                 | used as redirect target for SC-Hosted resources
+STORAGE_KEY_ID    | `sc-devteam`                               | S3 Credentials KEY_ID, provided by Alex / Falco
+STORAGE_KEY       | `undefined`                                | S3 Credentials KEY, provided by Alex / Falco
+STORAGE_CONTAINER | `resource-hosting`                         | S3 Containername for content hosting
+STORAGE_ENDPOINT  | `https://dev-storage.schul-cloud.org:9001` | S3 Storage Endpoint URL
+
+MONGO_HOST         | `https://dev-storage.schul-cloud.org:9001`         | S3 Storage Endpoint URL
+
+
+# What we need
+Elasticsearch
+check-connector.py: ELASTIC_HOST (elasticsearch (docker hostname)), ELASTIC_PORT (9200)
+search.service: ELASTICSEARCH_URI (http://localhost:9200)

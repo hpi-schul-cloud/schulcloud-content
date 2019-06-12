@@ -17,7 +17,7 @@ connection = None
 i = 0
 while i < totalConnectionAttempts:
 	try:
-			connection = MongoClient([os.environ['MONGO_URI']], int(os.environ['MONGO_PORT']))
+			connection = MongoClient([os.environ['MONGO_HOST']], int(os.environ['MONGO_PORT']))
 			print("Successfully connected to mongodb")
 			break
 	except:
