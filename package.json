@@ -27,7 +27,7 @@
     "eslint:fix": "eslint src/. test/. --config .eslintrc.json --fix",
     "start": "node src/",
     "debug": "nodemon --inspect src/",
-    "mocha": "cross-env NODE_ENV=test && npm run seed && mocha test/ --recursive --exit",
+    "mocha": "cross-env NODE_ENV=test && mocha test/ --recursive --exit",
     "coverage": "cross-env NODE_ENV=test nyc --reporter=text-summary mocha test/ --recursive --exit",
     "coverage-codecov": "cross-env NODE_ENV=test nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
