@@ -4,7 +4,7 @@ const { WritableMock } = require('stream-mock');
 const resources = app.service('resources');
 const resourceFilepaths = app.service('resource_filepaths');
 
-const { mockUserId } = require('./mockData');
+const { mockUserId, mockProviderId } = require('./mockData');
 const { uploadMockFile, PORT } = require('./file_upload.test');
 
 let mockResourceId;
@@ -16,7 +16,7 @@ const { startS3MockServer, stopS3MockServer } = require('./s3mock');
 const insertMock = () => {
   const mockResourceData = {
     originId: Date.now().toString(),
-    providerName: 'Test',
+    providerId: mockProviderId,
     url: 'https://de.khanacademy.org/video/number-grid',
     title: 'Testinhalt',
     description: 'Testinhalt',
@@ -52,13 +52,12 @@ describe('\'files/get*\' service', () => {
       .then(() =>
         uploadMockFile({
           filename: 'test.txt',
-          filepath: __filename,
-          resourceId: mockResourceId
+          filepath: __filename
         })
       )
       .then(({ body }) => {
         const { message: fileId } = JSON.parse(body);
-        return resourceFilepaths.patch(fileId, { isTemp: false });
+        return resourceFilepaths.patch(fileId, { resourceId: mockResourceId, isTemp: false });
       })
       .then(fileObj => {
         mockFilePath = fileObj.path;
@@ -115,7 +114,7 @@ describe('\'files/get*\' service', () => {
             },
             res: resStream,
             headers: {
-              Authorization: 'Basic dG9pQGV4YW1wbGUuY29tOnN0b3J5'
+              Authorization: 'Basic b2xpdmVAZXhhbXBsZS5jb206dHJlZQ=='
             }
           },
           query: {

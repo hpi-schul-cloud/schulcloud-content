@@ -15,7 +15,7 @@ const uploadMockFile = ({filepath, filename, resourceId }) => {
   return new Promise((resolve, reject) => {
     const req = request({
       headers: {
-        'Authorization': 'Basic dG9pQGV4YW1wbGUuY29tOnN0b3J5',
+        'Authorization': 'Basic b2xpdmVAZXhhbXBsZS5jb206dHJlZQ==',
       },
       uri: `http://localhost:${PORT}/files/upload?path=///${filename}&resourceId=${resourceId}`,
       method: 'POST'

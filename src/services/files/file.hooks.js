@@ -104,9 +104,9 @@ const structureHooks = {
   ...defaultHooks,
   before: {
     get: [
-      authenticateHook(),
-      getCurrentUserData,
-      restrictResourceToCurrentProvider
+      skipInternal(authenticateHook()),
+      skipInternal(getCurrentUserData),
+      skipInternal(restrictResourceToCurrentProvider)
     ]
   }
 };
