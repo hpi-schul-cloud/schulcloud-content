@@ -30,7 +30,7 @@ if i == totalConnectionAttempts:
 
 # Try connecting to ElasticSearch
 elasticConnect = Elasticsearch(
-	hosts=[{'host': os.environ['ELASTIC_URI'], 'port': int(os.environ['ELASTIC_PORT'])}]
+	hosts=[{'host': os.environ['ELASTIC_HOST'], 'port': int(os.environ['ELASTIC_PORT'])}]
 )
 i = 0
 while i < totalConnectionAttempts:

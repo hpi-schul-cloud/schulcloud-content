@@ -3,7 +3,7 @@ const createService = require('./search.class.js');
 const hooks = require('./search.hooks');
 const elasticsearch = require('elasticsearch');
 
-module.exports = function () {
+module.exports = function() {
   const app = this;
   const paginate = app.get('paginate');
 
@@ -13,7 +13,10 @@ module.exports = function () {
   };
 
   const client = elasticsearch.Client({
-    hosts: process.env.ELASTICSEARCH_URI || 'http://localhost:9200',
+    hosts:
+      (process.env.ELASTIC_HOST || 'localhost') +
+      ':' +
+      (process.env.ELASTIC_PORT || '9200'),
     apiVersion: '5.4'
   });
 
