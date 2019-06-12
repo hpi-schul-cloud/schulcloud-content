@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 ELASTIC_HOST=${ELASTIC_HOST:="localhost"}
 ELASTIC_PORT=${ELASTIC_PORT:="9200"}
