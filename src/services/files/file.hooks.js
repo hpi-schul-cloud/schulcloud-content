@@ -6,18 +6,6 @@ const { unifySlashes } = require('../../hooks/unifySlashes');
 
 const errors = require('@feathersjs/errors');
 
-const forceHookResolve = forcedHook => {
-  return hook => {
-    try {
-      return forcedHook(hook).then(result => {
-        return Promise.resolve(result);
-      });
-    } catch (error) {
-      return Promise.resolve(hook);
-    }
-  };
-};
-
 const hasViewPermission = hook => {
   // TODO implement permission check for non public content
 
@@ -169,9 +157,9 @@ const structureHooks = {
   ...defaultHooks,
   before: {
     get: [
-      authenticateHook(),
-      getCurrentUserData,
-      restrictResourceToCurrentProvider
+      skipInternal(authenticateHook()),
+      skipInternal(getCurrentUserData),
+      skipInternal(restrictResourceToCurrentProvider)
     ]
   }
 };
