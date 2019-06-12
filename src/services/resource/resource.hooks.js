@@ -52,7 +52,7 @@ const deleteRelatedFiles = async hook => {
 
 const createNewThumbnail = hook => {
   if (pichassoConfig.enabled && !hook.data.thumbnail) {
-    const resourceId = hook.id || hook.result._id.toString();
+    const resourceId = (hook.id || hook.result._id).toString();
     return hook.app
       .service('files/thumbnail')
       .patch(resourceId, {})

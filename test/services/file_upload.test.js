@@ -7,7 +7,7 @@ const fs = require('fs');
 
 const PORT = 3031;
 
-const {mockResourceId} = require("./mockData");
+const {mockResourceId} = require('./mockData');
 
 const { startS3MockServer, stopS3MockServer } = require('./s3mock');
 
