@@ -1,5 +1,6 @@
 const assert = require('assert');
 const app = require('../../src/app');
+const { mockProviderId } = require('./mockData');
 
 const mockSubmitResource = () => ({
   contentCategory: 'learning-object',
@@ -8,7 +9,7 @@ const mockSubmitResource = () => ({
   licenses: ['MIT'],
   mimeType: 'audio',
   originId: Date.now().toString(),
-  providerName: 'Khan Academy',
+  providerId: mockProviderId,
   tags: ['Test'],
   thumbnail: 'https://schul-cloud.org/images/logo/app-icon-144.png',
   title: 'SC-Hosting :D',

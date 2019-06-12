@@ -7,8 +7,8 @@ const {
 } = require('./storageHelper.js');
 const { addFilesToDB } = require('./fileDBHelper.js');
 
-const uploadFile = ({ app, resourceId, userId, uploadPath, sourceStream }) => {
-  return addFilesToDB(app, [uploadPath], resourceId, userId).then(
+const uploadFile = ({ app, userId, uploadPath, sourceStream }) => {
+  return addFilesToDB(app, [uploadPath], userId).then(
     fileIdDictionary => {
       return promisePipe(
         sourceStream,
@@ -23,17 +23,11 @@ class FileUploadService {
     this.app = app;
   }
 
-  create(data, { req, userId }) {
-    // TODO permission check, content-id must be owned by current user, ...
+  create(data, { req, user }) {
     if (!req.query.path) {
       throw new Error('param \'path\' is missing');
     }
-    /* // TODO is optional now
-    if(!req.query.resourceId){
-      throw new Error('param \'resourceId\' is missing');
-    }
-    */
-    if (!userId) {
+    if (!user || !user._id) {
       throw new Error('Unauthorized request');
     }
     return new Promise((resolve, reject) => {
@@ -51,8 +45,7 @@ class FileUploadService {
           // managedUpload object allows you to abort ongoing upload or track file upload progress.
           return uploadFile({
             app: this.app,
-            userId,
-            resourceId: req.query.resourceId,
+            userId: user._id,
             uploadPath,
             sourceStream: part
           })

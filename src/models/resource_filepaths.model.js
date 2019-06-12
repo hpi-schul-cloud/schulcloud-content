@@ -10,9 +10,9 @@ module.exports = function(app) {
     {
       // _id = fileId as used in StorageServer
       path: { type: String, required: true }, // "/resourceId/folderA/fileB.txt",
-      resourceId: { type: String },
       createdBy: { type: String, required: true },
       isTemp: { type: Boolean, default: false },
+      resourceId: { type: mongooseClient.Types.ObjectId, ref: 'resource' },
 
       createdAt: { type: Date, default: Date.now },
       updatedAt: { type: Date, default: Date.now }

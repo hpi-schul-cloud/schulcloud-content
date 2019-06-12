@@ -17,7 +17,7 @@ connection = None
 i = 0
 while i < totalConnectionAttempts:
 	try:
-			connection = MongoClient([os.environ['MONGO_URI']], int(os.environ['MONGO_PORT']))
+			connection = MongoClient([os.environ['MONGO_HOST']], int(os.environ['MONGO_PORT']))
 			print("Successfully connected to mongodb")
 			break
 	except:
@@ -30,7 +30,7 @@ if i == totalConnectionAttempts:
 
 # Try connecting to ElasticSearch
 elasticConnect = Elasticsearch(
-	hosts=[{'host': os.environ['ELASTIC_URI'], 'port': int(os.environ['ELASTIC_PORT'])}]
+	hosts=[{'host': os.environ['ELASTIC_HOST'], 'port': int(os.environ['ELASTIC_PORT'])}]
 )
 i = 0
 while i < totalConnectionAttempts:

@@ -7,19 +7,11 @@
     "default": 10,
     "max": 500
   },
-  "mongodb": "mongodb://localhost:27017/schulcloud_content",
-  "localAuthentication": [
-    {
-      "userId": "73632d636f6e74656e742d31",
-      "username": "schulcloud-content-1",
-      "password": "content-1"
-    },
-    {
-      "userId": "73632d636f6e74656e742d32",
-      "username": "schulcloud-content-2",
-      "password": "content-2"
-    }
-  ],
+  "mongodb": {
+    "host": "localhost",
+    "port": "27017",
+    "database": "schulcloud_content"
+  },
   "pichasso": {
     "enabled": false
   }

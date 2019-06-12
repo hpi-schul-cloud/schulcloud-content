@@ -11,7 +11,8 @@ module.exports = function () {
   const options = {
     name: 'resource_filepaths',
     Model,
-    paginate
+    paginate,
+    multi: true
   };
 
   // Initialize our service with any options it requires

@@ -3,6 +3,8 @@ const app = require('../../src/app');
 
 const serviceName = 'resources/bulk';
 
+const { mockProviderId } = require('./mockData');
+
 const mockResource = (i) => ({
   contentCategory: 'learning-object',
   description: 'ich bin ein Test',
@@ -10,7 +12,7 @@ const mockResource = (i) => ({
   licenses: ['MIT'],
   mimeType: 'audio',
   originId: Date.now().toString()+i,
-  providerName: 'Khan Academy',
+  providerId: mockProviderId,
   tags: ['Test'],
   thumbnail: 'https://schul-cloud.org/images/logo/app-icon-144.png',
   title: 'SC-Hosting :D',

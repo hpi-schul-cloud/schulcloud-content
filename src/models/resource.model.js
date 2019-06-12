@@ -8,9 +8,10 @@ module.exports = function (app) {
   const resource = new mongooseClient.Schema({
     originId: { type: String, unique: true },
     userId: {type: mongooseClient.Schema.Types.ObjectId, required: true },
-    providerName: { type: String, required: true },
+    providerName: { type: String },
+    providerId: { type: mongooseClient.Types.ObjectId, required: true },
 
-    url: { type: String, required: true },
+    url: { type: String },
     title: { type: String, required: true },
     description: { type: String },
     thumbnail: {type: String },
