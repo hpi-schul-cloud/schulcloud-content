@@ -84,8 +84,6 @@ STORAGE_KEY       | `undefined`                                | S3 Credentials 
 STORAGE_CONTAINER | `resource-hosting`                         | S3 Containername for content hosting
 STORAGE_ENDPOINT  | `https://dev-storage.schul-cloud.org:9001` | S3 Storage Endpoint URL
 
-MONGO_HOST         | `https://dev-storage.schul-cloud.org:9001`         | S3 Storage Endpoint URL
-
 
 # What we need
 Elasticsearch
