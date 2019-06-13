@@ -10,15 +10,17 @@ const { unifySlashes } = require('../../hooks/unifySlashes');
 const config = require('config');
 const pichassoConfig = config.get('pichasso');
 
-
-const manageFiles = async (hook) => {
-  if(!hook.data.files || !(hook.params.user || {})._id) { return hook; }
+const manageFiles = async hook => {
+  if (!hook.data.files || !(hook.params.user || {})._id) {
+    return hook;
+  }
   hook = await authenticateHook()(hook);
 
   const files = hook.data.files;
   const fileManagementService = hook.app.service('/files/manage');
   const resourceId = (hook.id || hook.result._id).toString();
-  return fileManagementService.patch(resourceId, { ...files, userId: (hook.params.user || {})._id }, hook)
+  return fileManagementService
+    .patch(resourceId, { ...files, userId: (hook.params.user || {})._id }, hook)
     .then(() => hook);
 };
 
@@ -52,6 +54,7 @@ const deleteRelatedFiles = async hook => {
 
 const createNewThumbnail = hook => {
   if (pichassoConfig.enabled && !hook.data.thumbnail) {
+    // TODO can't handle import because result is an array
     const resourceId = (hook.id || hook.result._id).toString();
     return hook.app
       .service('files/thumbnail')
@@ -143,30 +146,32 @@ const unifyLeadingSlashesHook = hook => {
 
 const getCurrentUserData = hook => {
   const userModel = hook.app.get('mongooseClient').model('users');
-    return new Promise((resolve, reject) => {
-      userModel.findById(hook.params.user._id, function (err, user) {
-        if(err) { reject(new errors.GeneralError(err)); }
-        if(!user) {
-          reject(new errors.NotFound('User not found'));
-        }
-        hook.params.user.role = user.role;
-        hook.params.user.providerId = user.providerId;
-        return resolve(hook);
-      });
+  return new Promise((resolve, reject) => {
+    userModel.findById(hook.params.user._id, function(err, user) {
+      if (err) {
+        reject(new errors.GeneralError(err));
+      }
+      if (!user) {
+        reject(new errors.NotFound('User not found'));
+      }
+      hook.params.user.role = user.role;
+      hook.params.user.providerId = user.providerId;
+      return resolve(hook);
     });
+  });
 };
 
 const restrictReadAccessToCurrentProvider = async hook => {
-  if(hook.params.user.role !== 'superhero') {
+  if (hook.params.user.role !== 'superhero') {
     hook.params.query.providerId = hook.params.user.providerId.toString();
   }
   return hook;
 };
 
 const restrictWriteAccessToCurrentProvider = hook => {
-  if(hook.params.user.role !== 'superhero') {
-    if(Array.isArray(hook.data)) {
-      hook.data.forEach((resource)=>{
+  if (hook.params.user.role !== 'superhero') {
+    if (Array.isArray(hook.data)) {
+      hook.data.forEach(resource => {
         resource.providerId = hook.params.user.providerId;
         resource.userId = hook.params.user._id;
       });
@@ -179,22 +184,24 @@ const restrictWriteAccessToCurrentProvider = hook => {
 };
 
 const ckeckUserHasPermission = hook => {
-  if(hook.method == 'create') {
+  if (hook.method == 'create') {
     return restrictWriteAccessToCurrentProvider(hook);
   } else if (hook.method == 'patch') {
-    return restrictReadAccessToCurrentProvider(hook) && restrictWriteAccessToCurrentProvider(hook);
+    return (
+      restrictReadAccessToCurrentProvider(hook) &&
+      restrictWriteAccessToCurrentProvider(hook)
+    );
   } else {
     return restrictReadAccessToCurrentProvider(hook);
   }
 };
 
-const skipInternal = (method) => (hook) => {
+const skipInternal = method => hook => {
   if (typeof hook.params.provider === 'undefined') {
     return hook;
   }
   return method(hook);
 };
-
 
 module.exports = {
   before: {
@@ -210,14 +217,8 @@ module.exports = {
       validateNewResources /* createThumbnail, */
     ],
     update: [commonHooks.disallow()],
-    patch: [
-      unifyLeadingSlashesHook,
-      patchResourceIdInFilepathDb,
-      manageFiles
-    ],
-    remove: [
-      deleteRelatedFiles
-    ]
+    patch: [unifyLeadingSlashesHook, patchResourceIdInFilepathDb, manageFiles],
+    remove: [deleteRelatedFiles]
   },
 
   after: {
@@ -227,7 +228,7 @@ module.exports = {
     create: [
       patchResourceIdInFilepathDb,
       manageFiles,
-      createNewThumbnail,
+      // createNewThumbnail, // TODO enable again
       populateResourceUrls
     ],
     update: [],
