@@ -27,7 +27,7 @@ const restoreOriginalFiles = async (app, resourceId, extensions) => {
         await Promise.all(
             files.map(async (entry)=>{
                 const extension = getFileExtension(entry.path);
-                if (entry.drmProtection && isRestoreFile(entry.path) && ( extensions === undefined || extensions.includes(extension) ) ) {
+                if (entry.drmProtection && !isRestoreFile(entry.path) && ( extensions === undefined || extensions.includes(extension) ) ) {
                     //Remove modified File
                     removeFile(entry._id);
                     await app.service('resource_filepaths').remove(entry._id);
@@ -36,7 +36,7 @@ const restoreOriginalFiles = async (app, resourceId, extensions) => {
                     //Move Original out of OriginalFileFolder
                     let newPath = entry.path.split('/');
                     newPath = '/' + newPath.slice(2, newPath.length).join('/');
-                    await app.service('resource_filepaths').patch(entry._id, {path: newPath, drmProtection: false});
+                    await app.service('resource_filepaths').patch(entry._id, {path: newPath, drmProtection: false, hidden: false});
                 }
                 return;
             })

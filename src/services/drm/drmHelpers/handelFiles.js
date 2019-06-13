@@ -20,7 +20,8 @@ const getResourceFileList = (app, resourceId) => {
         return {
           id: currentFile._id,
           path: currentFile.path,
-          drmProtection: currentFile.drmProtection
+          drmProtection: currentFile.drmProtection,
+          hidden: currentFile.hidden
         };
       });
     });
@@ -98,7 +99,7 @@ const downloadFiles = async(app, resourceFileList, storageLocation) => {
 }
   return await Promise.all(
     resourceFileList.map(async element => {
-      if (element.drmProtection === false) {
+      if (element.drmProtection === false && element.hidden === false) {
         let name = element.id.toString();
         let sourceStream = fs.createWriteStream(storageLocation+'\\'+name);
         return finishPromisePipe(getDownloadStream(name),sourceStream);

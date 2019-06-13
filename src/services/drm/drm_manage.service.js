@@ -8,8 +8,8 @@ const { createWatermark, getLogoFilePath, watermarkHasChanged} = require('./drmH
 const { createPdfDrm } = require('./drmHelpers/drm_pdf.js');
 const { createVideoDrm } = require('./drmHelpers/drm_video.js');
 const { writeExifData } = require('./drmHelpers/drm_exifInfo.js');
-const { writeDrmMetaDataToDB, writeDrmFileDataToDB, isRestoreFile } = require('./drmHelpers/drm_dbHelpers.js');
-const { uploadAndDelete, getResourceFileList, downloadFiles, getFileType } = require('./drmHelpers/handelFiles.js');
+const { writeDrmMetaDataToDB, writeDrmFileDataToDB, isRestoreFile, getFileExtension } = require('./drmHelpers/drm_dbHelpers.js');
+const { uploadAndDelete, getResourceFileList, downloadFiles, /*getFileType*/ } = require('./drmHelpers/handelFiles.js');
 const ep = new exiftool.ExiftoolProcess(exiftoolBin);
 
 class DrmService {
@@ -52,25 +52,25 @@ class DrmService {
         await Promise.all(
           resourceFileList.map(async element => {
             
+            element.remove = true; // While true the downloaded file is removed from disc at the end
+            element.upload = false; // If there are files changed that have to be reuploaded set this to true
+
             if (element.drmProtection === false) {
               element.sourceFilePath = sourceFolderPath + '\\' + element.id;
               element.outputFilePath =
                 sourceFolderPath + '\\' + element.id + '_out'; //It is sometimes not possible to override the original file
-              element.remove = true; // While true the downloaded file is removed from disc at the end
-              element.upload = false; // If there are files changed that have to be reuploaded set this to true
   
-              let fileType = await getFileType(element.sourceFilePath);
-              fileType = fileType.split(' ')[0];
+              let extension = getFileExtension(element.path);
               if (!isRestoreFile(element.path)) {
-                if (['JPEG', 'PNG'].includes(fileType) && drmOptions.watermark && logoFilePath != element.sourceFilePath) {
+                if (drmConfig.imageFileTypes.includes(extension) && drmOptions.watermark && logoFilePath != element.sourceFilePath) {
                   await createWatermark(element, logoFilePath, drmOptions);
                   await writeExifData(ep, drmOptions.exif, element.outputFilePath);
                   writeDrmFileDataToDB(this.app, element);
-                } else if (['PDF'].includes(fileType)&&drmOptions.pdfIsProtected) {
+                } else if (drmConfig.documentFileTypes.includes(extension)&&drmOptions.pdfIsProtected) {
                   await createPdfDrm(element);
                   await writeExifData(ep, drmOptions.exif, element.outputFilePath);
                   writeDrmFileDataToDB(this.app, element);
-                } else if (['Matroska'].includes(fileType)&&drmOptions.videoIsProtected) {
+                } else if (drmConfig.videoFileTypes.includes(extension)&&drmOptions.videoIsProtected) {
                   createVideoDrm(this.app, element, resourceId);
                   writeDrmFileDataToDB(this.app, element);
                 }
