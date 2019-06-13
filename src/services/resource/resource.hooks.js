@@ -52,6 +52,7 @@ const deleteRelatedFiles = async hook => {
   return hook;
 };
 
+/*
 const createNewThumbnail = hook => {
   if (pichassoConfig.enabled && !hook.data.thumbnail) {
     // TODO can't handle import because result is an array
@@ -63,6 +64,7 @@ const createNewThumbnail = hook => {
   }
   return hook;
 };
+*/
 
 // VALIDATION
 const validateResource = hook => {
