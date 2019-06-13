@@ -7,8 +7,8 @@ const { populateResourceUrls } = require('../../hooks/populateResourceUrls');
 const { unifySlashes } = require('../../hooks/unifySlashes');
 
 // const createThumbnail = require('../../hooks/createThumbnail');
-const config = require('config');
-const pichassoConfig = config.get('pichasso');
+// const config = require('config');
+// const pichassoConfig = config.get('pichasso');
 
 const manageFiles = async hook => {
   if (!hook.data.files || !(hook.params.user || {})._id) {
