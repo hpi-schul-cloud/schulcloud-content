@@ -1,3 +1,6 @@
+const logger = require('winston');
+const config = require('config');
+
 class RedirectService {
   constructor(app) {
     this.app = app;
@@ -29,19 +32,27 @@ class RedirectService {
       return videoUrl;
     }
 
-
-    return this.app
+    try {
+      this.app
       .service('resources')
       .patch(id, {
         $inc: {
           clickCount: 1
         }
-      })
+      });
+    } catch (error) {
+      logger.error(error);
+    }
+    return this.app
+      .service('resources')
+      .get(id)
       .then(resource => {
-        return resource.fullUrl;
+        return `${config.get('protocol')}://${config.get('host')}:${config.get(
+          'port'
+        )}/files/get/${resource._id.toString()}${resource.url}`;
       });
   }
-
+  
   static redirect(req, res) {
     res.redirect(res.data);
   }
