@@ -64,7 +64,7 @@ class FileStructureService {
     return this.app
       .service('resource_filepaths')
       .find({
-        query: { resourceId: resourceId, isTemp: false },
+        query: { resourceId: resourceId, isTemp: false, hidden: false},
         paginate: false
       })
       .then(publishedFiles => {

@@ -9,7 +9,7 @@ const { createPdfDrm } = require('./drmHelpers/drm_pdf.js');
 const { createVideoDrm } = require('./drmHelpers/drm_video.js');
 const { writeExifData } = require('./drmHelpers/drm_exifInfo.js');
 const { writeDrmMetaDataToDB, writeDrmFileDataToDB } = require('./drmHelpers/drm_dbHelpers.js');
-const { uploadAndDelete, getResourceFileList, downloadFile, getFileType } = require('./drmHelpers/handelFiles.js');
+const { uploadAndDelete, getResourceFileList, downloadFiles, getFileType } = require('./drmHelpers/handelFiles.js');
 const ep = new exiftool.ExiftoolProcess(exiftoolBin);
 
 const isRestoreFile = (filePath) => {
@@ -47,7 +47,7 @@ class DrmService {
         const sourceFolderPath =
         drmConfig.absoluteLocalStoragePath + '\\'+drmConfig.downloadDir+'\\' + resourceId;
         const resourceFileList = await getResourceFileList(this.app, resourceId);
-        await downloadFile(this.app, resourceFileList, sourceFolderPath);
+        await downloadFiles(this.app, resourceFileList, sourceFolderPath);
         try {
           await ep.open();
         } catch (error) {

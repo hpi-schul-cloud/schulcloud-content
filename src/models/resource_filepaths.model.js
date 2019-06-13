@@ -14,6 +14,7 @@ module.exports = function (app) {
       createdBy: {type: String, required: false},
       isTemp: {type: Boolean, required: true},
       drmProtection: {type: Boolean, required: true},
+      hidden: {type: Boolean, required: true},
 
       createdAt: { type: Date, default: Date.now },
       updatedAt: { type: Date, default: Date.now },

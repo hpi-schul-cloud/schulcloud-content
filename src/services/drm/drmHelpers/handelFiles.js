@@ -43,13 +43,18 @@ const uploadAndDelete = async (app, resourceFileList, sourceFolderPath) => {
   
   await Promise.all(resourceFileList.map(async element => {
       if (element.upload) {
-        await app.service('resource_filepaths').patch(element.id.toString(),{drmProtection: false}).then(async (resource)=>{
+        await app.service('resource_filepaths').get(element.id.toString()).then(async (resource)=>{
           delete resource._id;
           resource.drmProtection = true;
           await app.service('resource_filepaths').create(resource).then(async(newRecource)=>{
             let sourceStream = fs.createReadStream(element.outputFilePath);
             await finishPromisePipe(sourceStream, getUploadStream(newRecource._id));
-            app.service('resource_filepaths').patch(element.id.toString(),{path: '/' + drmConfig.originalFilesFolderName+element.path });
+            app.service('resource_filepaths').patch(element.id.toString(),
+          {
+            drmProtection: false,
+            path: '/' + drmConfig.originalFilesFolderName+element.path,
+            hidden: true
+        });
           });
         });
       }
@@ -87,7 +92,7 @@ function finishPromisePipe(source, target) {
 }
 
 
-const downloadFile = async(app, resourceFileList, storageLocation) => {
+const downloadFiles = async(app, resourceFileList, storageLocation) => {
   if (!fs.existsSync(storageLocation)){
     fs.mkdirSync(storageLocation);
 }
@@ -114,7 +119,7 @@ const getFileType = sourceFilePath => {
 module.exports = {
   uploadAndDelete,
   getResourceFileList,
-  downloadFile,
+  downloadFiles,
   getFileType,
   videoCleanupOnDelete
 };
