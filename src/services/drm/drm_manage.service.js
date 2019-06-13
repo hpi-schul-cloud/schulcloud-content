@@ -8,18 +8,9 @@ const { createWatermark, getLogoFilePath, watermarkHasChanged} = require('./drmH
 const { createPdfDrm } = require('./drmHelpers/drm_pdf.js');
 const { createVideoDrm } = require('./drmHelpers/drm_video.js');
 const { writeExifData } = require('./drmHelpers/drm_exifInfo.js');
-const { writeDrmMetaDataToDB, writeDrmFileDataToDB } = require('./drmHelpers/drm_dbHelpers.js');
+const { writeDrmMetaDataToDB, writeDrmFileDataToDB, isRestoreFile } = require('./drmHelpers/drm_dbHelpers.js');
 const { uploadAndDelete, getResourceFileList, downloadFiles, getFileType } = require('./drmHelpers/handelFiles.js');
 const ep = new exiftool.ExiftoolProcess(exiftoolBin);
-
-const isRestoreFile = (filePath) => {
-  filePath = filePath.split('/');
-  if (filePath[1] == drmConfig.originalFilesFolderName) {
-    return true;
-  }
-  return false;
-};
-
 
 class DrmService {
   constructor(app) {
