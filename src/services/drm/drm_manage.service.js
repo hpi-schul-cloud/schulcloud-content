@@ -12,13 +12,12 @@ const { writeDrmMetaDataToDB, writeDrmFileDataToDB } = require('./drmHelpers/drm
 const { uploadAndDelete, getResourceFileList, downloadFile, getFileType } = require('./drmHelpers/handelFiles.js');
 const ep = new exiftool.ExiftoolProcess(exiftoolBin);
 
-const createAccessToken = (app, resourceId) => {
-  return app.service('access_token').create({resourceId: resourceId}).then((result)=>{
-    return result._id.toString();
-  });
-};
-const removeAccessToken = (app, access_token) => {
-  return app.service('access_token').remove(access_token);
+const isRestoreFile = (filePath) => {
+  filePath = filePath.split('/');
+  if (filePath[1] == drmConfig.originalFilesFolderName) {
+    return true;
+  }
+  return false;
 };
 
 
@@ -31,34 +30,24 @@ class DrmService {
     new Promise(async resolve => {
       if (isProtected === true) {
 
-        if (!drmOptions.watermark) {
-          restoreOriginalFiles(this.app,resourceId, drmConfig.imageFileTypes);
-        } if (!drmOptions.pdfIsProtected) {
-          restoreOriginalFiles(this.app,resourceId, drmConfig.documentFileTypes);          
-        } if (!drmOptions.videoIsProtected) {
-          restoreOriginalFiles(this.app,resourceId, drmConfig.videoFileTypes);
-        }
+        if (oldDrmOptions !== undefined) {
+          if (!drmOptions.watermark && oldDrmOptions.watermark) {
+            restoreOriginalFiles(this.app,resourceId, drmConfig.imageFileTypes);
+          } if (!drmOptions.pdfIsProtected && oldDrmOptions.pdfIsProtected) {
+            restoreOriginalFiles(this.app,resourceId, drmConfig.documentFileTypes);          
+          } if (!drmOptions.videoIsProtected && oldDrmOptions.videoIsProtected) {
+            restoreOriginalFiles(this.app,resourceId, drmConfig.videoFileTypes);
+          }
 
-        if (oldDrmOptions !== undefined && drmOptions.watermark && watermarkHasChanged(drmOptions, oldDrmOptions)) {
-          await restoreOriginalFiles(this.app ,resourceId, drmConfig.imageFileTypes);
+          if (drmOptions.watermark && watermarkHasChanged(drmOptions, oldDrmOptions)) {
+            await restoreOriginalFiles(this.app ,resourceId, drmConfig.imageFileTypes);
+          }
         }
 
         const sourceFolderPath =
         drmConfig.absoluteLocalStoragePath + '\\'+drmConfig.downloadDir+'\\' + resourceId;
         const resourceFileList = await getResourceFileList(this.app, resourceId);
-        const accessToken = await createAccessToken(this.app, resourceId);
-        await Promise.all(
-          resourceFileList.map(data => {
-            const options = {
-              path: data.path,
-              resourceId: resourceId,
-              name: data.id,
-              storageLocation: sourceFolderPath,
-              accessToken: accessToken
-            };
-            return downloadFile(options);
-          })
-        );
+        await downloadFile(this.app, resourceFileList, sourceFolderPath);
         try {
           await ep.open();
         } catch (error) {
@@ -81,20 +70,21 @@ class DrmService {
   
               let fileType = await getFileType(element.sourceFilePath);
               fileType = fileType.split(' ')[0];
-              if (['JPEG', 'PNG'].includes(fileType) && drmOptions.watermark && logoFilePath != element.sourceFilePath) {
-                await createWatermark(element, logoFilePath, drmOptions);
-                await writeExifData(ep, drmOptions.exif, element.outputFilePath);
-                writeDrmFileDataToDB(this.app, element);
-              } else if (['PDF'].includes(fileType)&&drmOptions.pdfIsProtected) {
-                await createPdfDrm(element);
-                await writeExifData(ep, drmOptions.exif, element.outputFilePath);
-                writeDrmFileDataToDB(this.app, element);
-              } else if (['Matroska'].includes(fileType)&&drmOptions.videoIsProtected) {
-                createVideoDrm(this.app, element, resourceId);
-                writeDrmFileDataToDB(this.app, element);
+              if (!isRestoreFile(element.path)) {
+                if (['JPEG', 'PNG'].includes(fileType) && drmOptions.watermark && logoFilePath != element.sourceFilePath) {
+                  await createWatermark(element, logoFilePath, drmOptions);
+                  await writeExifData(ep, drmOptions.exif, element.outputFilePath);
+                  writeDrmFileDataToDB(this.app, element);
+                } else if (['PDF'].includes(fileType)&&drmOptions.pdfIsProtected) {
+                  await createPdfDrm(element);
+                  await writeExifData(ep, drmOptions.exif, element.outputFilePath);
+                  writeDrmFileDataToDB(this.app, element);
+                } else if (['Matroska'].includes(fileType)&&drmOptions.videoIsProtected) {
+                  createVideoDrm(this.app, element, resourceId);
+                  writeDrmFileDataToDB(this.app, element);
+                }
               }
             }
-  
           })
         );
   
@@ -106,10 +96,10 @@ class DrmService {
         
         //upload and delete Files
         uploadAndDelete(this.app, resourceFileList, sourceFolderPath);
-        removeAccessToken(this.app,accessToken);
         return resolve();
       } else if(isProtected === false){
         restoreOriginalFiles(this.app,resourceId);
+        this.app.service('resources').patch(resourceId, { drmOptions: {} });
         return resolve();
       }
      

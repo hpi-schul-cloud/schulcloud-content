@@ -1,5 +1,5 @@
 const writeExifData = async (ep, data, path) => {
-  if(Object.keys(data).length === 0){
+  if(data === undefined || Object.keys(data).length === 0){
     return;
   }try {
     await ep.writeMetadata(path, data, ['-File:all', 'overwrite_original']);

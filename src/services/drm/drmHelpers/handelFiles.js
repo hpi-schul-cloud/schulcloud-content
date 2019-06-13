@@ -1,9 +1,8 @@
 const fs = require('fs');
 const logger = require('winston');
 const emptyDir = require('empty-dir');
-const { promisePipe, getUploadStream } = require('../../files/storageHelper.js');
+const { getUploadStream, getDownloadStream } = require('../../files/storageHelper.js');
 const Magic = require('mmmagic').Magic;
-const download = require('download-file');
 const config = require('config');
 const drmConfig = config.get('DRM');
 
@@ -41,23 +40,28 @@ const videoCleanupOnDelete = (app, resourceId) =>{
 };
 
 const uploadAndDelete = async (app, resourceFileList, sourceFolderPath) => {
-  await Promise.all(
-    resourceFileList.map(async element => {
+  
+  await Promise.all(resourceFileList.map(async element => {
       if (element.upload) {
-        await app.service('resource_filepaths').get(element.id.toString()).then(async (resource)=>{
+        await app.service('resource_filepaths').patch(element.id.toString(),{drmProtection: false}).then(async (resource)=>{
           delete resource._id;
+          resource.drmProtection = true;
           await app.service('resource_filepaths').create(resource).then(async(newRecource)=>{
             let sourceStream = fs.createReadStream(element.outputFilePath);
-            await promisePipe(sourceStream, getUploadStream(newRecource._id));
-            app.service('resource_filepaths').patch(element.id.toString(),{path: '/' + drmConfig.originalFilesFolderName+element.path }).then(async()=>{
-            });
+            await finishPromisePipe(sourceStream, getUploadStream(newRecource._id));
+            app.service('resource_filepaths').patch(element.id.toString(),{path: '/' + drmConfig.originalFilesFolderName+element.path });
           });
         });
       }
       if (element.remove) {
-        fs.unlinkSync(element.sourceFilePath);
-        fs.unlinkSync(element.outputFilePath);
+        if (fs.existsSync(element.sourceFilePath)) {
+          fs.unlinkSync(element.sourceFilePath);
+        }
+        if (fs.existsSync(element.outputFilePath)) {
+          fs.unlinkSync(element.outputFilePath);
+        }      
       }
+      return;
     })
   );
 
@@ -69,22 +73,32 @@ const uploadAndDelete = async (app, resourceFileList, sourceFolderPath) => {
   }
 };
 
-const downloadFile = ({path, name, storageLocation, resourceId, accessToken}) => {
-    let preUrl = `${config.get('protocol')}://${config.get('host')}:${config.get(
-      'port'
-    )}/files/get/`;
-    var url = preUrl + resourceId + path + '?access_token=' + accessToken;
-  
-    var options = {
-      directory: storageLocation,
-      filename: name
-    };
-    return new Promise((resolve, reject) => {
-      download(url, options, function(err) {
-        if (err) reject(err);
-        resolve();
+function finishPromisePipe(source, target) {
+  return new Promise((resolve, reject) => {
+    source
+      .pipe(target)
+      .on('error', error => {
+        return reject(error);
+      })
+      .on('finish', result => {
+        return resolve(result);
       });
-    });
+  });
+}
+
+
+const downloadFile = async(app, resourceFileList, storageLocation) => {
+  if (!fs.existsSync(storageLocation)){
+    fs.mkdirSync(storageLocation);
+}
+  return await Promise.all(
+    resourceFileList.map(async element => {
+      if (element.drmProtection === false) {
+        let name = element.id.toString();
+        let sourceStream = fs.createWriteStream(storageLocation+'\\'+name);
+        return finishPromisePipe(getDownloadStream(name),sourceStream);
+      }
+    }));
 };
 
 const getFileType = sourceFilePath => {
