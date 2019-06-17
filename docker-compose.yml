@@ -7,14 +7,14 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      NODE_ENV: development
-      BACKEND_URL: https://schul-cloud.org:8080/
+      NODE_ENV: default
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
       MONGO_DATABASE: schulcloud_content
+      ELASTIC_HOST: elasticsearch
+      ELASTIC_PORT: 9200
     networks:
       - default
-      - schulcloudserver_schulcloud-server-network
     ports:
       - 4040:4040
       - 5858:5858
@@ -43,8 +43,9 @@ services:
       - schulcloud-content-mongodb:mongodb
       - schulcloud-content-elasticsearch:elasticsearch
     environment:
-      - MONGO_HOST=schulcloud-content-mongodb
+      - MONGO_HOST=mongodb
       - MONGO_PORT=27017
+      - MONGO_DATABASE=schulcloud_content
       - ELASTIC_HOST=elasticsearch
       - ELASTIC_PORT=9200
 
@@ -63,10 +64,6 @@ services:
       - data-schulcloud-elasticsearch:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
-
-networks:
-  schulcloudserver_schulcloud-server-network:
-    external: true
 
 volumes:
   data-schulcloud-content:
