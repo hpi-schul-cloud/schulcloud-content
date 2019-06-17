@@ -165,6 +165,26 @@ const restrictWriteAccessToCurrentProvider = hook => {
       hook.data.userId = hook.params.user._id;
     }
   }
+  else {
+    if (Array.isArray(hook.data)) {
+      hook.data.forEach(resource => {
+        if(!resource.providerId) {
+          resource.providerId = hook.params.user.providerId;
+        }
+        if(!resource.userId) {
+          resource.userId = hook.params.user._id;
+        }
+      });
+    }
+    else {
+      if(!hook.data.providerId) {
+        hook.data.providerId = hook.params.user.providerId;
+      }
+      if(!hook.data.userId) {
+        hook.data.userId = hook.params.user._id;
+      }
+    }
+  }
   return hook;
 };
 
