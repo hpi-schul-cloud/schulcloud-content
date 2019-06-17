@@ -1,22 +1,25 @@
-const addAccessToken = (hook) => {
-    return hook.app.service('access_token').create({resourceId: 'TODO'}).then((resource) => {
-        hook.data.access_token = resource._id;
-        return hook;
-    });
-};
+const commonHooks = require('feathers-hooks-common');
 
-const removeAccessToken = (hook) => {
-    return hook.app.service('access_token').remove(hook.data.access_token).then(() => hook);
+// resource need to be published for pichasso
+const temporarilyPublishResource = async (hook) => {
+  const resource = await hook.app.service('resources').get(hook.id);
+  hook.params.resource = resource;
+  await hook.app.service('resources').patch(resource._id, {isPublished: true});
+  return hook;
+};
+const unpublishResource = async (hook) => {
+  await hook.app.service('resources').patch(hook.params.resource._id, {isPublished: hook.params.resource.isPublished});
+  return hook;
 };
 
 module.exports = {
     before: {
-      all: [],
+      all: [commonHooks.disallow('external')],
       find: [],
       get: [],
       create: [],
-      update: [addAccessToken],
-      patch: [addAccessToken],
+      update: [temporarilyPublishResource],
+      patch: [temporarilyPublishResource],
       remove: []
     },
 
@@ -25,8 +28,8 @@ module.exports = {
       find: [],
       get: [],
       create: [],
-      update: [removeAccessToken],
-      patch: [removeAccessToken],
+      update: [unpublishResource],
+      patch: [unpublishResource],
       remove: []
     },
 

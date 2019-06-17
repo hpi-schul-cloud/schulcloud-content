@@ -1,5 +1,6 @@
 const commonHooks = require('feathers-hooks-common');
 const defaultHooks = require('./file_default.hook.js');
+const thumbnailHook = require('./thumbnail.hooks');
 const authenticateHook = require('../../authentication/authenticationHook');
 const { skipInternal, getCurrentUserData } = require('../../authentication/permissionHelper.hooks.js');
 const { unifySlashes } = require('../../hooks/unifySlashes');
@@ -97,10 +98,7 @@ const uploadHooks = {
 };
 
 const thumbnailHooks = {
-  ...defaultHooks,
-  before: {
-    all: [commonHooks.disallow('external')]
-  }
+  ...thumbnailHook
 };
 
 module.exports = {
