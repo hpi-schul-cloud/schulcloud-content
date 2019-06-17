@@ -19,7 +19,7 @@ module.exports = {
       patch: [addAccessToken],
       remove: []
     },
-  
+
     after: {
       all: [],
       find: [],
@@ -29,7 +29,7 @@ module.exports = {
       patch: [removeAccessToken],
       remove: []
     },
-  
+
     error: {
       all: [],
       find: [],
@@ -40,4 +40,3 @@ module.exports = {
       remove: []
     }
   };
-  

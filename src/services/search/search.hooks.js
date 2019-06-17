@@ -1,6 +1,6 @@
 const { populateResourceUrls } = require('../../hooks/populateResourceUrls');
-const errors = require('@feathersjs/errors');
 const authenticateHook = require('../../authentication/authenticationHook');
+const { skipInternal, getCurrentUserData } = require('../../authentication/permissionHelper.hooks.js');
 
 
 const allowDisableLimit = hook => {
@@ -9,21 +9,6 @@ const allowDisableLimit = hook => {
     hook.params.query.$limit = 10000; // just deleting $limit causes the default value :(
   }
   return hook;
-};
-
-const getCurrentUserData = hook => {
-  const userModel = hook.app.get('mongooseClient').model('users');
-    return new Promise((resolve, reject) => {
-      userModel.findById(hook.params.user._id, function (err, user) {
-        if(err) { reject(new errors.GeneralError(err)); }
-        if(!user) {
-          reject(new errors.NotFound('User not found'));
-        }
-        hook.params.user.role = user.role;
-        hook.params.user.providerId = user.providerId;
-        return resolve(hook);
-      });
-    });
 };
 
 const restrictToProviderOrToPublicResources = hook => {
@@ -59,13 +44,6 @@ const checkPermissionsAfterAuthentication = hook => {
   .catch(()=>{
     return restrictToPublicResources(hook);
   });
-};
-
-const skipInternal = (method) => (hook) => {
-  if (typeof hook.params.provider === 'undefined') {
-    return hook;
-  }
-  return method(hook);
 };
 
 module.exports = {

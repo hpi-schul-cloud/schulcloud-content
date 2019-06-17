@@ -1,4 +1,5 @@
 const authenticateHook = require('../../authentication/authenticationHook');
+const { skipInternal, getCurrentUserData } = require('../../authentication/permissionHelper.hooks.js');
 const errors = require('@feathersjs/errors');
 
 
@@ -6,22 +7,12 @@ const {
   hashPassword, protect
 } = require('@feathersjs/authentication-local').hooks;
 
-const checkUserHasRole = (permittedRoles) => async hook => {
-  const userModel = hook.app.get('mongooseClient').model('users');
-  return new Promise((resolve, reject) => {
-    userModel.findById(hook.params.user._id, function (err, user) {
-      if(err) { reject(new errors.GeneralError(err)); }
-      if(!user) {
-        reject(new errors.NotFound('User not found'));
-      }
-      if (!permittedRoles.includes(user.role)){
-        reject(new errors.Forbidden('Permissions missing'));
-      }
-      hook.params.user.role = user.role;
-      hook.params.user.providerId = user.providerId;
-      return resolve(hook);
-    });
-  });
+
+const checkUserHasRole = (permittedRoles) => hook => {
+  if (!permittedRoles.includes(hook.params.user.role)) {
+    throw new errors.Forbidden('Permissions missing');
+  }
+  return hook;
 };
 
 const restrictAccessToCurrentProvider = async hook => {
@@ -44,32 +35,32 @@ const restrictCreationToCurrentProvider = hook => {
   return hook;
 };
 
-const ckeckUserHasPermission = (roles) => hook => {
-  return checkUserHasRole(roles)(hook)
-  .then(()=>{
-    if(hook.method == 'create') {
-      return restrictCreationToCurrentProvider(hook);
-    } else {
-      return restrictAccessToCurrentProvider(hook);
-    }
-  });
-};
-
-const skipInternal = (method) => (hook) => {
-  if (typeof hook.params.provider === 'undefined') {
-    return hook;
-  }
-  return method(hook);
-};
-
 module.exports = {
   before: {
-    all: [ authenticateHook() ],
-    find: [ skipInternal(ckeckUserHasPermission(['superhero', 'admin'])) ],
-    get: [ skipInternal(ckeckUserHasPermission(['superhero', 'admin', 'user'])) ],
-    create: [ skipInternal(ckeckUserHasPermission(['superhero', 'admin'])), hashPassword() ],
-    patch: [  skipInternal(ckeckUserHasPermission(['superhero', 'admin', 'user'])), hashPassword() ],
-    remove: [ skipInternal(ckeckUserHasPermission(['superhero', 'admin'])) ]
+    all: [
+      authenticateHook(),
+      skipInternal(getCurrentUserData)
+    ],
+    find: [
+      skipInternal(checkUserHasRole(['superhero', 'admin'])),
+      skipInternal(restrictAccessToCurrentProvider)
+    ],
+    get: [
+      skipInternal(restrictAccessToCurrentProvider)
+    ],
+    create: [
+      skipInternal(checkUserHasRole(['superhero', 'admin'])),
+      skipInternal(restrictCreationToCurrentProvider),
+      hashPassword()
+    ],
+    patch: [
+      skipInternal(restrictAccessToCurrentProvider),
+      hashPassword()
+    ],
+    remove: [
+      skipInternal(checkUserHasRole(['superhero', 'admin'])),
+      skipInternal(restrictAccessToCurrentProvider)
+    ]
   },
 
   after: {

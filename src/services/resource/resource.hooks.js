@@ -1,6 +1,8 @@
 const commonHooks = require('feathers-hooks-common');
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 const authenticateHook = require('../../authentication/authenticationHook');
+const { skipInternal, getCurrentUserData } = require('../../authentication/permissionHelper.hooks.js');
+
 const errors = require('@feathersjs/errors');
 
 const { populateResourceUrls } = require('../../hooks/populateResourceUrls');
@@ -141,21 +143,6 @@ const unifyLeadingSlashesHook = hook => {
 
 /************ PERMISSION CHECK ************/
 
-const getCurrentUserData = hook => {
-  const userModel = hook.app.get('mongooseClient').model('users');
-    return new Promise((resolve, reject) => {
-      userModel.findById(hook.params.user._id, function (err, user) {
-        if(err) { reject(new errors.GeneralError(err)); }
-        if(!user) {
-          reject(new errors.NotFound('User not found'));
-        }
-        hook.params.user.role = user.role;
-        hook.params.user.providerId = user.providerId;
-        return resolve(hook);
-      });
-    });
-};
-
 const restrictReadAccessToCurrentProvider = async hook => {
   if(hook.params.user.role !== 'superhero') {
     hook.params.query.providerId = hook.params.user.providerId.toString();
@@ -187,14 +174,6 @@ const ckeckUserHasPermission = hook => {
     return restrictReadAccessToCurrentProvider(hook);
   }
 };
-
-const skipInternal = (method) => (hook) => {
-  if (typeof hook.params.provider === 'undefined') {
-    return hook;
-  }
-  return method(hook);
-};
-
 
 module.exports = {
   before: {
