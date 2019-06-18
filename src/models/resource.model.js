@@ -23,7 +23,7 @@ module.exports = function (app) {
 
     promoUntil: { type: Date },
     featuredUntil: { type: Date },
-    clickCount: { type: Number },
+    clickCount: { type: Number, default: 0 },
     drmOptions:{ type: Object },
 
     createdAt: { type: Date, default: Date.now },

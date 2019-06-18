@@ -2,9 +2,10 @@ const logger = require('winston');
 const multiparty = require('multiparty');
 const {
   promisePipe,
-  removeLeadingSlashes,
   getUploadStream
 } = require('./storageHelper.js');
+const { unifySlashes } = require('../../hooks/unifySlashes');
+
 const { addFilesToDB } = require('./fileDBHelper.js');
 
 const uploadFile = ({app, userId, uploadPath, sourceStream}) => {
@@ -28,7 +29,7 @@ class FileUploadService {
       throw new Error('Unauthorized request');
     }
     return new Promise((resolve, reject) => {
-      const uploadPath = '/' + removeLeadingSlashes(req.query.path);
+      const uploadPath = unifySlashes(req.query.path);
       const form = new multiparty.Form();
       form.on('error', error => {
         reject({ status: 400, message: error });
@@ -42,7 +43,7 @@ class FileUploadService {
           // managedUpload object allows you to abort ongoing upload or track file upload progress.
           return uploadFile({
             app: this.app,
-            userId: user._id,
+            userId: user._id.toString(),
             uploadPath,
             sourceStream: part
           })

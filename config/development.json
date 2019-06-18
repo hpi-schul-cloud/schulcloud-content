@@ -20,7 +20,6 @@
     "downloadDir": "files",
     "workingDir": "working\\.node_play\\uploader",
     "pdfConfig": {
-      "pdfPassword": "MySuperSecretPassword",
       "keyLength": 256,
       "print": "none",
       "modify": "none",

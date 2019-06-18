@@ -25,6 +25,10 @@ const manageFiles = async hook => {
     .then(() => hook);
 };
 
+/*
+  TODO is hook.id ever defined? Doesn't it need to be hook.data.id?
+*/
+
 const patchResourceIdInFilepathDb = hook => {
   let ids;
   try {
@@ -132,7 +136,11 @@ const validateNewResources = hook => {
 };
 
 const addDrmProtection = hook => {
-  const resourceId = hook.id || hook.result._id.toString();
+  if(Array.isArray(hook.data) || Array.isArray(hook.result)){
+    // TODO FIX handle arrays for bulk edit/create/patch/...
+    return hook;
+  }
+  const resourceId = (hook.id || hook.result._id).toString();
   const options = {
     resourceId: resourceId,
     drmOptions: hook.data.drmOptions,
@@ -247,7 +255,7 @@ module.exports = {
       unifyLeadingSlashesHook,
       validateNewResources /* createThumbnail, */
     ],
-    update: [commonHooks.disallow()],
+    update: [commonHooks.disallow('external')],
     patch: [unifyLeadingSlashesHook, patchResourceIdInFilepathDb, manageFiles, beforeDrmProtection],
     remove: [deleteRelatedFiles]
   },

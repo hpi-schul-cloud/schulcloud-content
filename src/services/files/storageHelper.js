@@ -13,11 +13,6 @@ function promisePipe(source, target) {
   });
 }
 
-function removeLeadingSlashes(fileId) {
-  // remove trailing slashes and dots
-  return fileId.replace(/^[/.]*/, '');
-}
-
 function fallbackUndefined(variable, fallback) {
   return variable !== undefined ? variable : fallback;
 }
@@ -76,7 +71,6 @@ function removeFile(fileId) {
 
 module.exports = {
   promisePipe,
-  removeLeadingSlashes,
   getUploadStream,
   getDownloadStream,
   fileExists,

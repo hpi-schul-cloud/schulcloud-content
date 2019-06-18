@@ -2,6 +2,7 @@ const errors = require('@feathersjs/errors');
 const request = require('request');
 const rpn = require('request-promise-native');
 
+const { unifySlashes } = require('../../hooks/unifySlashes');
 const config = require('config');
 const pichassoConfig = config.get('pichasso');
 const { uploadFile } = require('./file_upload.service');
@@ -50,9 +51,9 @@ class ThumbnailService {
     // create thumbnail
     const fileId = await uploadFile({
       app: this.app,
-      userId: undefined,
+      userId: resource.userId,
       resourceId,
-      uploadPath: resourceId+'/thumbnail.png',
+      uploadPath: unifySlashes(resourceId+'/thumbnail.png'),
       sourceStream: request(`${pichassoHost}/thumbnail?auth=${authtoken}&file=${resource.url}`)
     });
     // publish thumbnail

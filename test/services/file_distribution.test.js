@@ -1,8 +1,6 @@
 const assert = require('assert');
 const app = require('../../src/app');
 const { WritableMock } = require('stream-mock');
-const resources = app.service('resources');
-const resourceFilepaths = app.service('resource_filepaths');
 
 const { mockUserId, mockProviderId } = require('./mockData');
 const { uploadMockFile, PORT } = require('./file_upload.test');
@@ -28,13 +26,13 @@ const insertMock = () => {
     isPublished: true
   };
 
-  return resources.create(mockResourceData).then(resourceObj => {
+  return app.service('resources').create(mockResourceData).then(resourceObj => {
     mockResourceId = resourceObj._id.toString();
   });
 };
 
 const removeMock = () => {
-  return resources.remove(mockResourceId);
+  return app.service('resources').remove(mockResourceId);
 };
 
 describe('\'files/get*\' service', () => {
@@ -57,7 +55,7 @@ describe('\'files/get*\' service', () => {
       )
       .then(({ body }) => {
         const { message: fileId } = JSON.parse(body);
-        return resourceFilepaths.patch(fileId, { resourceId: mockResourceId, isTemp: false });
+        return app.service('resource_filepaths').patch(fileId, { resourceId: mockResourceId, isTemp: false });
       })
       .then(fileObj => {
         mockFilePath = fileObj.path;
@@ -65,6 +63,7 @@ describe('\'files/get*\' service', () => {
       .catch(err => {
         // eslint-disable-next-line no-console
         console.error(err);
+        throw err;
       });
   });
 

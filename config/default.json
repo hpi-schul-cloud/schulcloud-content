@@ -37,5 +37,25 @@
       "usernameField": "\\username",
       "passwordField": "password"
     }
+  },
+  "DRM": {
+    "absoluteLocalStoragePath": "VIDEO_STORAGE_LOCATION",
+    "downloadDir": "files",
+    "workingDir": "working\\.node_play\\uploader",
+    "pdfConfig": {
+      "keyLength": 256,
+      "print": "none",
+      "modify": "none",
+      "extract": "n"
+    },
+    "nodePlay":{
+      "protocol": "http",
+      "host": "localhost",
+      "port": 3000
+    },
+    "videoFileTypes": ["mp4","mkv","MP4","MKV"],
+    "imageFileTypes": ["jpeg","gif","jpg","png"],
+    "documentFileTypes": ["pdf"],
+    "originalFilesFolderName": "originalFiles"
   }
 }

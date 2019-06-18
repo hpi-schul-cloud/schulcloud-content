@@ -22,12 +22,11 @@ class RedirectService {
     try {
       await this.app
       .service('resources')
-      .patch(id, {
+      .update(id, {
         $inc: {
           clickCount: 1
         }
       });
-      
     } catch (error) {
       logger.error(error);
     }
