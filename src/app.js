@@ -16,6 +16,8 @@ const appHooks = require('./app.hooks');
 
 const mongodb = require('./mongodb');
 
+const authentication = require('./authentication/authentication');
+
 const app = express(feathers());
 
 // Load app configuration
@@ -41,6 +43,8 @@ app.use(function(req, res, next) {
   req.feathers.req = req;
   next();
 });
+
+app.configure(authentication);
 
 // Set up our services (see `services/index.js`)
 app.configure(services);

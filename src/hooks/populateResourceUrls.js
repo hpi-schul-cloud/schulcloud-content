@@ -1,14 +1,19 @@
 const config = require('config');
 
 const extendUrls = resource => {
-  const host = `${config.get('protocol')}://${config.get('host')}:${config.get(
-    'port'
-  )}/files/get/${resource._id}/`;
+  const fallbackHost = `${config.get('protocol')}://${config.get(
+    'host'
+  )}:${config.get('port')}`;
+  const host = `${process.env.HOSTING_URL || fallbackHost}/files/get/${
+    resource._id
+  }/`;
   ['url', 'thumbnail'].forEach(key => {
     const firstCapsKey = key.charAt(0).toUpperCase() + key.slice(1);
     if (resource[key] && !resource[key].startsWith('http')) {
       resource[`full${firstCapsKey}`] =
         host + resource[key].replace(/^\/+/, '');
+    } else {
+      resource[`full${firstCapsKey}`] = resource[key];
     }
   });
   return resource;

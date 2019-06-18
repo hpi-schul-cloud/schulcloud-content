@@ -1,50 +1,27 @@
 const commonHooks = require('feathers-hooks-common');
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
-const authenticate = require('../../hooks/authenticate');
+const authenticateHook = require('../../authentication/authenticationHook');
+const errors = require('@feathersjs/errors');
+
 const { populateResourceUrls } = require('../../hooks/populateResourceUrls');
-// const createThumbnail = require('../../hooks/createThumbnail');
-const config = require('config');
-const pichassoConfig = config.get('pichasso');
+const { unifySlashes } = require('../../hooks/unifySlashes');
 const { videoCleanupOnDelete } = require('../drm/drmHelpers/handelFiles.js');
 
-const restrictToPublicIfUnauthorized = hook => {
-  /*
-  Anfrage so manipulieren, dass nur isPublished=true angezeigt wird
-  Außer: userId = currentUser._id (hook.params.userId)
-  */
-  try {
-    hook = authenticate(hook);
+const createThumbnail = require('../../hooks/createThumbnail');
+const config = require('config');
+const pichassoConfig = config.get('pichasso');
 
-    if (
-      typeof hook.params.query.isPublished == 'undefined' ||
-      hook.params.query.isPublished == 'false'
-    ) {
-      delete hook.params.query.isPublished;
-      hook.params.query.$or = [
-        { isPublished: { $ne: false } },
-        { userId: hook.params.userId }
-      ];
-    } else {
-      hook.params.query.isPublished = { $ne: false };
-    }
-  } catch (error) {
-    hook.params.query.isPublished = { $ne: false };
+const manageFiles = async hook => {
+  if (!hook.data.files || !(hook.params.user || {})._id) {
     return hook;
   }
-  return hook;
-};
-
-const manageFiles = hook => {
-  if (!hook.data.files || !hook.params.userId) {
-    return hook;
-  }
-  hook = authenticate(hook);
+  hook = await authenticateHook()(hook);
 
   const files = hook.data.files;
   const fileManagementService = hook.app.service('/files/manage');
   const resourceId = (hook.id || hook.result._id).toString();
   return fileManagementService
-    .patch(resourceId, { ...files, userId: hook.params.userId }, hook)
+    .patch(resourceId, { ...files, userId: (hook.params.user || {})._id }, hook)
     .then(() => hook);
 };
 
@@ -77,9 +54,14 @@ const deleteRelatedFiles = async hook => {
   return hook;
 };
 
+
 const createNewThumbnail = hook => {
+  if(Array.isArray(hook.data)){
+    return hook; // TODO FIX BUG ERROR remove if arrays are handled correctly
+  }
   if (pichassoConfig.enabled && !hook.data.thumbnail) {
-    const resourceId = hook.id || hook.result._id.toString();
+    // TODO can't handle import because result is an array
+    const resourceId = (hook.id || hook.result._id).toString();
     return hook.app
       .service('files/thumbnail')
       .patch(resourceId, {})
@@ -164,28 +146,14 @@ const addDrmProtection = hook => {
       .then(() => hook);
   }
 };
-const addUserIdToData = hook => {
-  if (hook.params.userId) {
-    hook.data.userId = hook.params.userId;
-  }
-  return hook;
-};
 
-const removeLeadingSlashes = resource => {
+const unifySlashesFromResourceUrls = resource => {
   ['url', 'thumbnail'].forEach(key => {
-    if (resource[key]) {
-      resource[key] = resource[key].replace(/^\/+/, '/');
+    if (resource[key] && !resource[key].startsWith('http')) {
+      resource[key] = unifySlashes(resource[key]);
     }
   });
   return resource;
-};
-
-const removeLeadingSlashesHook = hook => {
-  if (Array.isArray(hook.data)) {
-    hook.data = hook.data.map(removeLeadingSlashes);
-  } else {
-    hook.data = removeLeadingSlashes(hook.data);
-  }
 };
 
 const beforeDrmProtection = async hook => {
@@ -196,27 +164,92 @@ const beforeDrmProtection = async hook => {
   return hook;
 };
 
+
+const unifyLeadingSlashesHook = hook => {
+  if (Array.isArray(hook.data)) {
+    hook.data = hook.data.map(unifySlashesFromResourceUrls);
+  } else {
+    hook.data = unifySlashesFromResourceUrls(hook.data);
+  }
+};
+
+/************ PERMISSION CHECK ************/
+
+const getCurrentUserData = hook => {
+  const userModel = hook.app.get('mongooseClient').model('users');
+  return new Promise((resolve, reject) => {
+    userModel.findById(hook.params.user._id, function(err, user) {
+      if (err) {
+        reject(new errors.GeneralError(err));
+      }
+      if (!user) {
+        reject(new errors.NotFound('User not found'));
+      }
+      hook.params.user.role = user.role;
+      hook.params.user.providerId = user.providerId;
+      return resolve(hook);
+    });
+  });
+};
+
+const restrictReadAccessToCurrentProvider = async hook => {
+  if (hook.params.user.role !== 'superhero') {
+    hook.params.query.providerId = hook.params.user.providerId.toString();
+  }
+  return hook;
+};
+
+const restrictWriteAccessToCurrentProvider = hook => {
+  if (hook.params.user.role !== 'superhero') {
+    if (Array.isArray(hook.data)) {
+      hook.data.forEach(resource => {
+        resource.providerId = hook.params.user.providerId;
+        resource.userId = hook.params.user._id;
+      });
+    } else {
+      hook.data.providerId = hook.params.user.providerId;
+      hook.data.userId = hook.params.user._id;
+    }
+  }
+  return hook;
+};
+
+const ckeckUserHasPermission = hook => {
+  if (hook.method == 'create') {
+    return restrictWriteAccessToCurrentProvider(hook);
+  } else if (hook.method == 'patch') {
+    return (
+      restrictReadAccessToCurrentProvider(hook) &&
+      restrictWriteAccessToCurrentProvider(hook)
+    );
+  } else {
+    return restrictReadAccessToCurrentProvider(hook);
+  }
+};
+
+const skipInternal = method => hook => {
+  if (typeof hook.params.provider === 'undefined') {
+    return hook;
+  }
+  return method(hook);
+};
+
 module.exports = {
   before: {
-    all: [],
-    find: [restrictToPublicIfUnauthorized],
+    all: [
+      skipInternal(authenticateHook()),
+      skipInternal(getCurrentUserData),
+      skipInternal(ckeckUserHasPermission)
+    ],
+    find: [],
     get: [],
     create: [
-      authenticate,
-      addUserIdToData,
-      removeLeadingSlashesHook,
-      validateNewResources, /* createThumbnail, */
+      unifyLeadingSlashesHook,
+      validateNewResources /* createThumbnail, */
     ],
     update: [commonHooks.disallow()],
-    patch: [
-      authenticate,
-      addUserIdToData,
-      removeLeadingSlashesHook,
-      patchResourceIdInFilepathDb,
-      manageFiles,
-      beforeDrmProtection
-    ],
-    remove: [authenticate, deleteRelatedFiles]
+    patch: [unifyLeadingSlashesHook, patchResourceIdInFilepathDb, manageFiles, beforeDrmProtection],
+    remove: [deleteRelatedFiles]
   },
 
   after: {
@@ -231,7 +264,7 @@ module.exports = {
       addDrmProtection
     ],
     update: [],
-    patch: [populateResourceUrls, addDrmProtection, unpublishInvalidResources],
+    patch: [unpublishInvalidResources, populateResourceUrls, addDrmProtection],
     remove: []
   },
 

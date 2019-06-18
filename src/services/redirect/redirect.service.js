@@ -1,5 +1,4 @@
 const logger = require('winston');
-const config = require('config');
 
 class RedirectService {
   constructor(app) {
@@ -7,24 +6,11 @@ class RedirectService {
   }
 
   async get(id) {
-    /*
-    return this.app
-      .service('resources')
-      .get(id)
-      .then(resource => {
-        return this.app
-          .service('resources')
-          .patch(id, { clickCount: resource.clickCount + 1 });
-      })
-      .then(resource => {
-        return resource.fullUrl;
-      });
-    */
 
-    // Increase Click Counter
+    // if it is a protected video -> redirect to video player
      const videoUrl = await this.app.service('/drm/videoRedirect').get(id).then((response) => {
 			if (response) {
-				return 'http://localhost:8080/video?recouceId='+id+'&videoId='+response;
+				return 'http://localhost:8080/video?recouceId='+id+'&videoId='+response; //TODO get URL from config
 			}
 			return undefined;
     });
@@ -32,27 +18,27 @@ class RedirectService {
       return videoUrl;
     }
 
+    // try to increment clickCount
     try {
-      this.app
+      await this.app
       .service('resources')
       .patch(id, {
         $inc: {
           clickCount: 1
         }
       });
+      
     } catch (error) {
       logger.error(error);
     }
-    return this.app
-      .service('resources')
-      .get(id)
+
+    // redirect to content
+    return this.app.service('resources').get(id)
       .then(resource => {
-        return `${config.get('protocol')}://${config.get('host')}:${config.get(
-          'port'
-        )}/files/get/${resource._id.toString()}${resource.url}`;
+        return resource.fullUrl;
       });
   }
-  
+
   static redirect(req, res) {
     res.redirect(res.data);
   }

@@ -6,7 +6,8 @@ const request = require('request');
 const fs = require('fs');
 
 const PORT = 3031;
-const resource_mock_id = 'resource_mock_id';
+
+const {mockResourceId} = require('./mockData');
 
 const { startS3MockServer, stopS3MockServer } = require('./s3mock');
 
@@ -14,13 +15,13 @@ const uploadMockFile = ({filepath, filename, resourceId }) => {
   return new Promise((resolve, reject) => {
     const req = request({
       headers: {
-        'Authorization': 'Basic c2NodWxjbG91ZC1jb250ZW50LTE6Y29udGVudC0x',
+        'Authorization': 'Basic b2xpdmVAZXhhbXBsZS5jb206dHJlZQ==',
       },
       uri: `http://localhost:${PORT}/files/upload?path=///${filename}&resourceId=${resourceId}`,
       method: 'POST'
     }, (err, resp) => {
       if (err || resp.statusCode < 200 || resp.statusCode >= 300) {
-        return reject(err);
+        return reject(err || resp.toJSON());
       } else {
         return resolve(resp);
       }
@@ -53,7 +54,7 @@ describe('\'files/upload\' service', () => {
         this.server.close(resolve);
       });
       const cleanupFilepaths = contentFilepaths
-        .find({ query: { resourceId: resource_mock_id } })
+        .find({ query: { resourceId: mockResourceId } })
         .then(res => {
           return Promise.all(
             res.data.map(mockData => contentFilepaths.remove(mockData._id))
@@ -68,7 +69,7 @@ describe('\'files/upload\' service', () => {
     return uploadMockFile({
         filename: 'test.txt',
         filepath: __filename,
-        resourceId: resource_mock_id,
+        resourceId: mockResourceId,
       })
       .then(({ body }) => {
         body = JSON.parse(body);

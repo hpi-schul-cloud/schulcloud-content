@@ -1,5 +1,7 @@
 const mime = require('mime-types');
 const path = require('path');
+const { unifySlashes } = require('../../hooks/unifySlashes');
+
 const {
   promisePipe,
   getDownloadStream,
@@ -13,8 +15,8 @@ class FileDistributionService {
 
   find({ req }) {
     const res = req.res;
-    let [resourceId, ...filePath] = req.params['0']
-      .replace(/^\//, '')
+    let [resourceId, ...filePath] = unifySlashes(req.params['0'])
+      .replace(/^\/+/g, '') // remove leading slashes
       .split('/');
     filePath = '/' + filePath.join('/');
 
