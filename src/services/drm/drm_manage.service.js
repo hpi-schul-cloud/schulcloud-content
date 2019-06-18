@@ -54,12 +54,11 @@ class DrmService {
             
             element.remove = true; // While true the downloaded file is removed from disc at the end
             element.upload = false; // If there are files changed that have to be reuploaded set this to true
+            element.sourceFilePath = sourceFolderPath + '\\' + element.id;
+            element.outputFilePath =
+              sourceFolderPath + '\\' + element.id + '_out'; //It is sometimes not possible to override the original file
 
-            if (element.drmProtection === false) {
-              element.sourceFilePath = sourceFolderPath + '\\' + element.id;
-              element.outputFilePath =
-                sourceFolderPath + '\\' + element.id + '_out'; //It is sometimes not possible to override the original file
-  
+            if (element.drmProtection === false) {  
               let extension = getFileExtension(element.path);
               if (!isRestoreFile(element.path)) {
                 if (drmConfig.imageFileTypes.includes(extension) && drmOptions.watermark && logoFilePath != element.sourceFilePath) {

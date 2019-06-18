@@ -1,6 +1,7 @@
 const config = require('config');
 const drmConfig = config.get('DRM');
 const qpdf = require('node-qpdf');
+var crypto = require('crypto');
 
 const createPdfDrm = async element => {
   element.upload = true;
@@ -8,7 +9,7 @@ const createPdfDrm = async element => {
     keyLength: drmConfig.pdfConfig.keyLength,
     password: {
       user: '',
-      owner: drmConfig.pdfConfig.pdfPassword
+      owner: crypto.randomBytes(20).toString('hex') //TODO RANDOM
     },
     outputFile: element.outputFilePath,
     restrictions: {

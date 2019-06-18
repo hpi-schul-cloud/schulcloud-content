@@ -43,6 +43,7 @@ const videoCleanupOnDelete = (app, resourceId) =>{
 const uploadAndDelete = async (app, resourceFileList, sourceFolderPath) => {
   
   await Promise.all(resourceFileList.map(async element => {
+    //upload the modified files to MINO and mark them as DRM Protected
       if (element.upload) {
         await app.service('resource_filepaths').get(element.id.toString()).then(async (resource)=>{
           delete resource._id;
@@ -59,6 +60,7 @@ const uploadAndDelete = async (app, resourceFileList, sourceFolderPath) => {
           });
         });
       }
+      //Delete input and output Files when the upload is done and the files are no longer needed (element.remove == true)
       if (element.remove) {
         if (fs.existsSync(element.sourceFilePath)) {
           fs.unlinkSync(element.sourceFilePath);
@@ -70,7 +72,8 @@ const uploadAndDelete = async (app, resourceFileList, sourceFolderPath) => {
       return;
     })
   );
-
+  
+  //If there are no files left in download Folder, delete the download Folder.
   const isEmpty = emptyDir.sync(sourceFolderPath);
   if (isEmpty) {
     fs.rmdir(sourceFolderPath, err => {
