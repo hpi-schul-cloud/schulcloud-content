@@ -7,7 +7,7 @@ const { populateResourceUrls } = require('../../hooks/populateResourceUrls');
 const { unifySlashes } = require('../../hooks/unifySlashes');
 const { videoCleanupOnDelete } = require('../drm/drmHelpers/handelFiles.js');
 
-const createThumbnail = require('../../hooks/createThumbnail');
+// const createThumbnail = require('../../hooks/createThumbnail');
 const config = require('config');
 const pichassoConfig = config.get('pichasso');
 
