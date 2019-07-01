@@ -39,8 +39,8 @@ module.exports = function() {
   # Result: stored file
   ################################################## */
 
-  app.use('/files/get*', new FileDistributionService(app));
-  const fileDistributionService = app.service('files/get*');
+  app.use('files/get/:resourceId/*', new FileDistributionService(app));
+  const fileDistributionService = app.service('files/get/:resourceId/*');
   fileDistributionService.hooks(hooks.distribution);
 
   /* ##################################################

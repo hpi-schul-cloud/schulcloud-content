@@ -15,11 +15,8 @@ class FileDistributionService {
 
   find({ req }) {
     const res = req.res;
-    let [resourceId, ...filePath] = unifySlashes(req.params['0'])
-      .replace(/^\/+/g, '') // remove leading slashes
-      .split('/');
-    filePath = '/' + filePath.join('/');
-
+    const resourceId = req.params.resourceId;
+    const filePath = '/' + unifySlashes(req.params['0']).replace(/^\/+/g, ''); // remove leading slashes
     // get fileId
     return this.app
       .service('resource_filepaths')

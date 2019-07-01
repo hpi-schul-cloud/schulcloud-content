@@ -55,10 +55,7 @@ const restrictToPublicResources = hook => {
 };
 
 const getResource = async hook => {
-  const path = hook.params.route[0];
-  let [resourceId] = unifySlashes(path)
-    .replace(/^\/+/g, '') // remove leading slashes
-    .split('/');
+  const resourceId = hook.params.route.resourceId;
   const resource = await hook.app.service('resources').get(resourceId);
   hook.params.resource = resource;
   return hook;
