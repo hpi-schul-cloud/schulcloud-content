@@ -36,24 +36,20 @@ class FileDistributionService {
         }
         const fileId = fileObjects.data[0]._id.toString();
 
-        try {
-          // check if file exists to prevent crash during download
-          const fileInfo = await fileExists(fileId);
+        // check if file exists to prevent crash during download
+        const fileInfo = await fileExists(fileId);
 
-          const contentType = mime.contentType(path.extname(filePath)); // 'application/json; charset=utf-8'
-          if (res.header) {
-            if (contentType) {
-              res.header('Content-Type', contentType);
-            }
-            if (fileInfo.etag) {
-              res.header('ETag', fileInfo.etag);
-            }
+        const contentType = mime.contentType(path.extname(filePath)); // 'application/json; charset=utf-8'
+        if (res.header) {
+          if (contentType) {
+            res.header('Content-Type', contentType);
           }
-
-          return promisePipe(getDownloadStream(fileId), res);
-        } catch (error) {
-          throw error;
+          if (fileInfo.etag) {
+            res.header('ETag', fileInfo.etag);
+          }
         }
+
+        return promisePipe(getDownloadStream(fileId), res);
       });
   }
 }
