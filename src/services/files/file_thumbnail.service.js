@@ -28,22 +28,26 @@ class ThumbnailService {
 
     const resource = await this.app.service('resources').get(resourceId);
 
-    if(resource.thumbnail){
+    if (resource.thumbnail) {
       throw new PreconditionFailed('thumbnail already exists');
     }
 
     const pichassoHost = `${pichassoConfig.url}:${pichassoConfig.port}`;
 
     // get auth token from pichasso
-    const verifyUrl = `${pichassoHost}/thumbnail/verify/${pichassoConfig.token}/${encodeURIComponent(resource.url)}`;
+    const verifyUrl = `${pichassoHost}/thumbnail/verify/${
+      pichassoConfig.token
+    }/${encodeURIComponent(resource.fullUrl)}`;
     const verifyResponse = await api.get(verifyUrl);
 
     // verify token
     if (verifyResponse.statusCode !== 200) {
-      throw new errors.GeneralError('verification failed getting thumbnail url');
+      throw new errors.GeneralError(
+        'verification failed getting thumbnail url'
+      );
     }
     const authtoken = verifyResponse.body;
-    if(!authtoken || authtoken.length !== 6){
+    if (!authtoken || authtoken.length !== 6) {
       throw new errors.GeneralError('received token seems to be wrong');
     }
 
@@ -52,13 +56,23 @@ class ThumbnailService {
       app: this.app,
       userId: undefined,
       resourceId,
-      uploadPath: resourceId+'/thumbnail.png',
-      sourceStream: request(`${pichassoHost}/thumbnail?auth=${authtoken}&file=${resource.url}`)
+      uploadPath: resourceId + '/thumbnail.png',
+      sourceStream: request(
+        `${pichassoHost}/thumbnail?auth=${authtoken}&file=${resource.url}`
+      )
     });
     // publish thumbnail
-    await this.app.service('resource_filepaths').patch(fileId, { isTemp: false });
+    await this.app
+      .service('resource_filepaths')
+      .patch(fileId, { isTemp: false });
     // patch thumbnail into resource
-    await this.app.service('resources').patch(resourceId, { thumbnail: `${config.get('protocol')}://${config.get('host')}:${config.get('port')}/files/get/${resourceId}/thumbnail.png` });
+    await this.app
+      .service('resources')
+      .patch(resourceId, {
+        thumbnail: `${config.get('protocol')}://${config.get(
+          'host'
+        )}:${config.get('port')}/files/get/${resourceId}/thumbnail.png`
+      });
 
     return `{code: 200, message: ${fileId}}`;
   }

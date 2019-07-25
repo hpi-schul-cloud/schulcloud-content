@@ -2,11 +2,13 @@ const commonHooks = require('feathers-hooks-common');
 const defaultHooks = require('./file_default.hook.js');
 const thumbnailHook = require('./thumbnail.hooks');
 const authenticateHook = require('../../authentication/authenticationHook');
-const { skipInternal, getCurrentUserData } = require('../../authentication/permissionHelper.hooks.js');
+const {
+  skipInternal,
+  getCurrentUserData
+} = require('../../authentication/permissionHelper.hooks.js');
 const { unifySlashes } = require('../../hooks/unifySlashes');
 
 const errors = require('@feathersjs/errors');
-
 
 const restrictResourceToCurrentProvider = async hook => {
   if (hook.params.user.role !== 'superhero') {
@@ -69,10 +71,29 @@ const distributionHooks = {
   }
 };
 
+const restrictDelete = hook => {
+  const resourceId = hook.id;
+  return hook.app
+    .service('resource_filepaths')
+    .find({ query: { _id: { $in: hook.data.delete || [] } } })
+    .then(files => {
+      if (
+        files.data.every(
+          file =>
+            file.resourceId &&
+            file.resourceId.toString() === resourceId.toString()
+        )
+      ) {
+        return hook; // everything ok
+      }
+      throw new Error('You are trying to delete some files you do not own.');
+    });
+};
+
 const manageHooks = {
   ...defaultHooks,
   before: {
-    all: [commonHooks.disallow('external')]
+    all: [restrictDelete, commonHooks.disallow('external')]
   }
 };
 

@@ -1,8 +1,9 @@
 function addFilesToDB(app, filePaths, userId) {
-  const addPromises = filePaths.map((filePath) => app.service('resource_filepaths').create({
+  const addPromises = filePaths.map(filePath =>
+    app.service('resource_filepaths').create({
       path: filePath,
       createdBy: userId,
-      isTemp: true,
+      isTemp: true
     })
   );
   return Promise.all(addPromises).then(newFileObjects => {
@@ -15,27 +16,37 @@ function addFilesToDB(app, filePaths, userId) {
 }
 
 function removeFilesFromDB(app, fileIds) {
-  // TODO permission check
-  const deletePromises = fileIds.map(fileId => app.service('resource_filepaths').remove(fileId));
+  const deletePromises = fileIds.map(fileId =>
+    app.service('resource_filepaths').remove(fileId)
+  );
   return Promise.all(deletePromises);
 }
 
 function replaceFilesInDB(app, fileIds) {
   fileIds.map(fileId => {
-    const deleteExistingPromise = app.service('resource_filepaths').get(fileId)
+    const deleteExistingPromise = app
+      .service('resource_filepaths')
+      .get(fileId)
       .then(fileObject => {
         const filePath = fileObject.path;
-        return app.service('resource_filepaths').find({ query: { _id: { $ne: fileId }, path: filePath, isTemp: false } });
+        return app.service('resource_filepaths').find({
+          query: { _id: { $ne: fileId }, path: filePath, isTemp: false }
+        });
       })
       .then(searchResults => {
         const currentFiles = searchResults.data;
-        // TODO throw error if got >1 file
-        // TODO throw error if we got fileId
-        const deletePromises = currentFiles.map(currentFile => app.service('resource_filepaths').remove(currentFile._id));
+        if (currentFiles.length > 1) {
+          throw new Error('found more than one published version of this file');
+        }
+        const deletePromises = currentFiles.map(currentFile =>
+          app.service('resource_filepaths').remove(currentFile._id)
+        );
         return Promise.all(deletePromises);
       });
 
-    const publishNewPromise = app.service('resource_filepaths').patch(fileId, { isTemp: false });
+    const publishNewPromise = app
+      .service('resource_filepaths')
+      .patch(fileId, { isTemp: false });
     return Promise.all([deleteExistingPromise, publishNewPromise]);
   });
 }

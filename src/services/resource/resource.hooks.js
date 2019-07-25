@@ -1,14 +1,17 @@
 const commonHooks = require('feathers-hooks-common');
 const validateResourceSchema = require('../../hooks/validate-resource-schema/');
 const authenticateHook = require('../../authentication/authenticationHook');
-const { skipInternal, getCurrentUserData } = require('../../authentication/permissionHelper.hooks.js');
+const {
+  skipInternal,
+  getCurrentUserData
+} = require('../../authentication/permissionHelper.hooks.js');
 
 const { populateResourceUrls } = require('../../hooks/populateResourceUrls');
 const { unifySlashes } = require('../../hooks/unifySlashes');
 
 // const createThumbnail = require('../../hooks/createThumbnail');
-// const config = require('config');
-// const pichassoConfig = config.get('pichasso');
+const config = require('config');
+const pichassoConfig = config.get('pichasso');
 
 const manageFiles = async hook => {
   if (!hook.data.files || !(hook.params.user || {})._id) {
@@ -17,9 +20,9 @@ const manageFiles = async hook => {
   hook = await authenticateHook()(hook);
 
   const files = hook.data.files;
-  const fileManagementService = hook.app.service('/files/manage');
   const resourceId = (hook.id || hook.result._id).toString();
-  return fileManagementService
+  return hook.app
+    .service('/files/manage')
     .patch(resourceId, { ...files, userId: (hook.params.user || {})._id }, hook)
     .then(() => hook);
 };
@@ -52,19 +55,28 @@ const deleteRelatedFiles = async hook => {
   return hook;
 };
 
-/*
 const createNewThumbnail = hook => {
-  if (pichassoConfig.enabled && !hook.data.thumbnail) {
-    // TODO can't handle import because result is an array
-    const resourceId = (hook.id || hook.result._id).toString();
-    return hook.app
-      .service('files/thumbnail')
-      .patch(resourceId, {})
-      .then(() => hook);
+  if (!pichassoConfig.enabled) {
+    return hook;
   }
-  return hook;
+
+  const addThumbnail = async data => {
+    if (!data.thumbnail) {
+      return data;
+    }
+    const resourceId = data._id.toString();
+    await hook.app.service('files/thumbnail').patch(resourceId, {});
+    return data;
+  };
+
+  const hookData = hook.result;
+
+  if (Array.isArray(hookData)) {
+    return Promise.all(hookData.map(addThumbnail)).then(() => hook);
+  } else {
+    return addThumbnail(hookData).then(() => hook);
+  }
 };
-*/
 
 // VALIDATION
 const validateResource = hook => {
@@ -164,23 +176,21 @@ const restrictWriteAccessToCurrentProvider = hook => {
       hook.data.providerId = hook.params.user.providerId;
       hook.data.userId = hook.params.user._id;
     }
-  }
-  else {
+  } else {
     if (Array.isArray(hook.data)) {
       hook.data.forEach(resource => {
-        if(!resource.providerId) {
+        if (!resource.providerId) {
           resource.providerId = hook.params.user.providerId;
         }
-        if(!resource.userId) {
+        if (!resource.userId) {
           resource.userId = hook.params.user._id;
         }
       });
-    }
-    else {
-      if(!hook.data.providerId) {
+    } else {
+      if (!hook.data.providerId) {
         hook.data.providerId = hook.params.user.providerId;
       }
-      if(!hook.data.userId) {
+      if (!hook.data.userId) {
         hook.data.userId = hook.params.user._id;
       }
     }
@@ -226,7 +236,7 @@ module.exports = {
     create: [
       patchResourceIdInFilepathDb,
       manageFiles,
-      // createNewThumbnail, // TODO enable again
+      createNewThumbnail,
       populateResourceUrls
     ],
     update: [],
