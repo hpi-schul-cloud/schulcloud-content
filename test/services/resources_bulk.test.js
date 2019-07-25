@@ -5,13 +5,13 @@ const serviceName = 'resources/bulk';
 
 const { mockProviderId } = require('./mockData');
 
-const mockResource = (i) => ({
+const mockResource = i => ({
   contentCategory: 'learning-object',
   description: 'ich bin ein Test',
   isPublished: false,
   licenses: ['MIT'],
   mimeType: 'audio',
-  originId: Date.now().toString()+i,
+  originId: Date.now().toString() + i,
   providerId: mockProviderId,
   tags: ['Test'],
   thumbnail: 'https://schul-cloud.org/images/logo/app-icon-144.png',
@@ -20,7 +20,7 @@ const mockResource = (i) => ({
   userId: '0000d224816abba584714c9c',
   files: {
     save: [],
-    delete: [],
+    delete: []
   }
 });
 
@@ -42,10 +42,11 @@ const promiseTimeout = (delay) => {
 let mockResources = [];
 
 describe(`${serviceName}' service`, () => {
-
   afterEach(function() {
     // runs after each test in this block
-    const resourcesToDelete = mockResources.map((resource) => app.service('resources').remove(resource._id));
+    const resourcesToDelete = mockResources.map(resource =>
+      app.service('resources').remove(resource._id)
+    );
     mockResources = [];
     return Promise.all(resourcesToDelete);
   });
@@ -57,7 +58,7 @@ describe(`${serviceName}' service`, () => {
 
   it('CREATE multiple resources', async () => {
     const resources = [];
-    for(var i=0; i < 1000; i++){
+    for (var i = 0; i < 1000; i++) {
       resources.push(mockResource(i));
     }
     const dbObjects = await app.service(serviceName).create(resources);
@@ -67,7 +68,7 @@ describe(`${serviceName}' service`, () => {
 
   it('CREATE multiple invalid resources', async () => {
     const resources = [];
-    for(var i=0; i < 5; i++){
+    for (var i = 0; i < 5; i++) {
       const resource = mockResource(i);
       resource.isPublished = true;
       resource.licenses = [];
@@ -79,20 +80,21 @@ describe(`${serviceName}' service`, () => {
   });
   it('CREATE unpublishs invalid resources', async () => {
     const resources = [];
-    for(var i=0; i < 5; i++){
+    for (var i = 0; i < 5; i++) {
       const resource = mockResource(i);
       resource.isPublished = true;
       resource.licenses = [];
       resources.push(resource);
     }
     const dbObjects = await app.service(serviceName).create(resources);
-    dbObjects.forEach((resource) => {
+    dbObjects.forEach(resource => {
       assert.equal(resource.isPublished, false);
     });
     mockResources.push(...dbObjects);
   });
 
   /*
+  // Test is not working because of elasticsearch (check out the description at the top)
   it('DELETE by query', async () => {
     const identifier = 'DELETE_by_query';
 

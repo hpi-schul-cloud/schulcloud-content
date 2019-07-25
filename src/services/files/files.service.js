@@ -19,7 +19,6 @@ module.exports = function() {
   ################################################## */
 
   app.use('/files/upload', new FileUploadService(app));
-  // Get our initialize service to that we can bind hooks
   const fileUploadService = app.service('files/upload');
   fileUploadService.hooks(hooks.upload);
 
@@ -60,7 +59,7 @@ module.exports = function() {
   # Usage: GET /files/thumbnail/{resourceId}
   # Result: Thumbnail in Storage Server
   ################################################## */
-  // Initialize our service with any options it requires
+
   app.use('/files/thumbnail', new ThumbnailService(app));
   const thumbnailService = app.service('files/thumbnail');
   thumbnailService.hooks(hooks.thumbnail);
