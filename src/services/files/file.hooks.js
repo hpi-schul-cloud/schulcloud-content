@@ -6,7 +6,6 @@ const {
   skipInternal,
   getCurrentUserData
 } = require('../../authentication/permissionHelper.hooks.js');
-const { unifySlashes } = require('../../hooks/unifySlashes');
 
 const errors = require('@feathersjs/errors');
 

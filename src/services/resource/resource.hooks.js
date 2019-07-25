@@ -166,34 +166,32 @@ const restrictReadAccessToCurrentProvider = async hook => {
 };
 
 const restrictWriteAccessToCurrentProvider = hook => {
-  if (hook.params.user.role !== 'superhero') {
-    if (Array.isArray(hook.data)) {
-      hook.data.forEach(resource => {
+  const applyToResource = method => {
+    return resources => {
+      if (Array.isArray(resources)) {
+        return resources.map(method);
+      } else {
+        return method(resources);
+      }
+    };
+  };
+
+  if (hook.params.user.role === 'superhero') {
+    hook.data = applyToResource(resource => {
+      if (!resource.providerId) {
         resource.providerId = hook.params.user.providerId;
+      }
+      if (!resource.userId) {
         resource.userId = hook.params.user._id;
-      });
-    } else {
-      hook.data.providerId = hook.params.user.providerId;
-      hook.data.userId = hook.params.user._id;
-    }
+      }
+      return resource;
+    })(hook.data);
   } else {
-    if (Array.isArray(hook.data)) {
-      hook.data.forEach(resource => {
-        if (!resource.providerId) {
-          resource.providerId = hook.params.user.providerId;
-        }
-        if (!resource.userId) {
-          resource.userId = hook.params.user._id;
-        }
-      });
-    } else {
-      if (!hook.data.providerId) {
-        hook.data.providerId = hook.params.user.providerId;
-      }
-      if (!hook.data.userId) {
-        hook.data.userId = hook.params.user._id;
-      }
-    }
+    hook.data = applyToResource(resource => {
+      resource.providerId = hook.params.user.providerId;
+      resource.userId = hook.params.user._id;
+      return resource;
+    })(hook.data);
   }
   return hook;
 };
